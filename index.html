@@ -8,32 +8,44 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg-void:       #080a0e;
-  --bg-panel:      #0d1117;
-  --bg-panel2:     #111620;
-  --bg-hover:      #1a2030;
-  --border:        #1e2a3a;
-  --border-bright: #2a3d55;
-  --accent:        #00d4ff;
-  --accent-dim:    #0088aa;
-  --accent-glow:   rgba(0,212,255,0.15);
+  /* ── KAM identity: amber/fire — machine floor, not drafting table ── */
+  --bg-void:       #08090a;   /* warm near-black */
+  --bg-panel:      #0e1112;   /* warm dark panels */
+  --bg-panel2:     #131618;
+  --bg-hover:      #1e2226;
+  --border:        #252c30;
+  --border-bright: #384248;
+
+  /* Primary accent: amber (KAD uses cyan — KAM is hot, not cool) */
+  --accent:        #ffaa00;
+  --accent-dim:    #b87800;
+  --accent-glow:   rgba(255,170,0,0.18);
+  --accent2:       #ff6b00;   /* deeper orange for gradients */
+
+  /* Operational colors */
+  --op-cut:        #ff4455;   /* cut = red/hot */
+  --op-mark:       #ffaa00;   /* mark = amber */
+  --op-score:      #cc88ff;   /* score = purple */
+  --op-none:       #3a5070;   /* untagged = dim */
+
+  /* Status / semantic */
   --green:         #00ff9d;
   --green-dim:     #00aa66;
   --amber:         #ffaa00;
-  --amber-dim:     #aa7000;
+  --amber-dim:     #b87800;
   --red:           #ff4455;
   --purple:        #cc88ff;
-  --text-primary:  #d0dde8;
-  --text-secondary:#6a8099;
-  --text-dim:      #3a5070;
+
+  /* Text */
+  --text-primary:  #d8cdb8;   /* warm white, not cool blue-white */
+  --text-secondary:#7a6e5a;
+  --text-dim:      #3a342a;
+
   --font-mono:     'JetBrains Mono', monospace;
   --font-ui:       'Space Grotesk', sans-serif;
   --sidebar-w:     228px;
   --toolbar-h:     40px;
   --status-h:      28px;
-  --op-cut:        #ff4455;
-  --op-mark:       #ffaa00;
-  --op-score:      #cc88ff;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -521,7 +533,92 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 .nc-field input, .nc-field select { background:var(--bg-panel2); border:1px solid var(--border-bright); border-radius:3px; color:var(--text-primary); font-family:var(--font-mono); font-size:10px; padding:4px 6px; outline:none; }
 .nc-field input:focus, .nc-field select:focus { border-color:var(--green); }
 
-/* ── TABLE / NESTING ── */
+/* ── PROCESS PANEL TABS ── */
+.proc-tab {
+  flex:1; font-family:var(--font-mono); font-size:9px; letter-spacing:0.06em;
+  text-transform:uppercase; padding:6px 2px; border:none; background:none;
+  color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent;
+  transition:all 0.12s;
+}
+.proc-tab:hover { color:var(--text-secondary); background:var(--bg-hover); }
+.proc-tab.active { color:var(--amber); border-bottom-color:var(--amber); }
+.proc-tab-panel { display:none; flex-direction:column; flex:1; overflow:hidden; }
+.proc-tab-panel.visible { display:flex; }
+
+/* ── PART LIBRARY ── */
+.part-list { flex:1; overflow-y:auto; padding:4px; }
+.part-row {
+  border:1px solid var(--border); border-radius:4px;
+  margin-bottom:4px; overflow:hidden; transition:border-color 0.1s;
+}
+.part-row:hover { border-color:var(--border-bright); }
+.part-row.selected { border-color:var(--amber); background:rgba(255,170,0,0.04); }
+.part-header {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 8px; cursor:pointer; background:var(--bg-panel2);
+}
+.part-color-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.part-name { flex:1; font-family:var(--font-mono); font-size:10px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.part-qty-badge { font-family:var(--font-mono); font-size:9px; color:var(--amber); background:rgba(255,170,0,0.1); border:1px solid var(--amber-dim); border-radius:3px; padding:1px 5px; flex-shrink:0; }
+.part-body { padding:5px 8px 6px; border-top:1px solid var(--border); }
+.part-src { font-family:var(--font-mono); font-size:8px; color:var(--text-dim); margin-bottom:4px; word-break:break-all; }
+.part-stats { font-family:var(--font-mono); font-size:9px; color:var(--text-secondary); margin-bottom:5px; }
+.part-actions { display:flex; gap:4px; }
+.part-btn {
+  flex:1; font-family:var(--font-mono); font-size:8px; letter-spacing:0.05em;
+  padding:3px 6px; border-radius:3px; cursor:pointer; border:1px solid var(--border);
+  background:var(--bg-panel); color:var(--text-secondary); transition:all 0.1s;
+  text-transform:uppercase; white-space:nowrap;
+}
+.part-btn:hover { background:var(--bg-hover); color:var(--text-primary); border-color:var(--border-bright); }
+.part-btn.sel   { color:var(--accent); border-color:var(--accent-dim); }
+.part-btn.sel:hover { background:var(--accent-glow); }
+.part-btn.ext   { color:var(--green); border-color:var(--green-dim); }
+.part-btn.ext:hover { background:rgba(0,255,157,0.06); }
+.part-btn.del   { color:var(--red); border-color:rgba(255,68,85,0.3); }
+.part-btn.del:hover { background:rgba(255,68,85,0.06); }
+
+/* KAM import dialog */
+#dxf-as-part-bar {
+  background:rgba(255,170,0,0.07); border:1px solid var(--amber-dim);
+  border-radius:4px; padding:8px 10px; margin-bottom:12px;
+  font-family:var(--font-mono); font-size:10px; color:var(--amber);
+}
+#dxf-as-part-bar label { color:var(--text-secondary); font-size:9px; display:block; margin-top:6px; }
+#dxf-part-name { background:var(--bg-panel); border:1px solid var(--border-bright); border-radius:3px; color:var(--text-primary); font-family:var(--font-mono); font-size:10px; padding:3px 6px; outline:none; width:100%; margin-top:3px; }
+#dxf-part-qty  { background:var(--bg-panel); border:1px solid var(--border-bright); border-radius:3px; color:var(--text-primary); font-family:var(--font-mono); font-size:10px; padding:3px 6px; outline:none; width:60px; margin-top:3px; }
+
+/* ── KAM Brand ───────────────────────────────────────────────────────────── */
+.brand { display:flex; align-items:center; gap:10px; margin-right:14px; flex-shrink:0; cursor:default; user-select:none; }
+.brand-mark-kam {
+  width:30px; height:30px; border-radius:8px; flex-shrink:0;
+  background: linear-gradient(140deg, #ffaa00 0%, #ff6b00 100%);
+  box-shadow: 0 0 16px rgba(255,170,0,0.35), 0 0 32px rgba(255,107,0,0.15);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono); font-weight:600; font-size:9px; color:#000;
+  letter-spacing:0.04em;
+}
+.brand-col { line-height:1.15; }
+.brand-name-kam {
+  font-family:var(--font-ui); font-weight:700; font-size:14px; letter-spacing:-0.01em;
+  background: linear-gradient(90deg, #ffaa00 0%, #ff6b00 60%, #ff4455 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.brand-sub-kam {
+  font-family:var(--font-mono); font-size:7px; color:var(--text-dim);
+  letter-spacing:0.18em; text-transform:uppercase; margin-top:1px;
+}
+
+
+.sheet-badge {
+  display:flex; align-items:center; gap:0;
+  background:rgba(255,170,0,0.07); border:1px solid rgba(255,170,0,0.22);
+  border-radius:4px; padding:2px 8px;
+  font-family:var(--font-mono); font-size:10px;
+  white-space:nowrap; flex-shrink:0;
+}
+
+</style>
 .table-outline { position:absolute; pointer-events:none; border:2px solid rgba(255,170,0,0.4); box-shadow:0 0 0 1px rgba(255,170,0,0.1); }
 .table-label   { position:absolute; font-family:var(--font-mono); font-size:9px; color:var(--amber); opacity:0.6; pointer-events:none; white-space:nowrap; }
 
@@ -545,10 +642,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 
 <!-- TOPBAR -->
 <div id="topbar">
-  <div class="brand" style="color:var(--amber);">
-    <div class="brand-dot" style="background:var(--amber);box-shadow:0 0 6px var(--amber);"></div>
-    <span>.KAM</span>
-    <div class="brand-sub">Kernel-Aided Manufacturing</div>
+  <div class="brand">
+    <div class="brand-mark-kam">KM</div>
+    <div class="brand-col">
+      <div class="brand-name-kam">.KAM</div>
+      <div class="brand-sub-kam">Kernel-Aided Manufacturing</div>
+    </div>
   </div>
   <div class="tb-sep"></div>
   <div class="tb-menu">
@@ -563,12 +662,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
+        <div class="tb-dd-sep"></div>
+        <div class="tb-dd-item" onclick="sendToKODE();closeMenus()" style="color:var(--accent)">Open in KODE<span class="dd-key">Ctrl+K</span></div>
       </div>
     </div>
     <div class="tb-menu-item" id="menu-edit" onmouseenter="openMenu('edit')" onmouseleave="scheduleClose()">Edit
       <div class="tb-dropdown" id="dd-edit" onmouseenter="cancelClose()" onmouseleave="scheduleClose()">
         <div class="tb-dd-item" onclick="deleteSelected();closeMenus()">Delete Selected<span class="dd-key">Del</span></div>
-        <div class="tb-dd-item" onclick="if(confirm('Clear all?')){GeoMemory.clear();KAM.clearTags();render();}closeMenus()">Clear All</div>
+        <div class="tb-dd-item" onclick="if(confirm('Clear all?')){GeoMemory.clear();KAM.clearTags();PartLibrary.clear();render();}closeMenus()">Clear All</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="joinSelected();closeMenus()">Join → Polyline<span class="dd-key">J</span></div>
         <div class="tb-dd-item" onclick="explodeSelected();closeMenus()">Explode<span class="dd-key">X</span></div>
@@ -596,14 +697,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 
   <div style="margin-left:12px;">
     <div id="view-toggle">
-      <button class="vt-btn kad active" id="vt-kad" onclick="setViewMode('kad')">KAD</button>
+      <button class="vt-btn kad active" id="vt-kad" onclick="setViewMode('kad')">GEOMETRY</button>
       <div class="vt-div"></div>
-      <button class="vt-btn kam" id="vt-kam" onclick="setViewMode('kam')">KAM</button>
+      <button class="vt-btn kam" id="vt-kam" onclick="setViewMode('kam')">PROCESS</button>
     </div>
   </div>
 
   <div class="tb-right">
-    <span class="tb-badge">v0.1</span>
+    <span class="tb-badge">v0.2</span>
     <button id="unit-toggle" onclick="toggleUnits()" title="Toggle mm/in (U)">
       <span class="unit-seg active" id="unit-seg-mm">mm</span>
       <span class="unit-divider"></span>
@@ -615,40 +716,39 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 
 <!-- SIDEBAR -->
 <div id="sidebar">
-  <div class="section-head">Draw &amp; Tag Tools</div>
+  <div class="section-head" style="color:var(--accent);letter-spacing:0.14em;">KAM Tools</div>
   <div class="tool-grid">
+
     <button class="tool-btn active" id="btn-select" onclick="setTool('select')">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3l14 9-7 1-4 7z"/></svg></div>
       <span class="tool-label">SELECT</span>
     </button>
-    <button class="tool-btn" id="btn-line" onclick="setTool('line')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="4" r="2" fill="currentColor"/></svg></div>
-      <span class="tool-label">LINE</span>
+
+    <button class="tool-btn" id="btn-tag" onclick="setTool('tag')" title="Tag contour (T)">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+      <span class="tool-label" style="color:var(--accent);">TAG</span>
     </button>
-    <button class="tool-btn" id="btn-rect" onclick="setTool('rect')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="1"/></svg></div>
-      <span class="tool-label">RECT</span>
+
+    <button class="tool-btn" id="btn-place" onclick="setTool('place')" title="Place part instance (P)">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1" opacity="0.4"/><rect x="3" y="13" width="8" height="8" rx="1" opacity="0.4"/><path d="M17 13v8M13 17h8"/></svg></div>
+      <span class="tool-label" style="color:var(--green);">PLACE</span>
     </button>
-    <button class="tool-btn" id="btn-polygon" onclick="setTool('polygon')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,3 21,9 17,20 7,20 3,9"/></svg></div>
-      <span class="tool-label">POLY</span>
-    </button>
-    <button class="tool-btn" id="btn-offset" onclick="setTool('offset')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/><path d="M14 11.5l3 2.5-3 2.5" stroke-width="1.2"/></svg></div>
-      <span class="tool-label">OFFSET</span>
-    </button>
-    <button class="tool-btn" id="btn-select2" onclick="deleteSelected()" title="Delete selected (Del)">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
-      <span class="tool-label">DELETE</span>
-    </button>
-    <button class="tool-btn" id="btn-rotate" onclick="setTool('rotate')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></div>
+
+    <button class="tool-btn" id="btn-rotate" onclick="setTool('rotate')" title="Rotate part (R)">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/></svg></div>
       <span class="tool-label">ROTATE</span>
     </button>
-    <button class="tool-btn" id="btn-tag" onclick="setTool('tag')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
-      <span class="tool-label" style="color:var(--amber);">TAG</span>
+
+    <button class="tool-btn" id="btn-delete-sel" onclick="deleteSelected()" title="Delete (Del)">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
+      <span class="tool-label" style="color:var(--red);">DELETE</span>
     </button>
+
+    <button class="tool-btn" id="btn-zext" onclick="zoomExtents()" title="Zoom Extents (Z)">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
+      <span class="tool-label">EXTENTS</span>
+    </button>
+
   </div>
 
   <!-- Rotation controls (shown when rotate tool is active OR objects are selected) -->
@@ -705,7 +805,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
     </button>
     <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNC(event)" style="display:none">
     <input type="file" id="load-kam-file" accept=".kam" onchange="loadKAM(event)" style="display:none">
-    <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none">
+    <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none" multiple>
     <input type="file" id="load-dxf" accept=".dxf,.DXF" onchange="importDXF(event)" style="display:none">
   </div>
 
@@ -742,122 +842,159 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 
   <!-- KAM VIEW: process panel -->
   <div id="process-panel">
-    <!-- Contour edit (shown when entity is tagged) -->
-    <div id="contour-edit">
-      <div class="ce-head">
-        <span>Contour <span id="ce-id">#—</span></span>
-        <button class="ce-close" onclick="closeContourEdit()">✕</button>
+    <!-- Tab strip -->
+    <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button class="proc-tab active" id="tab-parts"    onclick="showProcTab('parts')">Parts</button>
+      <button class="proc-tab"        id="tab-contours" onclick="showProcTab('contours')">Contours</button>
+      <button class="proc-tab"        id="tab-process"  onclick="showProcTab('process')">Process</button>
+    </div>
+
+    <!-- TAB: Parts -->
+    <div id="panel-parts" class="proc-tab-panel visible">
+      <div style="padding:5px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:4px;">
+        <button onclick="document.getElementById('load-kad-file').click()" style="flex:1;font-family:var(--font-mono);font-size:8px;background:var(--bg-panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ Import .KAD</button>
+        <button onclick="document.getElementById('load-dxf-as-part').click()" style="flex:1;font-family:var(--font-mono);font-size:8px;background:var(--bg-panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ Import .DXF</button>
+        <button onclick="clearAllParts()" style="font-family:var(--font-mono);font-size:8px;background:var(--bg-panel2);border:1px solid var(--border);border-radius:3px;color:var(--red);padding:4px 6px;cursor:pointer;" title="Remove all parts">✕</button>
       </div>
-      <div class="ce-body">
-        <div class="proc-field">
-          <label>Operation</label>
-          <select class="proc-select" id="ce-op" onchange="updateContourTag()">
-            <option value="cut">Cut</option>
-            <option value="mark">Mark</option>
-            <option value="score">Score</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-        <div class="proc-field">
-          <label>Side</label>
-          <select class="proc-select" id="ce-side" onchange="updateContourTag()">
-            <option value="auto">Auto-detect</option>
-            <option value="outside">Outside</option>
-            <option value="inside">Inside</option>
-          </select>
-        </div>
-        <div class="proc-field">
-          <label>Order</label>
-          <input class="proc-input" id="ce-order" type="number" value="0" min="0" step="1" onchange="updateContourTag()"/>
-        </div>
+      <input type="file" id="load-dxf-as-part" accept=".dxf,.DXF" onchange="importDXFasPart(event)" style="display:none">
+      <div style="padding:4px 6px;font-family:var(--font-mono);font-size:9px;color:var(--text-dim);border-bottom:1px solid var(--border);flex-shrink:0;" id="part-summary">0 parts · 0 entities</div>
+      <div class="part-list" id="part-list">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);padding:12px 8px;text-align:center;line-height:1.7;">No parts imported yet.<br>Use + Import .KAD or .DXF<br>to add parts to the nest.</div>
       </div>
     </div>
 
-    <div class="proc-scroll">
-      <!-- Table / Sheet -->
-      <div class="proc-section">
-        <div class="proc-label">Table / Sheet Size</div>
-        <div class="proc-field">
-          <label>Width</label>
-          <input class="proc-input" id="table-w" type="number" value="60" min="1" step="6" onchange="render()"/>
-          <span class="proc-unit" id="table-w-unit">in</span>
+    <!-- TAB: Contours -->
+    <div id="panel-contours" class="proc-tab-panel">
+      <div id="contour-edit">
+        <div class="ce-head">
+          <span>Contour <span id="ce-id">#—</span></span>
+          <button class="ce-close" onclick="closeContourEdit()">✕</button>
         </div>
-        <div class="proc-field">
-          <label>Height</label>
-          <input class="proc-input" id="table-h" type="number" value="120" min="1" step="6" onchange="render()"/>
-          <span class="proc-unit" id="table-h-unit">in</span>
-        </div>
-        <div class="proc-field">
-          <label style="font-size:8px;color:var(--text-dim);">Show table in KAM view</label>
-          <input type="checkbox" id="table-show" checked onchange="render()"/>
-        </div>
-      </div>
-        <div class="proc-field"><label>Grade</label><input class="proc-input" id="mat-grade" value="A36" placeholder="A36, 304SS…"/></div>
-        <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="0.375" min="0.001" step="0.0625"/><span class="proc-unit" id="mat-unit">in</span></div>
-      </div>
-      <!-- Machine -->
-      <div class="proc-section">
-        <div class="proc-label">Machine</div>
-        <div class="proc-field"><label>Name</label><input class="proc-input" id="mach-name" value="Plasma Table"/></div>
-        <div class="proc-field"><label>Amperage</label><input class="proc-input" id="mach-amps" type="number" value="65" min="1" step="5"/><span class="proc-unit">A</span></div>
-        <div class="proc-field"><label>Kerf</label><input class="proc-input" id="mach-kerf" type="number" value="0.06" min="0.001" step="0.005" onchange="updateKerfFromThickness()"/><span class="proc-unit" id="kerf-unit">in</span></div>
-        <div class="proc-field" style="flex-direction:column;align-items:flex-start;gap:3px;">
-          <label style="margin-bottom:2px;">Kerf Direction (G41/G42)</label>
-          <div class="kerf-dir-grid" style="width:100%">
-            <button class="kerf-dir-btn active" id="kd-left"  onclick="setKerfDir('left')" title="G41 — Cutter Left (standard)">◁ Left<br><span style="font-size:7px;color:inherit;opacity:0.7;">G41</span></button>
-            <button class="kerf-dir-btn right"  id="kd-right" onclick="setKerfDir('right')" title="G42 — Cutter Right">Right ▷<br><span style="font-size:7px;color:inherit;opacity:0.7;">G42</span></button>
-            <button class="kerf-dir-btn none-k" id="kd-none"  onclick="setKerfDir('none')" title="No compensation">None<br><span style="font-size:7px;color:inherit;opacity:0.7;">G40</span></button>
+        <div class="ce-body">
+          <div class="proc-field">
+            <label>Operation</label>
+            <select class="proc-select" id="ce-op" onchange="updateContourTag()">
+              <option value="cut">Cut</option>
+              <option value="mark">Mark</option>
+              <option value="score">Score</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+          <div class="proc-field">
+            <label>Side</label>
+            <select class="proc-select" id="ce-side" onchange="updateContourTag()">
+              <option value="auto">Auto-detect</option>
+              <option value="outside">Outside</option>
+              <option value="inside">Inside</option>
+            </select>
+          </div>
+          <div class="proc-field">
+            <label>Order</label>
+            <input class="proc-input" id="ce-order" type="number" value="0" min="0" step="1" onchange="updateContourTag()"/>
           </div>
         </div>
-        <div class="proc-field" style="flex-direction:column;align-items:flex-start;gap:3px;">
-          <label style="margin-bottom:2px;">Kerf vs Thickness reference</label>
-          <table class="kerf-table">
-            <tr><th>Thickness</th><th>Kerf (65A)</th></tr>
-            <tr id="kr-1"><td>1/8"</td><td>0.040"</td></tr>
-            <tr id="kr-2"><td>3/16"</td><td>0.050"</td></tr>
-            <tr id="kr-3"><td>1/4"</td><td>0.055"</td></tr>
-            <tr id="kr-4"><td>3/8"</td><td>0.060"</td></tr>
-            <tr id="kr-5"><td>1/2"</td><td>0.070"</td></tr>
-            <tr id="kr-6"><td>5/8"</td><td>0.080"</td></tr>
-            <tr id="kr-7"><td>3/4"</td><td>0.090"</td></tr>
-            <tr id="kr-8"><td>1"</td><td>0.110"</td></tr>
-          </table>
-        </div>
-        <div class="proc-field"><label>Cut Speed</label><input class="proc-input" id="mach-speed" type="number" value="80" min="1" step="5"/><span class="proc-unit" id="speed-unit">ipm</span></div>
-        <div class="proc-field"><label>Pierce ms</label><input class="proc-input" id="mach-pierce" type="number" value="500" min="0" step="50"/></div>
-        <div class="proc-field"><label>Lead-In R</label><input class="proc-input" id="mach-leadin" type="number" value="0.125" min="0" step="0.0625"/><span class="proc-unit" id="leadin-unit">in</span></div>
-        <div class="proc-field"><label>Dialect</label>
-          <select class="proc-select" id="mach-dialect">
-            <option value="generic">Generic Plasma</option>
-            <option value="hypertherm">Hypertherm Edge</option>
-            <option value="burny">Burny</option>
-            <option value="dynatorch">Dynatorch</option>
-          </select>
-        </div>
       </div>
-      <!-- Job -->
-      <div class="proc-section">
-        <div class="proc-label">Job</div>
-        <div class="proc-field"><label>Job #</label><input class="proc-input" id="job-num" placeholder="2025-001"/></div>
-        <div class="proc-field"><label>Client</label><input class="proc-input" id="job-client" placeholder="client name"/></div>
-        <div class="proc-field"><label>Notes</label><input class="proc-input" id="job-notes" placeholder="revision, notes…"/></div>
-      </div>
-      <!-- Contours -->
-      <div class="proc-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div class="proc-label" style="margin-bottom:0;">Contours</div>
-          <div style="display:flex;gap:3px;">
-            <button onclick="KAM.autoTag()" style="font-family:var(--font-mono);font-size:8px;background:var(--bg-panel);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);padding:2px 5px;cursor:pointer;" title="Auto-detect inside/outside">Auto</button>
-            <button onclick="KAM.autoSequence()" style="font-family:var(--font-mono);font-size:8px;background:var(--bg-panel);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);padding:2px 5px;cursor:pointer;" title="Sort sequence">Seq</button>
-          </div>
-        </div>
+      <div style="padding:4px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:4px;">
+        <button onclick="KAM.autoTag()" style="flex:1;font-family:var(--font-mono);font-size:8px;background:var(--bg-panel2);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);padding:3px;cursor:pointer;">Auto-Tag</button>
+        <button onclick="KAM.autoSequence()" style="flex:1;font-family:var(--font-mono);font-size:8px;background:var(--bg-panel2);border:1px solid var(--border);border-radius:3px;color:var(--text-dim);padding:3px;cursor:pointer;">Sort Seq</button>
       </div>
       <div class="contour-list" id="contour-list">
-        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);padding:8px;line-height:1.6;">No contours tagged yet.<br>Use TAG tool or right-click → Tag.</div>
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);padding:8px;line-height:1.6;">No contours tagged yet.<br>Use TAG tool or right-click.</div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- TAB: Process -->
+    <div id="panel-process" class="proc-tab-panel">
+      <div class="proc-scroll">
+        <!-- Utilization gauge -->
+        <div class="proc-section" style="border:1px solid rgba(255,170,0,0.2);border-radius:5px;padding:7px 8px;margin-bottom:8px;">
+          <div class="proc-label" style="color:var(--accent);margin-bottom:6px;">Sheet Utilization</div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:3px;height:8px;overflow:hidden;margin-bottom:5px;">
+            <div id="util-gauge-fill" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2,#ff6b00));border-radius:3px;width:0%;transition:width 0.4s;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;">
+            <span style="color:var(--text-dim);">USED</span>
+            <span style="color:var(--accent);" id="util-pct">0.0%</span>
+            <span style="color:var(--text-dim);">SCRAP</span>
+            <span style="color:var(--text-secondary);" id="scrap-pct">100.0%</span>
+          </div>
+        </div>
+
+        <!-- Table / Sheet -->
+        <div class="proc-section">
+          <div class="proc-label">Table / Sheet Size</div>
+          <div class="proc-field">
+            <label>Width</label>
+            <input class="proc-input" id="table-w" type="number" value="60" min="1" step="6" onchange="render();updateUtilization()"/>
+            <span class="proc-unit" id="table-w-unit">in</span>
+          </div>
+          <div class="proc-field">
+            <label>Height</label>
+            <input class="proc-input" id="table-h" type="number" value="120" min="1" step="6" onchange="render();updateUtilization()"/>
+            <span class="proc-unit" id="table-h-unit">in</span>
+          </div>
+          <div class="proc-field">
+            <label style="font-size:8px;color:var(--text-dim);">Show table</label>
+            <input type="checkbox" id="table-show" checked onchange="render()"/>
+          </div>
+        </div>
+        <!-- Material -->
+        <div class="proc-section">
+          <div class="proc-label">Material</div>
+          <div class="proc-field"><label>Grade</label><input class="proc-input" id="mat-grade" value="A36" placeholder="A36, 304SS…"/></div>
+          <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="0.375" min="0.001" step="0.0625"/><span class="proc-unit" id="mat-unit">in</span></div>
+        </div>
+        <!-- Machine -->
+        <div class="proc-section">
+          <div class="proc-label">Machine</div>
+          <div class="proc-field"><label>Name</label><input class="proc-input" id="mach-name" value="Plasma Table"/></div>
+          <div class="proc-field"><label>Amperage</label><input class="proc-input" id="mach-amps" type="number" value="65" min="1" step="5"/><span class="proc-unit">A</span></div>
+          <div class="proc-field"><label>Kerf</label><input class="proc-input" id="mach-kerf" type="number" value="0.06" min="0.001" step="0.005" onchange="updateKerfFromThickness()"/><span class="proc-unit" id="kerf-unit">in</span></div>
+          <div class="proc-field" style="flex-direction:column;align-items:flex-start;gap:3px;">
+            <label style="margin-bottom:2px;">Kerf Direction</label>
+            <div class="kerf-dir-grid" style="width:100%">
+              <button class="kerf-dir-btn active" id="kd-left"  onclick="setKerfDir('left')"  title="G41 — Cutter Left">◁ Left<br><span style="font-size:7px;opacity:0.7;">G41</span></button>
+              <button class="kerf-dir-btn right"  id="kd-right" onclick="setKerfDir('right')" title="G42 — Cutter Right">Right ▷<br><span style="font-size:7px;opacity:0.7;">G42</span></button>
+              <button class="kerf-dir-btn none-k" id="kd-none"  onclick="setKerfDir('none')"  title="No compensation">None<br><span style="font-size:7px;opacity:0.7;">G40</span></button>
+            </div>
+          </div>
+          <div class="proc-field" style="flex-direction:column;align-items:flex-start;gap:3px;">
+            <label style="margin-bottom:2px;">Kerf vs Thickness (65A ref)</label>
+            <table class="kerf-table">
+              <tr><th>Thick</th><th>Kerf</th></tr>
+              <tr id="kr-1"><td>1/8"</td><td>0.040"</td></tr>
+              <tr id="kr-2"><td>3/16"</td><td>0.050"</td></tr>
+              <tr id="kr-3"><td>1/4"</td><td>0.055"</td></tr>
+              <tr id="kr-4"><td>3/8"</td><td>0.060"</td></tr>
+              <tr id="kr-5"><td>1/2"</td><td>0.070"</td></tr>
+              <tr id="kr-6"><td>5/8"</td><td>0.080"</td></tr>
+              <tr id="kr-7"><td>3/4"</td><td>0.090"</td></tr>
+              <tr id="kr-8"><td>1"</td><td>0.110"</td></tr>
+            </table>
+          </div>
+          <div class="proc-field"><label>Cut Speed</label><input class="proc-input" id="mach-speed" type="number" value="80" min="1" step="5"/><span class="proc-unit" id="speed-unit">ipm</span></div>
+          <div class="proc-field"><label>Pierce ms</label><input class="proc-input" id="mach-pierce" type="number" value="500" min="0" step="50"/></div>
+          <div class="proc-field"><label>Lead-In R</label><input class="proc-input" id="mach-leadin" type="number" value="0.125" min="0" step="0.0625"/><span class="proc-unit" id="leadin-unit">in</span></div>
+          <div class="proc-field"><label>Dialect</label>
+            <select class="proc-select" id="mach-dialect">
+              <option value="generic">Generic Plasma</option>
+              <option value="hypertherm">Hypertherm Edge</option>
+              <option value="burny">Burny</option>
+              <option value="dynatorch">Dynatorch</option>
+            </select>
+          </div>
+        </div>
+        <!-- Job -->
+        <div class="proc-section">
+          <div class="proc-label">Job</div>
+          <div class="proc-field"><label>Job #</label><input class="proc-input" id="job-num" placeholder="2025-001"/></div>
+          <div class="proc-field"><label>Client</label><input class="proc-input" id="job-client" placeholder="client name"/></div>
+          <div class="proc-field"><label>Notes</label><input class="proc-input" id="job-notes" placeholder="revision, notes…"/></div>
+        </div>
+      </div><!-- end proc-scroll -->
+    </div><!-- end panel-process -->
+  </div><!-- end process-panel -->
+</div><!-- end sidebar -->
 
 <!-- CANVAS -->
 <div id="canvas-wrap">
@@ -1341,6 +1478,7 @@ function findSnap(wx, wy) {
 
 // ── STATE ───────────────────────────────────────────────
 let activeTool   = 'select';
+let placePartId  = null;  // which part is being placed (PLACE tool)
 let mouseWorld   = {x:0,y:0};
 let mouseScreen  = {x:0,y:0};
 let selectedIds  = new Set(); // selection set
@@ -2400,6 +2538,19 @@ function onMouseDown(e) {
     }
 
     // ── TAG TOOL ─────────────────────────────────────────
+    if(activeTool==='place') {
+      if (!placePartId && PartLibrary.parts.length)
+        placePartId = PartLibrary.parts[0].partId;
+      if (!placePartId) { showToast('No parts to place — import a .KAD first'); return; }
+      const bb = PartLibrary.partBBox(placePartId);
+      const cx  = bb ? (bb.maxX - bb.minX) / 2 : 0;
+      const cy  = bb ? (bb.maxY - bb.minY) / 2 : 0;
+      PartLibrary.addInstance(placePartId,
+        mouseWorld.x - cx + (bb ? bb.minX : 0),
+        mouseWorld.y - cy + (bb ? bb.minY : 0));
+      showToast('Placed · click again for another instance');
+      return;
+    }
     if(activeTool==='tag') {
       const hit = pickObject(mouseScreen.x, mouseScreen.y);
       if(hit) {
@@ -2592,6 +2743,8 @@ function onKeyDown(e) {
     if(k==='s'||k==='S') setTool('select');
     if(k==='o'||k==='O') setTool('offset');
     if(k==='t'||k==='T') setTool('tag');
+    if(k==='p'||k==='P') setTool('place');
+    if(k==='k'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); sendToKODE(); }
     if(k==='v'||k==='V') setViewMode(viewMode==='kad'?'kam':'kad');
     if(k==='1') tagSelected('cut');
     if(k==='2') tagSelected('mark');
@@ -2698,9 +2851,15 @@ function updateGridLabel() {
 
 // ── RENDER ──────────────────────────────────────────────
 const C={
-  bg:'#080a0e', grid:'#141c28', gridMaj:'#1c2535', axis:'#1e3348',
-  entity:'#00d4ff', entitySel:'#ffaa00', point:'#ffaa00',
-  rubberLine:'#00d4ff', startPt:'#00ff9d',
+  bg:'#08090a',          // warm near-black (KAM is hot, not cool)
+  grid:'#181610',        // warm dark grid
+  gridMaj:'#252018',     // slightly warmer major grid
+  axis:'#2a2215',
+  entity:'#e8c97a',      // warm steel/brass for untagged geometry
+  entitySel:'#ffaa00',   // amber selection
+  point:'#ffaa00',
+  rubberLine:'#ffaa00',  // amber rubber band (was cyan in KAD)
+  startPt:'#00ff9d',
 };
 
 function render() {
@@ -2716,6 +2875,26 @@ function render() {
   drawPolyPreview();
   drawRotatePreview();
   drawSelBox();
+}
+
+function calcUtilization() {
+  return PartLibrary.totalPlacedArea();
+}
+
+function updateUtilization() {
+  const { wMM, hMM } = getTableDims();
+  const total  = wMM * hMM;
+  const used   = PartLibrary.totalPlacedArea();
+  const pct    = total > 0 ? ((used/total)*100).toFixed(1) : '0.0';
+  const el     = document.getElementById('util-gauge-fill');
+  const label  = document.getElementById('util-pct');
+  const scrap  = document.getElementById('scrap-pct');
+  if (el)    el.style.width = Math.min(100, parseFloat(pct)) + '%';
+  if (label) label.textContent = pct + '%';
+  if (scrap) scrap.textContent = (100 - parseFloat(pct)).toFixed(1) + '%';
+  // Update sheet pill in topbar
+  const pill = document.getElementById('sheet-dim-label');
+  if (pill) pill.textContent = `${toDisplay(wMM).toFixed(2)} × ${toDisplay(hMM).toFixed(2)} ${unitLabel()} · ${pct}%`;
 }
 
 function drawGrid(W,H) {
@@ -2749,20 +2928,23 @@ function drawEntities() {
     const sel=selectedIds.has(o.id);
     // KAM view: dim untagged entities so tagged contours stand out
     ctx.globalAlpha = (viewMode==='kam' && !KAM.getTag(o.id)) ? 0.2 : 1;
+    // Part color: entities belonging to a named part take that part's color
+    const _part = PartLibrary.getPartForEntity(o.id);
+    const _col  = sel ? C.entitySel : (_part ? _part.color : C.entity);
     if(o.type==='LINE'){
       const a=worldToScreen(o.x1,o.y1), b=worldToScreen(o.x2,o.y2);
       if(sel){ ctx.shadowColor='rgba(255,170,0,0.5)'; ctx.shadowBlur=8; }
-      ctx.strokeStyle=sel?C.entitySel:C.entity;
+      ctx.strokeStyle=_col;
       ctx.lineWidth=sel?2:1.2;
       ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
       ctx.shadowBlur=0;
-      drawDot(a.x,a.y,sel?C.entitySel:C.entity);
-      drawDot(b.x,b.y,sel?C.entitySel:C.entity);
+      drawDot(a.x,a.y,_col);
+      drawDot(b.x,b.y,_col);
 
     } else if(o.type==='POLYLINE'){
       if(o.pts.length < 2) continue;
       if(sel){ ctx.shadowColor='rgba(255,170,0,0.5)'; ctx.shadowBlur=10; }
-      ctx.strokeStyle=sel?C.entitySel:C.entity;
+      ctx.strokeStyle=_col;
       ctx.lineWidth=sel?2:1.2;
       ctx.beginPath();
       const p0=worldToScreen(o.pts[0].x, o.pts[0].y);
@@ -2778,7 +2960,7 @@ function drawEntities() {
       for(let i=0;i<o.pts.length;i++){
         const p=worldToScreen(o.pts[i].x,o.pts[i].y);
         const isEndpoint = !o.closed && (i===0 || i===o.pts.length-1);
-        drawDot(p.x,p.y,sel?C.entitySel:C.entity, isEndpoint?2.5:1.5);
+        drawDot(p.x,p.y,_col, isEndpoint?2.5:1.5);
       }
 
     } else if(o.type==='POINT'){
@@ -3302,10 +3484,12 @@ function updateProps() {
   const lines  = GeoMemory.objects.filter(o=>o.type==='LINE').length;
   const polys  = GeoMemory.objects.filter(o=>o.type==='POLYLINE').length;
   const tagged = Object.keys(KAM.tags).length;
+  const parts  = PartLibrary.parts.length;
   document.getElementById('prop-objects').textContent = GeoMemory.objects.length;
-  document.getElementById('prop-lines').textContent   = lines + (polys ? ` +${polys}pl` : '');
+  document.getElementById('prop-lines').textContent   = lines + (polys?` +${polys}pl`:'');
   const tagEl = document.getElementById('prop-tagged');
-  if(tagEl) tagEl.textContent = tagged || '0';
+  if(tagEl) tagEl.textContent = tagged + (parts?` (${parts}pt)`:'') || '0';
+  updatePartList();
 }
 
 let toastT;
@@ -3316,13 +3500,17 @@ function showToast(msg) {
 
 // ── KAM v0.1 — Version tracking ──────────────────────────
 // Format: v{major}.{minor} — increment minor each session
-const KAM_VERSION = '0.1';
-// Changelog embedded in file for traceability:
-// v0.1 — Initial KAM build: KAD/KAM view, TAG tool, contour tagging,
-//         auto-tag inside/outside, cut sequence, kerf compensation,
-//         G-code output, .kam save/load, .kad import, .dxf import/export,
-//         table/sheet display, kerf direction (G41/G42/G40),
-//         thickness-kerf reference table, NC import → KAM geometry
+const KAM_VERSION = '1.0';
+// Changelog:
+// v0.1 — Initial build: KAD/KAM view, TAG tool, contour tagging,
+//         auto-tag, cut sequence, kerf compensation, G-code output,
+//         .kam save/load, .kad/.dxf import/export,
+//         table/sheet display, kerf direction G41/G42/G40,
+//         thickness-kerf reference, NC import → KAM geometry
+// v0.2 — Part instance model: multi-KAD import, named parts with entity
+//         grouping, quantity tracking, per-part color, part panel in KAM
+//         view, select-part-as-unit, extract part as .KAD,
+//         DXF import → KAM with material/machine dialog
 
 // ── TABLE / NESTING ──────────────────────────────────────
 function getTableDims() {
@@ -3333,7 +3521,7 @@ function getTableDims() {
 
 function drawTableOutline() {
   if(!document.getElementById('table-show').checked) return;
-  if(viewMode !== 'kam') return;
+  // Table always visible in KAM (primary spatial reference)
   const { wMM, hMM } = getTableDims();
   // Table origin at world (0,0), extends to (wMM, hMM)
   const tl = worldToScreen(0,     hMM);
@@ -3344,16 +3532,25 @@ function drawTableOutline() {
   // Sheet fill — very subtle
   ctx.fillStyle = 'rgba(255,170,0,0.03)';
   ctx.fillRect(tl.x, tl.y, W, H);
-  // Sheet border
-  ctx.strokeStyle = 'rgba(255,170,0,0.5)';
-  ctx.lineWidth   = 1.5;
-  ctx.setLineDash([8, 4]);
+  // Sheet border — primary reference, always prominent
+  ctx.strokeStyle = 'rgba(255,170,0,0.70)';
+  ctx.lineWidth   = 2;
+  ctx.setLineDash([10, 5]);
   ctx.strokeRect(tl.x, tl.y, W, H);
   ctx.setLineDash([]);
-  // Corner label
-  ctx.fillStyle = 'rgba(255,170,0,0.7)';
-  ctx.font = '9px JetBrains Mono, monospace';
-  ctx.fillText(`Sheet: ${toDisplay(wMM).toFixed(2)} × ${toDisplay(hMM).toFixed(2)} ${unitLabel()}`, tl.x+6, tl.y+14);
+  // Sheet corner ticks
+  const tk=12;
+  ctx.strokeStyle='rgba(255,170,0,0.9)'; ctx.lineWidth=1.5; ctx.setLineDash([]);
+  [[tl.x,tl.y,1,1],[tl.x+W,tl.y,-1,1],[tl.x,tl.y+H,1,-1],[tl.x+W,tl.y+H,-1,-1]].forEach(([x,y,dx,dy])=>{
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+dx*tk,y); ctx.moveTo(x,y); ctx.lineTo(x,y+dy*tk); ctx.stroke();
+  });
+  // Corner label + utilization
+  const usedArea = calcUtilization();
+  const totalArea = wMM * hMM;
+  const util = totalArea > 0 ? ((usedArea/totalArea)*100).toFixed(1) : '0.0';
+  ctx.fillStyle = 'rgba(255,170,0,0.85)';
+  ctx.font = 'bold 9px JetBrains Mono, monospace';
+  ctx.fillText(`${toDisplay(wMM).toFixed(2)} × ${toDisplay(hMM).toFixed(2)} ${unitLabel()}`, tl.x+6, tl.y+14);
   // Origin mark
   const o = worldToScreen(0, 0);
   ctx.strokeStyle = 'rgba(255,170,0,0.6)';
@@ -3531,6 +3728,356 @@ function parseNCtoKAM(text, filename) {
   return { entities, stats:{ torchOn:torchOnCount } };
 }
 
+// ── PART LIBRARY ─────────────────────────────────────────
+// Parts are named groups of entities. Each imported .KAD or .DXF
+// becomes one Part. Entities in GeoMemory carry a partId field.
+// The PartLibrary is the single source of truth for part metadata.
+
+const PART_COLORS = [
+  '#00d4ff','#00ff9d','#ffaa00','#cc88ff','#ff6688',
+  '#44ddbb','#ffcc44','#88aaff','#ff8844','#44ffcc',
+];
+
+const PartLibrary = {
+  parts: [], // [{ partId, name, sourceFile, qty, entityIds, color }]
+  _nextColor: 0,
+
+  nextColor() {
+    const c = PART_COLORS[this._nextColor % PART_COLORS.length];
+    this._nextColor++;
+    return c;
+  },
+
+  addPart(name, sourceFile, entityIds, qty=1) {
+    const partId = `part_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+    const color  = this.nextColor();
+    // instances: [{iid, x, y, angle}] — nesting placements on sheet
+    const part   = { partId, name, sourceFile, qty, entityIds:[...entityIds], color, instances:[] };
+    this.parts.push(part);
+    // Tag all entities with this partId
+    for(const id of entityIds) {
+      const obj = GeoMemory.objects.find(o=>o.id===id);
+      if(obj) obj.partId = partId;
+    }
+    updatePartList();
+    return part;
+  },
+
+  removePart(partId) {
+    const part = this.parts.find(p=>p.partId===partId);
+    if(!part) return;
+    // Remove all entities belonging to this part
+    for(const id of part.entityIds) {
+      GeoMemory.remove(id);
+      KAM.clearTag(id);
+    }
+    this.parts = this.parts.filter(p=>p.partId!==partId);
+    updatePartList(); updateContourList(); updateProps();
+    selectedIds.clear(); updateSelectionProps();
+    render();
+  },
+
+  getPart(partId) { return this.parts.find(p=>p.partId===partId); },
+
+  getPartForEntity(entityId) {
+    return this.parts.find(p=>p.entityIds.includes(entityId));
+  },
+
+  selectPart(partId) {
+    const part = this.getPart(partId);
+    if(!part) return;
+    selectedIds.clear();
+    for(const id of part.entityIds) selectedIds.add(id);
+    updateSelectionProps();
+    render();
+    // Highlight in list
+    document.querySelectorAll('.part-row').forEach(el=>{
+      el.classList.toggle('selected', el.dataset.partId===partId);
+    });
+  },
+
+  extractAsKAD(partId) {
+    const part = this.getPart(partId);
+    if(!part) return;
+    const entities = GeoMemory.objects.filter(o=>part.entityIds.includes(o.id));
+    if(!entities.length) { showToast('No entities in this part'); return; }
+    // Strip partId from exported entities
+    const cleanEntities = entities.map(o=>{
+      const c={...o};
+      delete c.partId;
+      return c;
+    });
+    const data = {
+      version:'0.4',
+      app:'kad',
+      displayUnits:unitMode,
+      nextId:Math.max(...entities.map(o=>o.id))+1,
+      objects:cleanEntities
+    };
+    downloadText(JSON.stringify(data,null,2), `${part.name}.kad`, 'application/json');
+    showToast(`Extracted ${part.name}.kad · ${entities.length} entities`);
+  },
+
+  setQty(partId, qty) {
+    const part = this.getPart(partId);
+    if(part) { part.qty=Math.max(1,parseInt(qty)||1); updatePartList(); }
+  },
+
+  clear() {
+    this.parts=[];
+    this._nextColor=0;
+    updatePartList();
+  },
+
+  // ── Instance / nesting ────────────────────────────────────────────────
+  addInstance(partId, x, y, angle=0) {
+    const part = this.getPart(partId);
+    if (!part) return null;
+    if (!part.instances) part.instances = [];
+    const iid = `${partId}_i${Date.now()}`;
+    part.instances.push({ iid, x, y, angle });
+    updatePartList(); updateUtilization(); render();
+    return iid;
+  },
+
+  removeInstance(partId, iid) {
+    const part = this.getPart(partId);
+    if (!part) return;
+    part.instances = (part.instances||[]).filter(i=>i.iid!==iid);
+    updatePartList(); updateUtilization(); render();
+  },
+
+  moveInstance(partId, iid, dx, dy) {
+    const part = this.getPart(partId);
+    if (!part) return;
+    const inst = (part.instances||[]).find(i=>i.iid===iid);
+    if (inst) { inst.x+=dx; inst.y+=dy; updateUtilization(); render(); }
+  },
+
+  rotateInstance(partId, iid, angleDeg) {
+    const part = this.getPart(partId);
+    if (!part) return;
+    const inst = (part.instances||[]).find(i=>i.iid===iid);
+    if (inst) { inst.angle=(inst.angle||0)+angleDeg; render(); }
+  },
+
+  // Total area of all placed instances (for utilization)
+  totalPlacedArea() {
+    let area = 0;
+    for (const part of this.parts) {
+      const bb = this.partBBox(part.partId);
+      if (!bb) continue;
+      const w = bb.maxX-bb.minX, h = bb.maxY-bb.minY;
+      const count = (part.instances||[]).length;
+      area += w*h*count;
+    }
+    return area;
+  },
+
+  // Bounding box of a part's entities
+  partBBox(partId) {
+    const part=this.getPart(partId);
+    if(!part) return null;
+    let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+    for(const id of part.entityIds){
+      const o=GeoMemory.objects.find(obj=>obj.id===id);
+      if(!o) continue;
+      if(o.type==='LINE'){x0=Math.min(x0,o.x1,o.x2);x1=Math.max(x1,o.x1,o.x2);y0=Math.min(y0,o.y1,o.y2);y1=Math.max(y1,o.y1,o.y2);}
+      else if(o.type==='POLYLINE'){for(const p of o.pts){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y);}}
+    }
+    return isFinite(x0)?{minX:x0,maxX:x1,minY:y0,maxY:y1}:null;
+  },
+
+  serialize() {
+    return this.parts.map(p=>({
+      partId:p.partId, name:p.name, sourceFile:p.sourceFile,
+      qty:p.qty, entityIds:p.entityIds, color:p.color
+    }));
+  },
+
+  deserialize(arr) {
+    if(!Array.isArray(arr)) return;
+    this.parts=arr;
+    this._nextColor=arr.length % PART_COLORS.length;
+    // Re-tag entities with their partId
+    for(const part of this.parts){
+      for(const id of part.entityIds){
+        const obj=GeoMemory.objects.find(o=>o.id===id);
+        if(obj) obj.partId=part.partId;
+      }
+    }
+    updatePartList();
+  },
+};
+
+// ── PART UI ──────────────────────────────────────────────
+function showProcTab(tab) {
+  ['parts','contours','process'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active',t===tab);
+    document.getElementById(`panel-${t}`).classList.toggle('visible',t===tab);
+  });
+}
+
+function updatePartList() {
+  const list = document.getElementById('part-list');
+  const summary = document.getElementById('part-summary');
+  const parts = PartLibrary.parts;
+  const totalEntities = parts.reduce((n,p)=>n+p.entityIds.length,0);
+  const totalQty = parts.reduce((n,p)=>n+p.qty,0);
+  summary.textContent = `${parts.length} part${parts.length!==1?'s':''} · ${totalEntities} entities · ${totalQty} total to cut`;
+
+  if(!parts.length){
+    list.innerHTML='<div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);padding:12px 8px;text-align:center;line-height:1.7;">No parts imported yet.<br>Use Import .KAD or Import .DXF<br>to add parts to the nest.</div>';
+    return;
+  }
+
+  list.innerHTML = parts.map(p=>{
+    const bb=PartLibrary.partBBox(p.partId);
+    const wStr=bb?`${toDisplay(bb.maxX-bb.minX).toFixed(3)}"`:'-';
+    const hStr=bb?`${toDisplay(bb.maxY-bb.minY).toFixed(3)}"`:'-';
+    const sizeStr=bb?`${wStr} × ${hStr}`:'-';
+    return `<div class="part-row" data-part-id="${p.partId}" id="pr-${p.partId}">
+      <div class="part-header" onclick="PartLibrary.selectPart('${p.partId}')">
+        <div class="part-color-dot" style="background:${p.color};box-shadow:0 0 4px ${p.color}"></div>
+        <span class="part-name" title="${p.name}">${p.name}</span>
+        <span class="part-qty-badge">×<input type="number" value="${p.qty}" min="1" step="1"
+          style="width:28px;background:none;border:none;color:inherit;font-family:inherit;font-size:inherit;text-align:right;outline:none;padding:0;"
+          onclick="event.stopPropagation()"
+          onchange="PartLibrary.setQty('${p.partId}',this.value)"/></span>
+      </div>
+      <div class="part-body">
+        <div class="part-src">${p.sourceFile}</div>
+        <div class="part-stats">${p.entityIds.length} entities · ${sizeStr}</div>
+        <div class="part-actions">
+          <button class="part-btn sel" onclick="PartLibrary.selectPart('${p.partId}')">Select</button>
+          <button class="part-btn ext" onclick="PartLibrary.extractAsKAD('${p.partId}')">Extract .KAD</button>
+          <button class="part-btn del" onclick="if(confirm('Remove ${p.name}?'))PartLibrary.removePart('${p.partId}')">Remove</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearAllParts() {
+  if(!PartLibrary.parts.length) return;
+  if(!confirm(`Remove all ${PartLibrary.parts.length} part(s) and clear canvas?`)) return;
+  GeoMemory.clear(); KAM.clearTags(); PartLibrary.clear();
+  selectedIds.clear(); updateSelectionProps(); render();
+  showToast('All parts removed');
+}
+
+// ── MULTI-KAD IMPORT ─────────────────────────────────────
+// Override importKAD to use the Part model
+function importKAD(event) {
+  const files = event.target.files;
+  if(!files.length) return;
+  let imported=0;
+
+  Array.from(files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        const d=JSON.parse(e.target.result);
+        if(!d.objects) throw new Error('Not a valid .kad file');
+
+        // Re-ID all incoming entities to avoid collisions with existing ones
+        const idMap={};
+        const newObjects=d.objects.map(o=>{
+          const newId=GeoMemory.nextId++;
+          idMap[o.id]=newId;
+          return {...o,id:newId};
+        });
+
+        // Offset new geometry so parts don't stack
+        // Place each new part to the right of the existing bounding box
+        let offsetX=0;
+        if(GeoMemory.objects.length){
+          let maxX=-Infinity;
+          GeoMemory.objects.forEach(o=>{
+            if(o.type==='LINE'){maxX=Math.max(maxX,o.x1,o.x2);}
+            else if(o.type==='POLYLINE'){o.pts.forEach(p=>{maxX=Math.max(maxX,p.x);});}
+          });
+          if(isFinite(maxX)) offsetX=maxX+fromDisplay(1); // 1 unit gap
+        }
+
+        // Apply offset
+        const offsetObjects=newObjects.map(o=>{
+          if(o.type==='LINE')     return {...o,x1:o.x1+offsetX,x2:o.x2+offsetX};
+          if(o.type==='POLYLINE') return {...o,pts:o.pts.map(p=>({x:p.x+offsetX,y:p.y}))};
+          return o;
+        });
+
+        GeoMemory.objects.push(...offsetObjects);
+
+        const partName=file.name.replace(/\.kad$/i,'');
+        const entityIds=offsetObjects.map(o=>o.id);
+        PartLibrary.addPart(partName,file.name,entityIds);
+
+        imported++;
+        if(imported===files.length){
+          updateProps(); render(); zoomExtents();
+          showProcTab('parts');
+          showToast(`Imported ${imported} part${imported>1?'s':''} · Use Parts tab to manage`);
+        }
+      }catch(err){showToast(`Import failed: ${file.name} — ${err.message}`);}
+      event.target.value='';
+    };
+    reader.readAsText(file);
+  });
+}
+
+// ── DXF IMPORT AS PART ───────────────────────────────────
+function importDXFasPart(event) {
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let parsed;
+    try{ parsed=parseDXF(e.target.result); }
+    catch(err){ showToast('DXF parse error: '+err.message); event.target.value=''; return; }
+    if(!parsed.lines.length&&!parsed.circles.length&&!parsed.arcs.length){
+      showToast('No geometry found in DXF'); event.target.value=''; return;
+    }
+
+    // Default unit detect
+    const ru=(parsed.rawInsUnits!==undefined?parsed.rawInsUnits:0);
+    const S=(DXF_INSUNITS_TO_MM[ru]!==undefined?DXF_INSUNITS_TO_MM[ru]:1);
+
+    // Offset to the right of existing geometry
+    let offsetX=0;
+    if(GeoMemory.objects.length){
+      let maxX=-Infinity;
+      GeoMemory.objects.forEach(o=>{
+        if(o.type==='LINE')maxX=Math.max(maxX,o.x1,o.x2);
+        else if(o.type==='POLYLINE')o.pts.forEach(p=>{maxX=Math.max(maxX,p.x);});
+      });
+      if(isFinite(maxX)) offsetX=maxX+fromDisplay(1);
+    }
+
+    const beforeCount=GeoMemory.objects.length;
+    for(const ln of parsed.lines)
+      GeoMemory.addLine(parseFloat((ln.x1*S+offsetX).toFixed(6)),parseFloat((ln.y1*S).toFixed(6)),parseFloat((ln.x2*S+offsetX).toFixed(6)),parseFloat((ln.y2*S).toFixed(6)),ln.layer||'Layer_0');
+    for(const c of parsed.circles)
+      for(const seg of tessellateCircle(c.cx*S+offsetX,c.cy*S,c.r*S,c.layer))
+        GeoMemory.addLine(seg.x1,seg.y1,seg.x2,seg.y2,seg.layer);
+    for(const a of parsed.arcs)
+      for(const seg of tessellateArc(a.cx*S+offsetX,a.cy*S,a.r*S,a.startA,a.endA,a.layer))
+        GeoMemory.addLine(seg.x1,seg.y1,seg.x2,seg.y2,seg.layer);
+
+    const newIds=GeoMemory.objects.slice(beforeCount).map(o=>o.id);
+    const partName=file.name.replace(/\.dxf$/i,'');
+    PartLibrary.addPart(partName,file.name,newIds);
+
+    updateProps(); render(); zoomExtents();
+    showProcTab('parts');
+    showToast(`Imported ${file.name} as part · ${newIds.length} entities`);
+    event.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// Allow multiple KAD files at once
+// (the file input needs multiple attribute — add to HTML)
+
 // ── KAM INIT ─────────────────────────────────────────────
 // The KAM object holds all manufacturing data that lives alongside geometry.
 // Stored in .kam files, not in .kad files.
@@ -3699,7 +4246,19 @@ function updateContourList() {
 function setToolKAMExtension(originalSetTool) {
   return function(tool) {
     originalSetTool(tool);
+    placePartId = null;
     document.getElementById('btn-tag').classList.toggle('tag-active', tool==='tag');
+    // Place tool setup
+    if (tool === 'place') {
+      if (PartLibrary.parts.length === 1) {
+        placePartId = PartLibrary.parts[0].partId;
+        showToast('Click sheet to place · ' + PartLibrary.parts[0].name);
+      } else if (PartLibrary.parts.length > 1) {
+        showToast('Select a part in Parts panel then click Place tool');
+      } else {
+        showToast('Import a .KAD part first');
+      }
+    }
   };
 }
 
@@ -3851,20 +4410,62 @@ function makeLeadIn(pts, radius) {
 }
 
 // ── KAM FILE I/O ─────────────────────────────────────────
+function hashStr(s) {
+  let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h)^s.charCodeAt(i); return(h>>>0).toString(16);
+}
+let kamMeta = { created:null, nc_hash:null, nc_synced:false, last_kode:null };
+let kamScripts = {};
+
+function buildNCText() { try { return generateNC(); } catch(e) { return null; } }
+
+function sendToKODE() {
+  const nc = buildNCText();
+  if (!nc) { showToast('Generate NC first (Ctrl+E)'); return; }
+  kamMeta.nc_hash   = hashStr(nc);
+  kamMeta.nc_synced = true;
+  kamMeta.last_kode = new Date().toISOString();
+  const now = new Date().toISOString();
+  const payload = {
+    version:'1.0', app:'kam',
+    meta:{ session:KAM.getJob().number||'untitled', created:kamMeta.created||now, modified:now, units:unitMode },
+    nextId:GeoMemory.nextId, objects:GeoMemory.objects,
+    parts:PartLibrary.serialize(),
+    contourTags:KAM.tags, cutSequence:KAM.sequence, kerfDirection,
+    material:KAM.getMaterial(), machine:KAM.getMachine(), job:KAM.getJob(),
+    table:{w:parseFloat(document.getElementById('table-w').value)||60,h:parseFloat(document.getElementById('table-h').value)||120},
+    kode:{ nc_hash:kamMeta.nc_hash, nc_synced:true, last_kode:kamMeta.last_kode },
+    scripts:kamScripts, nc,
+  };
+  try {
+    localStorage.setItem('kam_session', JSON.stringify(payload));
+    showToast('KAM session ready — open KODE to verify toolpath');
+  } catch(e) {
+    downloadText(JSON.stringify(payload,null,2),'session.kam','application/json');
+    showToast('Saved session.kam — open in KODE');
+  }
+}
+
 function saveKAM() {
+  const now = new Date().toISOString();
+  kamMeta.created = kamMeta.created || now;
   const data = {
     version: KAM_VERSION,
     app:'kam',
     displayUnits:unitMode,
     nextId:GeoMemory.nextId,
     objects:GeoMemory.objects,
+    parts:PartLibrary.serialize(),
     contourTags:KAM.tags,
     cutSequence:KAM.sequence,
     kerfDirection,
     material:KAM.getMaterial(),
     machine:KAM.getMachine(),
     job:KAM.getJob(),
-    table:{ w:parseFloat(document.getElementById('table-w').value)||60, h:parseFloat(document.getElementById('table-h').value)||120 }
+    table:{ w:parseFloat(document.getElementById('table-w').value)||60, h:parseFloat(document.getElementById('table-h').value)||120 },
+    meta:{ session:KAM.getJob().number||'untitled', created:kamMeta.created, modified:now, units:unitMode },
+    kode:{ nc_hash:kamMeta.nc_hash, nc_synced:kamMeta.nc_synced, last_kode:kamMeta.last_kode },
+    scripts:kamScripts,
+    version:'1.0',
   };
   downloadText(JSON.stringify(data,null,2), 'drawing.kam', 'application/json');
   showToast('Saved drawing.kam');
@@ -3881,6 +4482,8 @@ function loadKAM(event) {
       GeoMemory.nextId  = d.nextId || 1;
       KAM.tags     = d.contourTags || {};
       KAM.sequence = d.cutSequence || [];
+      if(d.parts) PartLibrary.deserialize(d.parts);
+      else PartLibrary.clear();
       if(d.kerfDirection) setKerfDir(d.kerfDirection);
       if(d.table) {
         document.getElementById('table-w').value = d.table.w||60;
@@ -3999,7 +4602,7 @@ setTimeout(()=>{
   GeoMemory.addLine(-15,0,15,0);
   GeoMemory.addLine(0,-15,0,15);
   render();
-  showToast(`.KAM v${KAM_VERSION} · V = toggle view · T = tag · Ctrl+E = export .nc`);
+  showToast(`KAM v${KAM_VERSION} · S=select  T=tag  P=place  R=rotate  Ctrl+E=NC  Ctrl+K=KODE`);
 }, 250);
 </script>
 </body>
