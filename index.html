@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>.KAM — Kernel-Aided Manufacturing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KAM — Kernel-Aided Manufacturing</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600&display=swap');
 
@@ -81,7 +81,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 .tool-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; padding:6px; background:var(--border); border-bottom:1px solid var(--border); flex-shrink:0; }
 .tool-btn { background:var(--bg-panel2); border:none; cursor:pointer; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:3px; transition:background 0.15s,box-shadow 0.15s; position:relative; overflow:hidden; }
 .tool-btn:hover { background:var(--bg-hover); }
-.tool-btn.active { background:var(--bg-hover); box-shadow:inset 0 0 0 1px var(--accent); }
+.tool-btn.active { background:rgba(255,170,0,0.06); box-shadow:inset 0 0 0 1px var(--accent); border-top:2px solid var(--accent); }
 .tool-btn.active::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent); box-shadow:0 0 8px var(--accent); }
 .tool-icon { width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
 .tool-icon svg { width:16px; height:16px; }
@@ -137,7 +137,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 #main-canvas { display:block; }
 
 /* ── SNAP INDICATOR ── */
-.snap-ring { position:absolute; pointer-events:none; width:12px; height:12px; border:1.5px solid var(--accent); border-radius:50%; box-shadow:0 0 6px var(--accent); transform:translate(-50%,-50%); display:none; }
+.snap-ring { position:absolute; pointer-events:none; width:12px; height:12px; border:1.5px solid var(--accent); border-radius:50%; box-shadow:0 0 8px var(--accent); transform:translate(-50%,-50%); display:none; }
 
 /* ── COORD OVERLAY ── */
 #coord-overlay { position:absolute; bottom:8px; right:8px; background:rgba(8,10,14,0.88); border:1px solid var(--border); backdrop-filter:blur(4px); padding:5px 10px; border-radius:4px; font-family:var(--font-mono); font-size:11px; color:var(--text-secondary); pointer-events:none; display:flex; gap:12px; letter-spacing:0.04em; }
@@ -370,7 +370,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
   background: var(--bg-panel);
   border: 1px solid var(--border-bright);
   border-radius: 8px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,212,255,0.1);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,170,0,0.15);
   width: 400px; max-width: 95vw;
   font-family: var(--font-mono);
   overflow: hidden;
@@ -418,12 +418,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
-.splash-unit-btn.mm-btn:hover  { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0,212,255,0.15); }
-.splash-unit-btn.in-btn:hover  { border-color: var(--amber);  box-shadow: 0 4px 16px rgba(255,170,0,0.15); }
+.splash-unit-btn.mm-btn:hover  { border-color: #00d4ff; box-shadow: 0 4px 14px rgba(0,212,255,0.20); }
+.splash-unit-btn.in-btn:hover  { border-color: var(--amber);  box-shadow: 0 4px 20px rgba(255,170,0,0.30); }
 .splash-unit-btn .sub-unit {
   font-size: 28px; font-weight: 700; letter-spacing: 0.02em;
 }
-.splash-unit-btn.mm-btn .sub-unit { color: var(--accent); }
+.splash-unit-btn.mm-btn .sub-unit { color: #00d4ff; }
 .splash-unit-btn.in-btn .sub-unit { color: var(--amber); }
 .splash-unit-btn .sub-name { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
 .splash-unit-btn .sub-example { font-size: 10px; color: var(--text-secondary); }
@@ -618,7 +618,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
   white-space:nowrap; flex-shrink:0;
 }
 
-</style>
 .table-outline { position:absolute; pointer-events:none; border:2px solid rgba(255,170,0,0.4); box-shadow:0 0 0 1px rgba(255,170,0,0.1); }
 .table-label   { position:absolute; font-family:var(--font-mono); font-size:9px; color:var(--amber); opacity:0.6; pointer-events:none; white-space:nowrap; }
 
@@ -1155,9 +1154,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
 <div id="splash-overlay">
   <div id="splash-dialog">
     <div class="dlg-head">
-      <div class="splash-brand" style="color:var(--amber);">
-        <div class="splash-brand-dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber);"></div>
-        .KAM
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(140deg,#ffaa00,#ff6b00);
+          display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);
+          font-weight:600;font-size:11px;color:#000;box-shadow:0 0 24px rgba(255,170,0,0.40);">KM</div>
+        <div>
+          <div style="font-family:var(--font-mono);font-weight:700;font-size:22px;letter-spacing:0.04em;
+            background:linear-gradient(90deg,#ffaa00,#ff6b00);-webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;background-clip:text;">.KAM</div>
+          <div style="font-size:8px;color:var(--text-dim);letter-spacing:0.16em;text-transform:uppercase;">
+            Kernel-Aided Manufacturing</div>
+        </div>
       </div>
       <div class="splash-sub">Kernel-Aided Manufacturing · v1.0</div>
     </div>
@@ -1168,15 +1175,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg-void)
         You can switch at any time with the <span style="color:var(--amber)">mm·in</span> toggle.
       </div>
       <div class="splash-unit-grid">
-        <button class="splash-unit-btn mm-btn" onclick="splashSelectUnit('mm')">
-          <span class="sub-unit">mm</span>
-          <span class="sub-name">Millimeters</span>
-          <span class="sub-example">ISO · Metric</span>
-        </button>
         <button class="splash-unit-btn in-btn" onclick="splashSelectUnit('in')">
           <span class="sub-unit">in</span>
           <span class="sub-name">Inches</span>
           <span class="sub-example">Imperial · US Shop</span>
+        </button>
+        <button class="splash-unit-btn mm-btn" onclick="splashSelectUnit('mm')">
+          <span class="sub-unit">mm</span>
+          <span class="sub-name">Millimeters</span>
+          <span class="sub-example">ISO · Metric</span>
         </button>
       </div>
       <div class="splash-note">
