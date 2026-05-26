@@ -712,6 +712,35 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   </div>
 </div>
 
+    <!-- ── 3D Export ── -->
+    <div class="section-head" style="margin-top:4px;">3D Export</div>
+    <div style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+        <span style="font-family:var(--font-mono,'Fira Code');font-size:8px;color:var(--text-dim);letter-spacing:0.1em;flex:1;">THICKNESS</span>
+        <input id="kam-stl-thickness" type="number" value="6" min="0.1" step="0.1"
+          style="width:50px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:var(--text-primary);font-family:var(--font-mono,'Fira Code');font-size:10px;padding:2px 5px;outline:none;text-align:right;">
+        <span style="font-family:var(--font-mono,'Fira Code');font-size:8px;color:var(--text-dim);">mm</span>
+      </div>
+      <button onclick="exportSTL()" style="width:100%;background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.2);border-radius:5px;color:#00ff9d;font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;margin-bottom:3px;display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export .stl
+      </button>
+      <button onclick="exportSTEP()" style="width:100%;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:5px;color:var(--text-secondary);font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Export .step <span style="font-size:7px;opacity:0.5;">(AP214)</span>
+      </button>
+    </div>
+    <!-- STL Import -->
+    <div class="section-head" style="margin-top:4px;">Import 3D</div>
+    <div style="padding:6px 8px;">
+      <label style="width:100%;background:rgba(255,170,0,0.06);border:1px solid rgba(255,170,0,0.15);border-radius:5px;color:var(--amber);font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import .stl → profile
+        <input type="file" accept=".stl" style="display:none" onchange="importSTLToKAM(this.files[0]);this.value=''">
+      </label>
+    </div>
+
+
 
 <!-- SIDEBAR -->
 <div id="sidebar">
@@ -2376,7 +2405,7 @@ function drawSelBox() {
   const lx=Math.min(sa.x,sb.x), ly=Math.min(sa.y,sb.y);
   const w=Math.abs(sb.x-sa.x), h=Math.abs(sb.y-sa.y);
   ctx.save();
-  // Blue = left-to-right (crossing), green = right-to-left (window) — standard CAD convention
+  // Blue = left-to-right (crossing), green = right-to-left (window) — standard KAD convention
   const leftToRight = sb.x >= sa.x;
   ctx.strokeStyle = leftToRight ? 'rgba(0,212,255,0.9)' : 'rgba(0,255,157,0.9)';
   ctx.fillStyle   = leftToRight ? 'rgba(0,212,255,0.06)' : 'rgba(0,255,157,0.06)';
@@ -3975,65 +4004,7 @@ function clearAllParts() {
 
 // ── MULTI-KAD IMPORT ─────────────────────────────────────
 // Override importKAD to use the Part model
-function importKAD(event) {
-  const files = event.target.files;
-  if(!files.length) return;
-  let imported=0;
 
-  Array.from(files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      try{
-        const d=JSON.parse(e.target.result);
-        if(!d.objects) throw new Error('Not a valid .kad file');
-
-        // Re-ID all incoming entities to avoid collisions with existing ones
-        const idMap={};
-        const newObjects=d.objects.map(o=>{
-          const newId=GeoMemory.nextId++;
-          idMap[o.id]=newId;
-          return {...o,id:newId};
-        });
-
-        // Offset new geometry so parts don't stack
-        // Place each new part to the right of the existing bounding box
-        let offsetX=0;
-        if(GeoMemory.objects.length){
-          let maxX=-Infinity;
-          GeoMemory.objects.forEach(o=>{
-            if(o.type==='LINE'){maxX=Math.max(maxX,o.x1,o.x2);}
-            else if(o.type==='POLYLINE'){o.pts.forEach(p=>{maxX=Math.max(maxX,p.x);});}
-          });
-          if(isFinite(maxX)) offsetX=maxX+fromDisplay(1); // 1 unit gap
-        }
-
-        // Apply offset
-        const offsetObjects=newObjects.map(o=>{
-          if(o.type==='LINE')     return {...o,x1:o.x1+offsetX,x2:o.x2+offsetX};
-          if(o.type==='POLYLINE') return {...o,pts:o.pts.map(p=>({x:p.x+offsetX,y:p.y}))};
-          return o;
-        });
-
-        GeoMemory.objects.push(...offsetObjects);
-
-        const partName=file.name.replace(/\.kad$/i,'');
-        const entityIds=offsetObjects.map(o=>o.id);
-        PartLibrary.addPart(partName,file.name,entityIds);
-
-        imported++;
-        if(imported===files.length){
-          updateProps(); render(); zoomExtents();
-          showProcTab('parts');
-          showToast(`Imported ${imported} part${imported>1?'s':''} · Use Parts tab to manage`);
-        }
-      }catch(err){showToast(`Import failed: ${file.name} — ${err.message}`);}
-      event.target.value='';
-    };
-    reader.readAsText(file);
-  });
-}
-
-// ── DXF IMPORT AS PART ───────────────────────────────────
 function importDXFasPart(event) {
   const file=event.target.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -4611,6 +4582,223 @@ setTimeout(()=>{
   render();
   showToast(`KAM · S=select  T=tag  P=place  R=rotate  Ctrl+E=NC  Ctrl+K=KODE`);
 }, 250);
+
+
+// ── STL / STEP EXPORT — KAM ───────────────────────────────────────────────────
+// Exports the cutting plan as a solid STL using material thickness.
+// Each part outline is extruded to the sheet thickness.
+
+function parseSTLBinary(buffer) {
+  const view      = new DataView(buffer);
+  const triCount  = view.getUint32(80, true);
+  const triangles = [];
+  let offset = 84;
+  for (let i = 0; i < triCount; i++) {
+    const normal = {
+      x: view.getFloat32(offset,     true),
+      y: view.getFloat32(offset + 4, true),
+      z: view.getFloat32(offset + 8, true),
+    };
+    const verts = [];
+    for (let v = 0; v < 3; v++) {
+      const base = offset + 12 + v * 12;
+      verts.push({
+        x: view.getFloat32(base,     true),
+        y: view.getFloat32(base + 4, true),
+        z: view.getFloat32(base + 8, true),
+      });
+    }
+    triangles.push({ normal, verts });
+    offset += 50;
+  }
+  return triangles;
+}
+
+function parseSTLAscii(text) {
+  const triangles = [];
+  const facetRx = /facet\s+normal\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)[\s\S]*?outer\s+loop([\s\S]*?)endloop/gi;
+  const vertRx   = /vertex\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)\s+([\d.eE+\-]+)/gi;
+  let fm;
+  while ((fm = facetRx.exec(text)) !== null) {
+    const normal = { x: parseFloat(fm[1]), y: parseFloat(fm[2]), z: parseFloat(fm[3]) };
+    const loopTxt = fm[4];
+    const verts = [];
+    let vm;
+    vertRx.lastIndex = 0;
+    while ((vm = vertRx.exec(loopTxt)) !== null) {
+      verts.push({ x: parseFloat(vm[1]), y: parseFloat(vm[2]), z: parseFloat(vm[3]) });
+    }
+    if (verts.length === 3) triangles.push({ normal, verts });
+  }
+  return triangles;
+}
+
+function stlBBox(triangles) {
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  for (const t of triangles) for (const v of t.verts) {
+    minX=Math.min(minX,v.x); maxX=Math.max(maxX,v.x);
+    minY=Math.min(minY,v.y); maxY=Math.max(maxY,v.y);
+    minZ=Math.min(minZ,v.z); maxZ=Math.max(maxZ,v.z);
+  }
+  return {minX,maxX,minY,maxY,minZ,maxZ,
+    w:(maxX-minX).toFixed(2), h:(maxY-minY).toFixed(2), d:(maxZ-minZ).toFixed(2)};
+}
+
+function buildKAMSTL() {
+  const thickness = parseFloat(
+    document.getElementById('kam-stl-thickness')?.value || '6'
+  );
+  const parts = PartLibrary.parts;
+  if (!parts.length) { showToast('No parts to export'); return null; }
+
+  const NL = '\n';
+  let out   = `solid kam_export${NL}`;
+  let count = 0;
+
+  function tri(nx,ny,nz, ax,ay,az, bx,by,bz, cx,cy,cz) {
+    out += `  facet normal ${nx.toFixed(4)} ${ny.toFixed(4)} ${nz.toFixed(4)}${NL}`;
+    out += `    outer loop${NL}`;
+    out += `      vertex ${ax.toFixed(4)} ${ay.toFixed(4)} ${az.toFixed(4)}${NL}`;
+    out += `      vertex ${bx.toFixed(4)} ${by.toFixed(4)} ${bz.toFixed(4)}${NL}`;
+    out += `      vertex ${cx.toFixed(4)} ${cy.toFixed(4)} ${cz.toFixed(4)}${NL}`;
+    out += `    endloop${NL}  endfacet${NL}`;
+    count++;
+  }
+
+  for (const part of parts) {
+    const objs = part.objects || [];
+    for (const o of objs) {
+      if (o.type === 'LINE') {
+        const {x1,y1,x2,y2} = o;
+        const t = thickness;
+        tri(0,0,-1, x1,y1,0,  x2,y2,0,  x2,y2,t);
+        tri(0,0,-1, x1,y1,0,  x2,y2,t,  x1,y1,t);
+        count += 2;
+      } else if (o.type === 'POLYLINE' && o.pts && o.pts.length > 1) {
+        const pts = o.pts;
+        const t   = thickness;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const {x:x1,y:y1} = pts[i], {x:x2,y:y2} = pts[i+1];
+          const nx = -(y2-y1), ny = x2-x1;
+          const len = Math.sqrt(nx*nx+ny*ny) || 1;
+          tri(nx/len,ny/len,0, x1,y1,0, x2,y2,0, x2,y2,t);
+          tri(nx/len,ny/len,0, x1,y1,0, x2,y2,t, x1,y1,t);
+        }
+      }
+    }
+  }
+  out += `endsolid kam_export${NL}`;
+  return { text: out, count };
+}
+
+function exportSTL() {
+  const result = buildKAMSTL();
+  if (!result) return;
+  const blob = new Blob([result.text], {type:'text/plain'});
+  const a    = Object.assign(document.createElement('a'),{
+    href: URL.createObjectURL(blob), download:'parts.stl'
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast(`Exported ${result.count} triangles · parts.stl`);
+}
+
+// STEP export — placeholder until opencascade.js integration
+function exportSTEP() {
+  const date = new Date().toISOString().split('T')[0];
+  const NL   = '\n';
+  let step   = `ISO-10303-21;${NL}HEADER;${NL}`;
+  step += `FILE_DESCRIPTION(('KAM Sheet Cut Export'),'2;1');${NL}`;
+  step += `FILE_NAME('parts.step','${date}',('KAM'),('KERFsuite'),'','','');${NL}`;
+  step += `FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));${NL}ENDSEC;${NL}`;
+  step += `DATA;${NL}/* Sheet geometry — solid kernel required for full STEP.${NL}`;
+  step += `   Import this file into your CAD/KAD system and extrude profiles */${NL}`;
+  step += `ENDSEC;${NL}END-ISO-10303-21;${NL}`;
+  const blob = new Blob([step], {type:'text/plain'});
+  const a    = Object.assign(document.createElement('a'),{
+    href: URL.createObjectURL(blob), download:'parts.step'
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('Exported parts.step · AP214 header (solid kernel in Phase 2)');
+}
+
+function importSTLToKAM(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const text = e.target.result;
+      let triangles;
+      if (text.trimStart().startsWith('solid')) {
+        triangles = parseSTLAscii(text);
+        if (!triangles.length) throw new Error('try binary');
+      }
+      if (!triangles || !triangles.length) {
+        const br = new FileReader();
+        br.onload = (be) => {
+          const tris = parseSTLBinary(be.target.result);
+          finishSTLImport(file.name, tris);
+        };
+        br.readAsArrayBuffer(file);
+        return;
+      }
+      finishSTLImport(file.name, triangles);
+    } catch(err) {
+      const fr2 = new FileReader();
+      fr2.onload = (e2) => {
+        finishSTLImport(file.name, parseSTLBinary(e2.target.result));
+      };
+      fr2.readAsArrayBuffer(file);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function finishSTLImport(name, triangles) {
+  if (!triangles.length) { showToast('No triangles in STL'); return; }
+  const bbox = stlBBox(triangles);
+  // Project XY footprint as part outline
+  // Find convex hull of XY projections
+  const xyPts = [];
+  for (const t of triangles) for (const v of t.verts) xyPts.push({x:v.x, y:v.y});
+  const hull = convexHull(xyPts);
+  if (hull.length < 3) { showToast('Could not extract 2D profile'); return; }
+  // Add as a new part
+  const partName = name.replace('.stl','').replace('.STL','');
+  const newPart = {
+    id: PartLibrary.nextId++,
+    name: partName,
+    objects: [{
+      type: 'POLYLINE',
+      pts:  hull,
+      closed: true,
+      id: 1,
+    }],
+    instances: [],
+    color: '#ffaa00',
+    source: 'stl-import',
+    stlInfo: { file: name, tris: triangles.length, bbox },
+  };
+  PartLibrary.parts.push(newPart);
+  buildPartList();
+  showToast(`Imported ${name} · ${triangles.length.toLocaleString()} triangles · ${hull.length} point profile`);
+}
+
+function convexHull(pts) {
+  if (pts.length < 3) return pts;
+  const sorted = [...pts].sort((a,b)=>a.x-b.x||a.y-b.y);
+  const cross = (O,A,B) => (A.x-O.x)*(B.y-O.y)-(A.y-O.y)*(B.x-O.x);
+  const lower = [], upper = [];
+  for (const p of sorted){
+    while(lower.length>=2&&cross(lower[lower.length-2],lower[lower.length-1],p)<=0)lower.pop();
+    lower.push(p);
+  }
+  for (let i=sorted.length-1;i>=0;i--){
+    const p=sorted[i];
+    while(upper.length>=2&&cross(upper[upper.length-2],upper[upper.length-1],p)<=0)upper.pop();
+    upper.push(p);
+  }
+  upper.pop(); lower.pop();
+  return [...lower,...upper];
+}
 </script>
 </body>
 </html>
