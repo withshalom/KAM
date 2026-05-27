@@ -76,7 +76,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .tb-dd-sep { height:1px; background:var(--border); margin:3px 0; }
 
 /* ── SIDEBAR ── */
-#sidebar { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; position:relative; z-index:10; }
+#sidebar { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; position:relative; z-index:10; height:100%; flex-shrink:0; }
 .section-head { padding:8px 14px 5px; font-family:var(--fm); font-size:9px; font-weight:500; color:var(--t3); letter-spacing:0.14em; text-transform:uppercase; border-bottom:1px solid var(--border); flex-shrink:0; }
 .tool-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; padding:6px; background:var(--border); border-bottom:1px solid var(--border); flex-shrink:0; }
 .tool-btn { background:var(--panel2); border:none; cursor:pointer; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:3px; transition:background 0.15s,box-shadow 0.15s; position:relative; overflow:hidden; }
@@ -133,7 +133,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .layer-count { font-size:10px; color:var(--t3); font-family:var(--fm); }
 
 /* ── CANVAS AREA ── */
-#canvas-wrap { position:relative; overflow:hidden; background:var(--void); }
+#canvas-wrap { position:relative; overflow:hidden; background:var(--void); flex:1; min-width:0; }
 #main-canvas { display:block; }
 
 /* ── SNAP INDICATOR ── */
@@ -634,6 +634,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .kerf-table th { color:var(--t3); font-weight:400; padding:2px 4px; text-align:left; border-bottom:1px solid var(--border); }
 .kerf-table td { color:var(--t2); padding:2px 4px; }
 .kerf-table tr.active-row td { color:var(--accent); }
+
+.tool-grid-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  padding: 6px;
+  background: var(--border);
+  border-top: 1px solid var(--border);
+}
+.tool-grid-bottom .tool-btn {
+  grid-column: 1 / -1;
+}
+.tool-grid-bottom .tool-btn {
+  width: 100%;
+}
 </style>
 </head>
 <body>
@@ -712,33 +727,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   </div>
 </div>
 
-    <!-- ── 3D Export ── -->
-    <div class="section-head" style="margin-top:4px;">3D Export</div>
-    <div style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-        <span style="font-family:var(--font-mono,'Fira Code');font-size:8px;color:var(--text-dim);letter-spacing:0.1em;flex:1;">THICKNESS</span>
-        <input id="kam-stl-thickness" type="number" value="6" min="0.1" step="0.1"
-          style="width:50px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:var(--text-primary);font-family:var(--font-mono,'Fira Code');font-size:10px;padding:2px 5px;outline:none;text-align:right;">
-        <span style="font-family:var(--font-mono,'Fira Code');font-size:8px;color:var(--text-dim);">mm</span>
-      </div>
-      <button onclick="exportSTL()" style="width:100%;background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.2);border-radius:5px;color:#00ff9d;font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;margin-bottom:3px;display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export .stl
-      </button>
-      <button onclick="exportSTEP()" style="width:100%;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.15);border-radius:5px;color:var(--text-secondary);font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Export .step <span style="font-size:7px;opacity:0.5;">(AP214)</span>
-      </button>
-    </div>
-    <!-- STL Import -->
-    <div class="section-head" style="margin-top:4px;">Import 3D</div>
-    <div style="padding:6px 8px;">
-      <label style="width:100%;background:rgba(255,170,0,0.06);border:1px solid rgba(255,170,0,0.15);border-radius:5px;color:var(--amber);font-family:var(--font-mono,'Fira Code');font-size:9px;padding:6px;cursor:pointer;letter-spacing:0.06em;display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Import .stl → profile
-        <input type="file" accept=".stl" style="display:none" onchange="importSTLToKAM(this.files[0]);this.value=''">
-      </label>
-    </div>
+    
 
 
 
@@ -752,6 +741,46 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="tool-label">SELECT</span>
     </button>
 
+    <button class="tool-btn" id="btn-line" onclick="setTool('line')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="4" r="2" fill="currentColor"/></svg></div>
+      <span class="tool-label">LINE</span>
+    </button>
+    <button class="tool-btn" id="btn-rect" onclick="setTool('rect')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="1"/></svg></div>
+      <span class="tool-label">RECT</span>
+    </button>
+    <button class="tool-btn" id="btn-polygon" onclick="setTool('polygon')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,3 21,9 17,20 7,20 3,9"/></svg></div>
+      <span class="tool-label">POLY</span>
+    </button>
+    <button class="tool-btn" id="btn-offset" onclick="setTool('offset')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/><path d="M14 11.5l3 2.5-3 2.5" stroke-width="1.2"/></svg></div>
+      <span class="tool-label">OFFSET</span>
+    </button>
+    <button class="tool-btn" id="btn-arc" onclick="setTool('arc')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 19a9 9 0 0 1 14 0"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/><circle cx="19" cy="19" r="1.5" fill="currentColor"/></svg></div>
+      <span class="tool-label">ARC</span>
+    </button>
+    <button class="tool-btn" id="btn-circle" onclick="setTool('circle')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
+      <span class="tool-label">CIRCLE</span>
+    </button>
+    <button class="tool-btn" id="btn-fillet" onclick="setTool('fillet')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20v-8a8 8 0 0 1 8-8h8"/></svg></div>
+      <span class="tool-label">FILLET</span>
+    </button>
+    <button class="tool-btn" id="btn-chamfer" onclick="setTool('chamfer')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 L12 4 L20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg></div>
+      <span class="tool-label">CHAMFER</span>
+    </button>
+    <button class="tool-btn" id="btn-mirror" onclick="setTool('mirror')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="3,2"/><path d="M3 8l9-5 9 5"/><path d="M3 16l9 5 9-5"/></svg></div>
+      <span class="tool-label">MIRROR</span>
+    </button>
+    <button class="tool-btn" id="btn-measure" onclick="setTool('measure')">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="12" x2="21" y2="12"/><path d="M3 6l3 6-3 6"/><path d="M21 6l-3 6 3 6"/></svg></div>
+      <span class="tool-label">MEASURE</span>
+    </button>
     <button class="tool-btn" id="btn-tag" onclick="setTool('tag')" title="Tag contour (T)">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
       <span class="tool-label" style="color:var(--accent);">TAG</span>
@@ -767,10 +796,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="tool-label">ROTATE</span>
     </button>
 
-    <button class="tool-btn" id="btn-delete-sel" onclick="deleteSelected()" title="Delete (Del)">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
-      <span class="tool-label" style="color:var(--red);">DELETE</span>
-    </button>
+
 
     <button class="tool-btn" id="btn-zext" onclick="zoomExtents()" title="Zoom Extents (Z)">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
@@ -804,6 +830,68 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
     <label style="font-family:var(--fm);font-size:9px;color:var(--t3);text-transform:uppercase;">CIRC</label>
     <input type="checkbox" id="poly-inscribed" checked title="Inscribed (vertices on circle) vs circumscribed"/>
   </div>
+
+  <div class="tool-grid-bottom">
+    <button class="tool-btn" id="btn-delete" onclick="deleteSelected()" style="color:#ff4455;">
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ff4455" stroke-width="1.5">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+      </svg></div>
+      <span class="tool-label" style="color:#ff4455;">DELETE</span>
+    </button>
+  </div>
+
+  <!-- ── 3D Export / Import ── -->
+    <div class="section-head" style="margin-top:4px;">3D · Thickness</div>
+    <div style="padding:4px 8px 2px;display:flex;align-items:center;gap:6px;">
+      <span style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;letter-spacing:0.1em;flex:1;">Sheet thickness</span>
+      <input id="kam-stl-thickness" type="number" value="6" min="0.1" step="0.1"
+        style="width:46px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+        border-radius:4px;color:#d0dde8;font-family:'Fira Code',monospace;font-size:10px;
+        padding:2px 5px;outline:none;text-align:right;">
+      <span style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;">mm</span>
+    </div>
+    <!-- Export — STL + STEP together, same green/blue family -->
+    <div style="padding:3px 8px 5px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <button onclick="exportSTL()"
+        style="width:100%;background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.2);
+        border-radius:5px;color:#00ff9d;font-family:'Fira Code',monospace;font-size:9px;
+        padding:6px;cursor:pointer;letter-spacing:0.06em;margin-bottom:3px;
+        display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>Export .stl</button>
+      <button onclick="exportSTEP()"
+        style="width:100%;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);
+        border-radius:5px;color:#4db8ff;font-family:'Fira Code',monospace;font-size:9px;
+        padding:6px;cursor:pointer;letter-spacing:0.06em;
+        display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>Export .step
+        <span style="font-size:7px;opacity:0.45;margin-left:auto;">AP214</span></button>
+    </div>
+    <!-- Import — STL → flat profile -->
+    <div style="padding:3px 8px 5px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <label style="width:100%;background:rgba(255,170,0,0.06);border:1px solid rgba(255,170,0,0.18);
+        border-radius:5px;color:#ffaa00;font-family:'Fira Code',monospace;font-size:9px;
+        padding:6px;cursor:pointer;letter-spacing:0.06em;
+        display:flex;align-items:center;gap:6px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>Import .stl → profile
+        <input type="file" accept=".stl" style="display:none"
+          onchange="importSTLToKAM(this.files[0]);this.value=''">
+      </label>
+    </div>
+    <!-- Delete — always at bottom -->
+    <div style="padding:6px 8px;border-top:1px solid rgba(255,68,85,0.1);">
+      
+    </div>
 
   <div class="section-head">File</div>
   <div class="file-ops">
@@ -1545,6 +1633,20 @@ let rotateState = {
   startAngle:   0,
   previewDelta: 0,
 };
+
+// ── KAD geometry states ──────────────────
+let arcState     = {active:false,phase:0,p1:null,p2:null};
+let circleState  = {active:false,cx:0,cy:0};
+let filletState  = {active:false,firstLine:null};
+let chamferState = {active:false,line1:null,line2:null};
+let chamferDist  = 5;
+let mirrorAxis   = 'h'; // 'h' | 'v' | 'line'
+let mirrorLineState = {active:false,p1:null,p2:null};
+let measureState = {active:false,p1:null};
+
+
+
+
 
 // ── TOPBAR MENUS ────────────────────────────────────────
 let menuCloseTimer = null;
@@ -2296,7 +2398,7 @@ function setTool(tool) {
   activeTool = tool;
 
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-  const btnMap={select:'btn-select',line:'btn-line',rect:'btn-rect',polygon:'btn-polygon',offset:'btn-offset',rotate:'btn-rotate',tag:'btn-tag'};
+  const btnMap={select:'btn-select',arc:'btn-arc',circle:'btn-circle',fillet:'btn-fillet',chamfer:'btn-chamfer',mirror:'btn-mirror',measure:'btn-measure',line:'btn-line',rect:'btn-rect',polygon:'btn-polygon',offset:'btn-offset',rotate:'btn-rotate',tag:'btn-tag'};
   if(btnMap[tool]) document.getElementById(btnMap[tool]).classList.add('active');
 
   document.getElementById('sb-mode').textContent=tool.toUpperCase();
@@ -2319,6 +2421,14 @@ function setTool(tool) {
     rotate:  'Select · <span>Click</span> pivot → drag angle → confirm · <span>Q/E</span> ±90°',
     tag:     '<span>Click</span> any contour to tag · <span>1</span>=cut <span>2</span>=mark <span>3</span>=score · right-click for menu',
   };
+  
+  // ── KAD-ported tool setup ──────────────────────────────────────────────────
+  if (activeTool === 'arc')     arcState     = {active:false,phase:0,p1:null,p2:null};
+  if (activeTool === 'circle')  circleState  = {active:false,cx:0,cy:0};
+  if (activeTool === 'fillet')  filletState  = {active:false,firstLine:null};
+  if (activeTool === 'chamfer') chamferState = {active:false,line1:null,line2:null};
+  if (activeTool !== 'measure') measureState = {active:false,p1:null};
+
   document.getElementById('hint').innerHTML = hintMap[tool]||'';
 
   updateCursor();
@@ -4567,6 +4677,353 @@ function drawKAMOverlay() {
 }
 
 // ── INIT ────────────────────────────────────────────────
+
+
+function normAngle(a){a=a%(2*Math.PI);return a<0?a+2*Math.PI:a;}
+
+function angleOnArc(a,startA,endA,ccw){
+  a=normAngle(a);startA=normAngle(startA);endA=normAngle(endA);
+  if(ccw){if(startA<=endA)return a>=startA&&a<=endA;return a>=startA||a<=endA;}
+  else{if(endA<=startA)return a>=endA&&a<=startA;return a>=endA||a<=startA;}
+}
+
+function arcToPolygonPts(cx, cy, r, startA, endA, ccw, segments=64) {
+    const pts = [];
+    let a0 = startA, a1 = endA;
+    if (ccw) {
+      // go from a0 → a1 counter-clockwise (increasing angle)
+      if (a1 < a0) a1 += 2*Math.PI;
+    } else {
+      // go from a0 → a1 clockwise (decreasing angle)
+      if (a1 > a0) a1 -= 2*Math.PI;
+    }
+    const span = a1 - a0;
+    const steps = Math.max(4, Math.ceil(Math.abs(span) / (2*Math.PI) * segments));
+    for (let i = 0; i <= steps; i++) {
+      const a = a0 + (span * i / steps);
+      pts.push([f(cx + r * Math.cos(a)), f(cy + r * Math.sin(a))]);
+    }
+    return pts;
+  }
+
+function circumscribedCircle(p1,p2,p3){
+  const ax=p1.x,ay=p1.y,bx=p2.x,by=p2.y,cx=p3.x,cy=p3.y;
+  const D=2*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by));
+  if(Math.abs(D)<1e-10)return null;
+  const ux=((ax*ax+ay*ay)*(by-cy)+(bx*bx+by*by)*(cy-ay)+(cx*cx+cy*cy)*(ay-by))/D;
+  const uy=((ax*ax+ay*ay)*(cx-bx)+(bx*bx+by*by)*(ax-cx)+(cx*cx+cy*cy)*(bx-ax))/D;
+  const r=Math.hypot(ax-ux,ay-uy);
+  return{cx:parseFloat(ux.toFixed(6)),cy:parseFloat(uy.toFixed(6)),r:parseFloat(r.toFixed(6))};
+}
+
+function getFillet(){const r=parseFloat(document.getElementById('fillet-r-input').value)||5;return parseFloat(fromDisplay(r).toFixed(6));}
+
+function commitFillet(l1,l2){
+  const r=getFillet();if(r<=0){showToast('Enter a fillet radius > 0');return;}
+  const inter=lineIntersectPt(l1,l2);if(!inter){showToast('Lines are parallel');return;}
+  const len1=Math.hypot(l1.x2-l1.x1,l1.y2-l1.y1),len2=Math.hypot(l2.x2-l2.x1,l2.y2-l2.y1);
+  if(len1<1e-10||len2<1e-10){showToast('Degenerate line');return;}
+  const iv=inter;
+  const mid1x=(l1.x1+l1.x2)/2,mid1y=(l1.y1+l1.y2)/2,mid2x=(l2.x1+l2.x2)/2,mid2y=(l2.y1+l2.y2)/2;
+  let u1x=mid1x-iv.x,u1y=mid1y-iv.y,u2x=mid2x-iv.x,u2y=mid2y-iv.y;
+  const ul1=Math.hypot(u1x,u1y)||1;u1x/=ul1;u1y/=ul1;
+  const ul2=Math.hypot(u2x,u2y)||1;u2x/=ul2;u2y/=ul2;
+  const bx_=u1x+u2x,by_=u1y+u2y,bl=Math.hypot(bx_,by_);
+  if(bl<1e-10){showToast('Cannot compute bisector');return;}
+  const bnx=bx_/bl,bny=by_/bl;
+  const halfAngle=Math.acos(Math.max(-1,Math.min(1,u1x*u2x+u1y*u2y)))/2;
+  if(Math.abs(halfAngle)<1e-6){showToast('Lines are collinear');return;}
+  const dist=r/Math.sin(halfAngle);
+  const fcx=iv.x+bnx*dist,fcy=iv.y+bny*dist;
+  const tp1d=u1x*(fcx-iv.x)+u1y*(fcy-iv.y),tp1={x:iv.x+u1x*tp1d,y:iv.y+u1y*tp1d};
+  const tp2d=u2x*(fcx-iv.x)+u2y*(fcy-iv.y),tp2={x:iv.x+u2x*tp2d,y:iv.y+u2y*tp2d};
+  const startA=Math.atan2(tp1.y-fcy,tp1.x-fcx),endA=Math.atan2(tp2.y-fcy,tp2.x-fcx);
+  const midAng=(startA+endA)/2;
+  const testPt={x:fcx+r*Math.cos(midAng),y:fcy+r*Math.sin(midAng)};
+  const ccw=Math.hypot(testPt.x-iv.x,testPt.y-iv.y)<dist;
+  const l1ks=Math.hypot(l1.x1-iv.x,l1.y1-iv.y)>Math.hypot(l1.x2-iv.x,l1.y2-iv.y);
+  const l1a=l1ks?{x:l1.x1,y:l1.y1}:{x:l1.x2,y:l1.y2};
+  const l2ks=Math.hypot(l2.x1-iv.x,l2.y1-iv.y)>Math.hypot(l2.x2-iv.x,l2.y2-iv.y);
+  const l2a=l2ks?{x:l2.x1,y:l2.y1}:{x:l2.x2,y:l2.y2};
+  GeoMemory.remove(l1.id);GeoMemory.remove(l2.id);
+  GeoMemory.addLine(l1a.x,l1a.y,tp1.x,tp1.y,l1.layer);
+  GeoMemory.addLine(l2a.x,l2a.y,tp2.x,tp2.y,l2.layer);
+  GeoMemory.addArc(fcx,fcy,r,startA,endA,ccw,l1.layer);
+  showToast('Fillet r='+fmtU(r)+' committed');render();
+}
+
+function drawArcPreview(){
+  if(activeTool!=='arc'||arcState.phase===0)return;
+  const ep=snapActive&&snapPoint?snapPoint:mouseWorld;
+  ctx.save();ctx.strokeStyle='rgba(0,212,255,0.6)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+  if(arcState.phase===1){
+    const sp1=worldToScreen(arcState.p1.x,arcState.p1.y);
+    const sep=worldToScreen(ep.x,ep.y);
+    ctx.beginPath();ctx.moveTo(sp1.x,sp1.y);ctx.lineTo(sep.x,sep.y);ctx.stroke();
+    drawDot(sp1.x,sp1.y,C.entity,3);
+  }else if(arcState.phase===2){
+    const circ=circumscribedCircle(arcState.p1,arcState.p2,ep);
+    if(circ){
+      const{cx,cy,r}=circ;const sc=worldToScreen(cx,cy);const sr=r*cam.zoom;
+      const startA=Math.atan2(arcState.p1.y-cy,arcState.p1.x-cx);
+      const midA=Math.atan2(arcState.p2.y-cy,arcState.p2.x-cx);
+      const endA=Math.atan2(ep.y-cy,ep.x-cx);
+      const ccw=angleOnArc(normAngle(midA),normAngle(startA),normAngle(endA),true);
+      ctx.beginPath();ctx.arc(sc.x,sc.y,sr,-endA,-startA,!ccw);ctx.stroke();
+      const sp1=worldToScreen(arcState.p1.x,arcState.p1.y);
+      const sp2=worldToScreen(arcState.p2.x,arcState.p2.y);
+      const sep=worldToScreen(ep.x,ep.y);
+      drawDot(sp1.x,sp1.y,C.entity,3);drawDot(sp2.x,sp2.y,C.entity,2);drawDot(sep.x,sep.y,C.entity,3);
+    }
+  }
+  ctx.setLineDash([]);ctx.restore();
+}
+
+function drawCirclePreview(){
+  if(activeTool!=='circle'||!circleState.active)return;
+  const sc=worldToScreen(circleState.cx,circleState.cy);
+  const ep=snapActive&&snapPoint?snapPoint:mouseWorld;
+  const r=Math.hypot(ep.x-circleState.cx,ep.y-circleState.cy)*cam.zoom;
+  ctx.save();ctx.strokeStyle='rgba(0,212,255,0.6)';ctx.lineWidth=1.2;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.arc(sc.x,sc.y,r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  const sep=worldToScreen(ep.x,ep.y);ctx.strokeStyle='rgba(0,212,255,0.3)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(sc.x,sc.y);ctx.lineTo(sep.x,sep.y);ctx.stroke();
+  drawDot(sc.x,sc.y,C.entity,3);ctx.restore();
+}
+
+function commitChamfer(line1Id, line2Id) {
+  const o1 = GeoMemory.objects.find(o=>o.id===line1Id);
+  const o2 = GeoMemory.objects.find(o=>o.id===line2Id);
+  if (!o1||!o2||o1.type!=='LINE'||o2.type!=='LINE') { showToast('Select two lines for chamfer'); return; }
+
+  // Find intersection
+  const ip = lineIntersectPt(
+    {x:o1.x1,y:o1.y1},{x:o1.x2,y:o1.y2},
+    {x:o2.x1,y:o2.y1},{x:o2.x2,y:o2.y2}
+  );
+  if (!ip) { showToast('Lines do not intersect'); return; }
+
+  const d = chamferDist;
+  // Find points at distance d from intersection along each line
+  function ptAtDist(lineObj, fromPt, dist) {
+    const dx1 = lineObj.x1 - fromPt.x, dy1 = lineObj.y1 - fromPt.y;
+    const dx2 = lineObj.x2 - fromPt.x, dy2 = lineObj.y2 - fromPt.y;
+    const len1 = Math.sqrt(dx1*dx1+dy1*dy1), len2 = Math.sqrt(dx2*dx2+dy2*dy2);
+    if (len1 < 1e-6 && len2 < 1e-6) return null;
+    if (len1 > len2) {
+      const t = dist/len1; return {x:fromPt.x+dx1*t, y:fromPt.y+dy1*t};
+    } else {
+      const t = dist/len2; return {x:fromPt.x+dx2*t, y:fromPt.y+dy2*t};
+    }
+  }
+  const cp1 = ptAtDist(o1, ip, d);
+  const cp2 = ptAtDist(o2, ip, d);
+  if (!cp1||!cp2) return;
+
+  // Trim line1 to cp1 and line2 to cp2, add chamfer line
+  // Determine which end to trim
+  function trimLine(obj, trimPt, intPt) {
+    const d1 = Math.hypot(obj.x1-intPt.x, obj.y1-intPt.y);
+    const d2 = Math.hypot(obj.x2-intPt.x, obj.y2-intPt.y);
+    if (d1 < d2) { obj.x1=trimPt.x; obj.y1=trimPt.y; }
+    else          { obj.x2=trimPt.x; obj.y2=trimPt.y; }
+  }
+  trimLine(o1, cp1, ip);
+  trimLine(o2, cp2, ip);
+  GeoMemory.addLine(cp1.x, cp1.y, cp2.x, cp2.y);
+  render();
+  showToast(`Chamfer ${fmtU(d)} applied`);
+}
+
+function drawChamferPreview() {
+  if (activeTool !== 'chamfer' || !chamferState.line1) return;
+  // Highlight selected lines
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,170,0,0.6)';
+  ctx.lineWidth = 2;
+  const o = GeoMemory.objects.find(o=>o.id===chamferState.line1);
+  if (o) {
+    const a = worldToScreen(o.x1,o.y1), b = worldToScreen(o.x2,o.y2);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function mirrorSelected() {
+  const ids = [...selectedIds];
+  if (!ids.length) { showToast('Select objects first (S)'); return; }
+
+  // Compute bounding box of selected objects for h/v axis center
+  let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+  for (const o of GeoMemory.objects.filter(o => selectedIds.has(o.id))) {
+    if (o.type === 'LINE') {
+      minX=Math.min(minX,o.x1,o.x2); maxX=Math.max(maxX,o.x1,o.x2);
+      minY=Math.min(minY,o.y1,o.y2); maxY=Math.max(maxY,o.y1,o.y2);
+    } else if (o.type === 'CIRCLE') {
+      minX=Math.min(minX,o.cx-o.r); maxX=Math.max(maxX,o.cx+o.r);
+      minY=Math.min(minY,o.cy-o.r); maxY=Math.max(maxY,o.cy+o.r);
+    } else if (o.type === 'ARC') {
+      const bb = arcBBox(o.cx,o.cy,o.r,o.startA,o.endA,o.ccw);
+      minX=Math.min(minX,bb.minX); maxX=Math.max(maxX,bb.maxX);
+      minY=Math.min(minY,bb.minY); maxY=Math.max(maxY,bb.maxY);
+    } else if (o.type === 'POLYLINE') {
+      for (const p of o.pts) { minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); }
+    }
+  }
+
+  const axisData = mirrorAxis === 'line' && mirrorLineState.p1 && mirrorLineState.p2
+    ? { p1: mirrorLineState.p1, p2: mirrorLineState.p2 }
+    : { cx: (minX+maxX)/2, cy: (minY+maxY)/2 };
+
+  if (mirrorAxis === 'line' && (!mirrorLineState.p1 || !mirrorLineState.p2)) {
+    showToast('Click two points on canvas to define mirror line'); return;
+  }
+
+  const mp = (x,y) => mirrorPoint(x, y, mirrorAxis, axisData);
+  let added = 0;
+  for (const o of GeoMemory.objects.filter(o => selectedIds.has(o.id))) {
+    if (o.type === 'LINE') {
+      const a = mp(o.x1,o.y1), b = mp(o.x2,o.y2);
+      GeoMemory.addLine(a.x,a.y,b.x,b.y,o.layer); added++;
+    } else if (o.type === 'POLYLINE') {
+      const newPts = o.pts.map(p => mp(p.x,p.y));
+      GeoMemory.addPolyline(newPts, o.closed, o.layer); added++;
+    } else if (o.type === 'CIRCLE') {
+      const c = mp(o.cx,o.cy);
+      GeoMemory.addCircle(c.x,c.y,o.r,o.layer); added++;
+    } else if (o.type === 'ARC') {
+      const c = mp(o.cx,o.cy);
+      // Mirror arc: flip angles depending on axis
+      let sa = o.startA, ea = o.endA;
+      if (mirrorAxis === 'h') { sa = -o.startA; ea = -o.endA; }
+      else if (mirrorAxis === 'v') { sa = Math.PI - o.startA; ea = Math.PI - o.endA; }
+      else { /* line mirror — approximate by swapping and negating */ sa = Math.PI - o.startA; ea = Math.PI - o.endA; }
+      GeoMemory.addArc(c.x,c.y,o.r,sa,ea,!o.ccw,o.layer); added++;
+    }
+  }
+  showToast(`Mirrored ${added} object${added!==1?'s':''}`);
+  render();
+}
+
+function setMirrorAxis(axis) {
+  mirrorAxis = axis;
+  ['h','v','line'].forEach(a => {
+    const btn = document.getElementById('mirror-btn-'+a);
+    if (!btn) return;
+    btn.style.background = a === axis ? 'var(--accent-glow)' : 'var(--panel)';
+    btn.style.borderColor = a === axis ? 'var(--accent)' : 'var(--border)';
+    btn.style.color = a === axis ? 'var(--accent)' : 'var(--t2)';
+  });
+  mirrorLineState = { active: false, p1: null };
+  render();
+}
+
+function drawMirrorPreview() {
+  if (activeTool !== 'mirror') return;
+  ctx.save();
+  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+  ctx.lineWidth = 1;
+  const W = canvas.width, H = canvas.height;
+  if (mirrorAxis === 'h') {
+    // horizontal axis through selection center or canvas center
+    const cy = worldToScreen(0, 0).y;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+  } else if (mirrorAxis === 'v') {
+    const cx = worldToScreen(0, 0).x;
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, H); ctx.stroke();
+  } else if (mirrorAxis === 'line') {
+    if (mirrorLineState.p1) {
+      const sp1 = worldToScreen(mirrorLineState.p1.x, mirrorLineState.p1.y);
+      const ep = mirrorLineState.p2 ? worldToScreen(mirrorLineState.p2.x, mirrorLineState.p2.y)
+                                     : worldToScreen(mouseWorld.x, mouseWorld.y);
+      ctx.beginPath(); ctx.moveTo(sp1.x, sp1.y); ctx.lineTo(ep.x, ep.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#00d4ff';
+      ctx.beginPath(); ctx.arc(sp1.x, sp1.y, 4, 0, Math.PI*2); ctx.fill();
+      if (mirrorLineState.p2) {
+        ctx.beginPath(); ctx.arc(ep.x, ep.y, 4, 0, Math.PI*2); ctx.fill();
+      }
+    }
+  }
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawMeasurePreview() {
+  if (activeTool !== 'measure' || !measureState.active || !measureState.p1) return;
+  const sp1 = worldToScreen(measureState.p1.x, measureState.p1.y);
+  const sp2 = worldToScreen(mouseWorld.x, mouseWorld.y);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,170,0,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(sp1.x, sp1.y); ctx.lineTo(sp2.x, sp2.y); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffaa00';
+  ctx.beginPath(); ctx.arc(sp1.x, sp1.y, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(sp2.x, sp2.y, 4, 0, Math.PI*2); ctx.fill();
+  // Live distance label
+  const dx = mouseWorld.x - measureState.p1.x, dy = mouseWorld.y - measureState.p1.y;
+  const dist = Math.hypot(dx, dy);
+  const angle = (Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1);
+  const mid = { x: (sp1.x+sp2.x)/2, y: (sp1.y+sp2.y)/2 };
+  ctx.font = '10px "Fira Code", monospace';
+  ctx.fillStyle = '#ffaa00';
+  ctx.fillText(`${fmtU(dist)}  ${angle}°`, mid.x + 6, mid.y - 6);
+  ctx.restore();
+  // Update sidebar readout live
+  if (dist > 0) updateMeasureDisplay(measureState.p1, mouseWorld);
+}
+
+function updateMeasureDisplay(p1, p2) {
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const dist = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+  document.getElementById('measure-dist').textContent = fmtU(dist);
+  document.getElementById('measure-angle').textContent = angle.toFixed(2) + '°';
+}
+
+function copySelected() {
+  const ids = [...selectedIds];
+  if (!ids.length) { showToast('Select objects first'); return; }
+  const copies = [];
+  for (const id of ids) {
+    const o = GeoMemory.objects.find(x=>x.id===id);
+    if (!o) continue;
+    if (o.type==='LINE') {
+      copies.push({type:'LINE',x1:o.x1+copyOffset.x,y1:o.y1+copyOffset.y,
+                                x2:o.x2+copyOffset.x,y2:o.y2+copyOffset.y});
+    } else if (o.type==='CIRCLE') {
+      copies.push({type:'CIRCLE',cx:o.cx+copyOffset.x,cy:o.cy+copyOffset.y,r:o.r});
+    } else if (o.type==='ARC') {
+      copies.push({type:'ARC',cx:o.cx+copyOffset.x,cy:o.cy+copyOffset.y,
+                   r:o.r,startAngle:o.startAngle,endAngle:o.endAngle,ccw:o.ccw});
+    } else if (o.type==='POLYLINE') {
+      copies.push({type:'POLYLINE',pts:o.pts.map(p=>({x:p.x+copyOffset.x,y:p.y+copyOffset.y})),
+                   closed:o.closed});
+    }
+  }
+  for (const c of copies) {
+    if (c.type==='LINE') GeoMemory.addLine(c.x1,c.y1,c.x2,c.y2);
+    else if (c.type==='CIRCLE') GeoMemory.addCircle(c.cx,c.cy,c.r);
+    else if (c.type==='ARC') GeoMemory.addArc(c.cx,c.cy,c.r,c.startAngle,c.endAngle,c.ccw);
+    else if (c.type==='POLYLINE') {
+      const id = GeoMemory.nextId++;
+      GeoMemory.objects.push({...c, id});
+    }
+  }
+  render();
+  showToast(`Copied ${copies.length} object${copies.length>1?'s':''}`);
+}
+
+function lineIntersectPt(l1,l2){
+  const dx1=l1.x2-l1.x1,dy1=l1.y2-l1.y1,dx2=l2.x2-l2.x1,dy2=l2.y2-l2.y1;
+  const denom=dx1*dy2-dy1*dx2;if(Math.abs(denom)<1e-10)return null;
+  const t=((l2.x1-l1.x1)*dy2-(l2.y1-l1.y1)*dx2)/denom;
+  return{x:l1.x1+t*dx1,y:l1.y1+t*dy1};
+}
+
 resizeCanvas();
 initCamera();
 setTool('select');
