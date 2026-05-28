@@ -649,6 +649,47 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .tool-grid-bottom .tool-btn {
   width: 100%;
 }
+
+/* ── TABLE / NESTING MODE ───────────────────────────────── */
+.mode-tab-bar { display:flex; gap:3px; align-items:center; margin-left:10px; }
+.mode-tab {
+  padding:4px 12px; border-radius:3px; font-size:10px; font-family:var(--fm);
+  letter-spacing:0.10em; cursor:pointer; border:1px solid var(--border);
+  background:var(--panel2); color:var(--t2); transition:all 0.15s;
+}
+.mode-tab:hover { background:var(--hover); color:var(--t1); }
+.mode-tab.active { background:var(--acc-dim,rgba(255,170,0,0.15));
+                   border-color:var(--accent); color:var(--accent); }
+#nest-panel { display:none; flex-direction:column; overflow-y:auto; flex:1; }
+.nest-part-row {
+  display:flex; align-items:center; gap:6px; padding:5px 8px;
+  border-bottom:1px solid var(--border); font-family:var(--fm); font-size:10px;
+}
+.np-swatch { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+.np-name   { flex:1; color:var(--t1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.np-count  { color:var(--t2); font-size:9px; white-space:nowrap; }
+.np-place  {
+  padding:2px 7px; font-size:9px; font-family:var(--fm); cursor:pointer;
+  background:var(--panel2); border:1px solid var(--border); border-radius:3px;
+  color:var(--accent); transition:all 0.15s;
+}
+.np-place:hover { background:var(--acc-dim,rgba(255,170,0,0.12)); border-color:var(--accent); }
+.np-place.placing { background:var(--acc-dim,rgba(255,170,0,0.25)); border-color:var(--accent); }
+.nest-sel-bar {
+  padding:6px 8px; background:rgba(255,170,0,0.08); border-bottom:1px solid var(--border);
+  font-family:var(--fm); font-size:9px; color:var(--accent); display:none;
+  align-items:center; gap:6px;
+}
+.nest-sel-btn {
+  padding:2px 7px; font-size:9px; font-family:var(--fm); cursor:pointer;
+  background:var(--panel2); border:1px solid var(--border); border-radius:3px;
+  color:var(--t2); transition:all 0.15s;
+}
+.nest-sel-btn:hover { color:var(--t1); border-color:var(--border-hi); }
+.nest-sel-btn.danger { color:#ff4455; border-color:rgba(255,68,85,0.25); }
+.nest-sel-btn.danger:hover { background:rgba(255,68,85,0.08); border-color:#ff4455; }
+#nest-util-bar { padding:6px 12px; font-family:var(--fm); font-size:10px; color:var(--t2); }
+#nest-util-bar span { color:var(--accent); }
 </style>
 </head>
 <body>
@@ -715,6 +756,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <div class="vt-div"></div>
       <button class="vt-btn kam" id="vt-kam" onclick="setViewMode('kam')">PROCESS</button>
     </div>
+    <div class="vt-div"></div>
+    <div class="mode-tab-bar">
+      <button class="mode-tab active" id="mt-part" onclick="setKAMMode('part')">⚙ PART</button>
+      <button class="mode-tab" id="mt-table" onclick="setKAMMode('table')">⬛ TABLE</button>
+    </div>
   </div>
 
   <div class="tb-right">
@@ -724,7 +770,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="unit-divider"></span>
       <span class="unit-seg" id="unit-seg-in">in</span>
     </button>
-  </div>
+  
+  </div><!-- /part-sidebar --></div>
 </div>
 
     
@@ -733,6 +780,27 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 
 <!-- SIDEBAR -->
 <div id="sidebar">
+  <!-- ── NESTING MODE PANEL ────────────────── -->
+  <div id="nest-panel">
+    <div class="section-head">PLACE PARTS</div>
+    <div id="nest-sel-bar" class="nest-sel-bar">
+      <span id="nest-sel-name" style="flex:1">—</span>
+      <button class="nest-sel-btn" onclick="nestRotateSel()">↻ 90°</button>
+      <button class="nest-sel-btn danger" onclick="nestRemoveSel()">Remove</button>
+    </div>
+    <div id="nest-part-list">
+      <div style="padding:16px;font-size:10px;color:var(--t3);font-family:var(--fm)">
+        Import parts in PART mode first.
+      </div>
+    </div>
+    <div id="nest-util-bar">Utilization: <span id="nest-util-pct">0.0 %</span></div>
+    <div style="padding:4px 8px">
+      <button class="op-btn" style="color:#ff4455;border-color:rgba(255,68,85,0.2)" onclick="nestClearAll()">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Clear All</button>
+    </div>
+  </div>
+  <!-- ── PART MODE SIDEBAR ─────────────────── -->
+  <div id="part-sidebar">
   <div class="section-head" style="color:var(--accent);letter-spacing:0.14em;">KAM Tools</div>
   <div class="tool-grid">
 
@@ -1041,12 +1109,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
           <div class="proc-label">Table / Sheet Size</div>
           <div class="proc-field">
             <label>Width</label>
-            <input class="proc-input" id="table-w" type="number" value="60" min="1" step="6" onchange="render();updateUtilization()"/>
+            <input class="proc-input" id="table-w" type="number" value="120" min="1" step="6" onchange="render();updateUtilization()"/>
             <span class="proc-unit" id="table-w-unit">in</span>
           </div>
           <div class="proc-field">
             <label>Height</label>
-            <input class="proc-input" id="table-h" type="number" value="120" min="1" step="6" onchange="render();updateUtilization()"/>
+            <input class="proc-input" id="table-h" type="number" value="60" min="1" step="6" onchange="render();updateUtilization()"/>
             <span class="proc-unit" id="table-h-unit">in</span>
           </div>
           <div class="proc-field">
@@ -1604,6 +1672,10 @@ function findSnap(wx, wy) {
 let activeTool   = 'select';
 let placePartId  = null;  // which part is being placed (PLACE tool)
 let mouseWorld   = {x:0,y:0};
+let kamMode      = 'part';   // 'part' | 'table'
+let nestSel      = null;     // { partId, iid } selected in TABLE mode
+let nestPlacing  = null;     // partId being placed
+let nestDrag     = null;     // { partId, iid, ox, oy } active drag
 let mouseScreen  = {x:0,y:0};
 let selectedIds  = new Set(); // selection set
 let showGrid     = true;
@@ -2542,6 +2614,36 @@ document.addEventListener('contextmenu', e=>{
 });
 
 function onMouseDown(e) {
+  // TABLE MODE
+  if (kamMode==='table') {
+    if (e.button===1||(e.button===0&&e.altKey)) {
+      isPanning=true; const rect=canvas.getBoundingClientRect();
+      panOX=e.clientX-rect.left; panOY=e.clientY-rect.top;
+      camStart={x:cam.panX,y:cam.panY}; return;
+    }
+    if (e.button!==0) return;
+    const wp = mouseWorld;
+    if (nestPlacing) {
+      // Place a new instance
+      const bb = PartLibrary.partBBox(nestPlacing);
+      const w = bb ? bb.maxX-bb.minX : 0, h = bb ? bb.maxY-bb.minY : 0;
+      PartLibrary.addInstance(nestPlacing, wp.x - w/2 - (bb?bb.minX:0), wp.y - h/2 - (bb?bb.minY:0));
+      if (!e.shiftKey) nestPlacing = null; // Shift = keep placing
+      updateNestPanel(); render(); return;
+    }
+    const hit = hitTestNest(wp.x, wp.y);
+    if (hit) {
+      nestSel = hit;
+      const part = PartLibrary.getPart(hit.partId);
+      const inst = part && (part.instances||[]).find(i=>i.iid===hit.iid);
+      const bb   = getInstBBox(part, inst);
+      if (bb) nestDrag = { partId:hit.partId, iid:hit.iid, ox:wp.x-bb.cx, oy:wp.y-bb.cy };
+    } else {
+      nestSel=null; nestPlacing=null;
+    }
+    updateNestPanel(); render(); return;
+  }
+
   if(e.button===2) return; // handled by contextmenu
   closeCtxMenu();
   closeMenus();
@@ -2775,11 +2877,26 @@ function onMouseMove(e) {
     document.getElementById('rect-preview').style.display='none';
   }
 
+  if (kamMode==='table' && nestDrag) {
+    const part = PartLibrary.getPart(nestDrag.partId);
+    const inst  = part && (part.instances||[]).find(i=>i.iid===nestDrag.iid);
+    if (inst) {
+      const bb = getInstBBox(part, inst);
+      if (bb) {
+        inst.x += (mouseWorld.x - nestDrag.ox) - bb.cx + (PartLibrary.partBBox(nestDrag.partId)||{minX:0}).minX + (bb.w/2);
+        inst.y += (mouseWorld.y - nestDrag.oy) - bb.cy + (PartLibrary.partBBox(nestDrag.partId)||{minY:0}).minY + (bb.h/2);
+        nestDrag.ox = mouseWorld.x; nestDrag.oy = mouseWorld.y;
+      }
+    }
+    render(); return;
+  }
   if(dynVisible) positionDynInput();
   render();
 }
 
 function onMouseUp(e) {
+  if (kamMode==='table') { nestDrag=null; render(); return; }
+
   if(isPanning){ isPanning=false; updateCursor(); }
 
   // Release pivot drag
@@ -3008,10 +3125,258 @@ const C={
   startPt:'#00ff9d',
 };
 
+
+// ═══════════════════════════════════════════════════════════
+//  TABLE / NESTING MODE
+// ═══════════════════════════════════════════════════════════
+function setKAMMode(mode) {
+  kamMode = mode;
+  document.getElementById('mt-part').classList.toggle('active', mode==='part');
+  document.getElementById('mt-table').classList.toggle('active', mode==='table');
+  document.getElementById('part-sidebar').style.display = mode==='part' ? '' : 'none';
+  document.getElementById('nest-panel').style.display   = mode==='table' ? 'flex' : 'none';
+  // Mode-specific view toggle bar
+  const vtBar = document.querySelector('.view-toggle');
+  if (vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
+  if (mode==='table') {
+    nestSel = null; nestPlacing = null; nestDrag = null;
+    fitTableView();
+    updateNestPanel();
+  }
+  render();
+}
+
+function fitTableView() {
+  const { wMM, hMM } = getTableDims();
+  const W = canvas.width, H = canvas.height;
+  const pad = 60;
+  cam.zoom = Math.min((W - pad*2) / wMM, (H - pad*2) / hMM);
+  // Center table; origin at bottom-left → panX = left edge, panY = bottom edge
+  const tableScreenW = wMM * cam.zoom;
+  const tableScreenH = hMM * cam.zoom;
+  cam.panX = (W - tableScreenW) / 2;
+  cam.panY = (H + tableScreenH) / 2;
+  updateGridLabel();
+}
+
+function getInstBBox(part, inst) {
+  const bb = PartLibrary.partBBox(part.partId);
+  if (!bb) return null;
+  const w = bb.maxX - bb.minX, h = bb.maxY - bb.minY;
+  const cos = Math.cos((inst.angle||0)*Math.PI/180);
+  const sin = Math.sin((inst.angle||0)*Math.PI/180);
+  // Corners relative to part centre (0,0)
+  const hw=w/2, hh=h/2;
+  const corners = [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
+  const rotated  = corners.map(([cx,cy])=>({x:cx*cos-cy*sin, y:cx*sin+cy*cos}));
+  const rMinX = Math.min(...rotated.map(c=>c.x));
+  const rMaxX = Math.max(...rotated.map(c=>c.x));
+  const rMinY = Math.min(...rotated.map(c=>c.y));
+  const rMaxY = Math.max(...rotated.map(c=>c.y));
+  // inst.x, inst.y are offsets such that original centre = (minX+w/2 + inst.x, minY+h/2 + inst.y)
+  const cx = bb.minX + hw + inst.x;
+  const cy = bb.minY + hh + inst.y;
+  return { minX:cx+rMinX, maxX:cx+rMaxX, minY:cy+rMinY, maxY:cy+rMaxY, cx, cy, w, h };
+}
+
+function nestBoxesOverlap(a, b) {
+  return a.minX < b.maxX && a.maxX > b.minX && a.minY < b.maxY && a.maxY > b.minY;
+}
+
+function nestHasCollision(checkPartId, checkIid) {
+  const checkPart = PartLibrary.getPart(checkPartId);
+  if (!checkPart) return false;
+  const checkInst = (checkPart.instances||[]).find(i=>i.iid===checkIid);
+  if (!checkInst) return false;
+  const checkBB = getInstBBox(checkPart, checkInst);
+  if (!checkBB) return false;
+  for (const part of PartLibrary.parts) {
+    for (const inst of (part.instances||[])) {
+      if (part.partId===checkPartId && inst.iid===checkIid) continue;
+      const bb = getInstBBox(part, inst);
+      if (bb && nestBoxesOverlap(checkBB, bb)) return true;
+    }
+  }
+  return false;
+}
+
+function hitTestNest(wx, wy) {
+  // Check from top (last drawn) to bottom
+  const allInst = [];
+  for (const part of PartLibrary.parts)
+    for (const inst of (part.instances||[]))
+      allInst.push({ part, inst });
+  for (let i=allInst.length-1; i>=0; i--) {
+    const { part, inst } = allInst[i];
+    const bb = getInstBBox(part, inst);
+    if (!bb) continue;
+    if (wx>=bb.minX && wx<=bb.maxX && wy>=bb.minY && wy<=bb.maxY)
+      return { partId:part.partId, iid:inst.iid };
+  }
+  return null;
+}
+
+function renderTableMode(W, H) {
+  const { wMM, hMM } = getTableDims();
+  // Grid
+  if (showGrid) drawGrid(W, H);
+
+  // Table fill
+  const tl=worldToScreen(0,hMM), br=worldToScreen(wMM,0);
+  ctx.fillStyle='rgba(255,170,0,0.03)';
+  ctx.fillRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
+  ctx.strokeStyle='rgba(255,170,0,0.75)'; ctx.lineWidth=2; ctx.setLineDash([8,4]);
+  ctx.strokeRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
+  ctx.setLineDash([]);
+
+  // Compass rose at origin (bottom-left = torch home)
+  const O=worldToScreen(0,0);
+  const R=22;
+  ctx.strokeStyle='rgba(255,170,0,0.9)'; ctx.lineWidth=1.5;
+  // X axis arrow
+  ctx.beginPath(); ctx.moveTo(O.x,O.y); ctx.lineTo(O.x+R,O.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(O.x+R,O.y); ctx.lineTo(O.x+R-5,O.y-3); ctx.lineTo(O.x+R-5,O.y+3); ctx.closePath(); ctx.fill();
+  // Y axis arrow (screen up = world up)
+  ctx.beginPath(); ctx.moveTo(O.x,O.y); ctx.lineTo(O.x,O.y-R); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(O.x,O.y-R); ctx.lineTo(O.x-3,O.y-R+5); ctx.lineTo(O.x+3,O.y-R+5); ctx.closePath(); ctx.fillStyle='rgba(255,170,0,0.9)'; ctx.fill();
+  ctx.font='8px Fira Code,monospace'; ctx.fillStyle='rgba(255,170,0,0.85)';
+  ctx.fillText('X',O.x+R+4,O.y+3); ctx.fillText('Y',O.x-8,O.y-R-4);
+  ctx.fillStyle='rgba(255,170,0,0.7)'; ctx.font='7px Fira Code,monospace';
+  ctx.fillText('HOME',O.x+4,O.y+10);
+
+  // Placed instances
+  for (const part of PartLibrary.parts) {
+    for (const inst of (part.instances||[])) {
+      const bb = getInstBBox(part, inst);
+      if (!bb) continue;
+      const isSel = nestSel && nestSel.partId===part.partId && nestSel.iid===inst.iid;
+      const isCol = isSel ? nestHasCollision(part.partId, inst.iid) : false;
+      // Transform box to screen
+      const stl = worldToScreen(bb.minX, bb.maxY);
+      const sbr = worldToScreen(bb.maxX, bb.minY);
+      const sw = sbr.x-stl.x, sh = sbr.y-stl.y;
+      // Fill
+      const alpha = isSel ? '0.35' : '0.22';
+      ctx.fillStyle = isCol ? `rgba(255,80,80,${alpha})` : `${part.color}${Math.round(parseFloat(alpha)*255).toString(16).padStart(2,'0')}`;
+      ctx.fillRect(stl.x,stl.y,sw,sh);
+      // Border
+      ctx.strokeStyle = isCol ? '#ff5050' : (isSel ? '#fff' : part.color);
+      ctx.lineWidth   = isSel ? 2 : 1;
+      ctx.setLineDash(isSel ? [] : [4,3]);
+      ctx.strokeRect(stl.x,stl.y,sw,sh);
+      ctx.setLineDash([]);
+      // Part name label
+      ctx.fillStyle = isSel ? '#fff' : part.color;
+      ctx.font = `${Math.max(8,Math.min(12,sw*0.18))}px Fira Code,monospace`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const labelX = (stl.x+sbr.x)/2, labelY = (stl.y+sbr.y)/2;
+      ctx.fillText(part.name.slice(0,10), labelX, labelY);
+      if (inst.angle) {
+        ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='8px Fira Code,monospace';
+        ctx.fillText(inst.angle+'°', labelX, labelY+12);
+      }
+    }
+  }
+
+  // Placing ghost
+  if (nestPlacing) {
+    const bb = PartLibrary.partBBox(nestPlacing);
+    if (bb) {
+      const w=bb.maxX-bb.minX, h=bb.maxY-bb.minY;
+      const gx = mouseWorld.x - w/2, gy = mouseWorld.y - h/2;
+      const gs = worldToScreen(gx,gy+h), ge = worldToScreen(gx+w,gy);
+      ctx.globalAlpha = 0.4;
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(gs.x,gs.y,ge.x-gs.x,ge.y-gs.y);
+      ctx.strokeStyle='#ffaa00'; ctx.lineWidth=1.5; ctx.setLineDash([3,2]);
+      ctx.strokeRect(gs.x,gs.y,ge.x-gs.x,ge.y-gs.y);
+      ctx.setLineDash([]); ctx.globalAlpha=1;
+    }
+  }
+
+  // Table dimension labels
+  ctx.font='10px Fira Code,monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,170,0,0.7)';
+  const midTop = worldToScreen(wMM/2, hMM);
+  ctx.fillText(toDisplay(wMM).toFixed(0)+' '+unitLabel(), midTop.x, tl.y-14);
+  const midRight = worldToScreen(wMM, hMM/2);
+  ctx.save(); ctx.translate(br.x+18, (tl.y+br.y)/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(toDisplay(hMM).toFixed(0)+' '+unitLabel(), 0, 0); ctx.restore();
+
+  // Utilization
+  const used = PartLibrary.totalPlacedArea ? PartLibrary.totalPlacedArea() : 0;
+  const total = (getTableDims().wMM) * (getTableDims().hMM);
+  const util = total>0 ? ((used/total)*100).toFixed(1) : '0.0';
+  ctx.textAlign='left'; ctx.fillStyle='rgba(255,170,0,0.85)'; ctx.font='9px Fira Code,monospace';
+  ctx.fillText('UTILIZATION: '+util+'%', tl.x+6, br.y+14);
+}
+
+function updateNestPanel() {
+  const list = document.getElementById('nest-part-list');
+  if (!list) return;
+  if (!PartLibrary.parts.length) {
+    list.innerHTML='<div style="padding:16px;font-size:10px;color:var(--t3);font-family:var(--fm)">Import parts in PART mode first.</div>';
+  } else {
+    list.innerHTML = PartLibrary.parts.map(p=>{
+      const placed = (p.instances||[]).length;
+      const isPlacing = nestPlacing===p.partId;
+      return `<div class="nest-part-row">
+        <div class="np-swatch" style="background:${p.color}"></div>
+        <div class="np-name" title="${p.name}">${p.name}</div>
+        <div class="np-count">${placed}/${p.qty}</div>
+        <button class="np-place${isPlacing?' placing':''}" onclick="nestStartPlace('${p.partId}')">
+          ${isPlacing?'▸ Click':'Place'}
+        </button>
+      </div>`;
+    }).join('');
+  }
+  const utilEl = document.getElementById('nest-util-pct');
+  if (utilEl) {
+    const used = PartLibrary.totalPlacedArea ? PartLibrary.totalPlacedArea() : 0;
+    const total = getTableDims().wMM * getTableDims().hMM;
+    utilEl.textContent = total>0 ? ((used/total)*100).toFixed(1)+' %' : '0.0 %';
+  }
+  // Selected bar
+  const bar = document.getElementById('nest-sel-bar');
+  if (bar) {
+    const show = !!nestSel;
+    bar.style.display = show ? 'flex' : 'none';
+    if (nestSel) {
+      const part = PartLibrary.getPart(nestSel.partId);
+      document.getElementById('nest-sel-name').textContent = part ? part.name : '—';
+    }
+  }
+}
+
+function nestStartPlace(partId) {
+  nestPlacing = nestPlacing===partId ? null : partId;
+  nestSel = null;
+  updateNestPanel(); render();
+}
+
+function nestRotateSel() {
+  if (!nestSel) return;
+  PartLibrary.rotateInstance(nestSel.partId, nestSel.iid, 90);
+  updateNestPanel(); render();
+}
+
+function nestRemoveSel() {
+  if (!nestSel) return;
+  PartLibrary.removeInstance(nestSel.partId, nestSel.iid);
+  nestSel = null; updateNestPanel(); render();
+}
+
+function nestClearAll() {
+  for (const part of PartLibrary.parts) part.instances = [];
+  nestSel = null; nestPlacing = null;
+  updateNestPanel(); render();
+}
+
 function render() {
   const W=canvas.width, H=canvas.height;
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  if (kamMode==='table') { renderTableMode(W,H); return; }
   if(showGrid) drawGrid(W,H);
   drawTableOutline();
   if(viewMode==='kam') drawKAMOverlay();
@@ -5103,7 +5468,7 @@ function stlBBox(triangles) {
 
 function buildKAMSTL() {
   const thickness = parseFloat(
-    document.getElementById('kam-stl-thickness')?.value || '6'
+    (document.getElementById('kam-stl-thickness') && document.getElementById('kam-stl-thickness').value) || '6'
   );
   const parts = PartLibrary.parts;
   if (!parts.length) { showToast('No parts to export'); return null; }
