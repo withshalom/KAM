@@ -660,7 +660,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .mode-tab:hover { background:var(--hover); color:var(--t1); }
 .mode-tab.active { background:var(--acc-dim,rgba(255,170,0,0.15));
                    border-color:var(--accent); color:var(--accent); }
-#nest-panel { display:none; flex-direction:column; overflow-y:auto; flex:1; }
+#nest-panel   { display:none; flex-direction:column; overflow-y:auto; flex:1; overflow-x:hidden; }
+#part-sidebar { display:flex; flex-direction:column; flex:1; overflow-y:auto; overflow-x:hidden; }
 .nest-part-row {
   display:flex; align-items:center; gap:6px; padding:5px 8px;
   border-bottom:1px solid var(--border); font-family:var(--fm); font-size:10px;
@@ -713,7 +714,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc → .KAM</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -771,7 +772,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="unit-seg" id="unit-seg-in">in</span>
     </button>
   
-  </div><!-- /part-sidebar --></div>
+  </div></div>
 </div>
 
     
@@ -1178,6 +1179,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       </div><!-- end proc-scroll -->
     </div><!-- end panel-process -->
   </div><!-- end process-panel -->
+  </div><!-- /part-sidebar -->
 </div><!-- end sidebar -->
 
 <!-- CANVAS -->
@@ -1429,6 +1431,32 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 </div>
 
 <script>
+function receiveFromKODE(){
+  try {
+    const raw=localStorage.getItem('kode_to_kam');
+    if(!raw){ showToast('No KODE session found — send from KODE first'); return; }
+    const data=JSON.parse(raw);
+    if(!data.nc){ showToast('KODE session has no NC data'); return; }
+    const result=parseNCtoKAM(data.nc,'KODE import');
+    if(!result.entities.length){ showToast('No geometry in KODE NC'); return; }
+    const merge=GeoMemory.objects.length>0?confirm('Add to existing canvas?\nOK = Merge  ·  Cancel = Replace'):false;
+    if(!merge){ GeoMemory.clear(); KAM.clearTags(); }
+    for(const ent of result.entities){
+      if(ent.type==='LINE'){
+        const ln=GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,'KODE');
+        if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
+      } else if(ent.type==='POLYLINE'){
+        const pl=GeoMemory.addPolyline(ent.pts,ent.closed,'KODE');
+        if(pl&&ent.isCut) KAM.setTag(pl.id,'cut','outside');
+      }
+    }
+    localStorage.removeItem('kode_to_kam');
+    updateProps(); updateContourList(); render(); zoomExtents();
+    showToast('Received from KODE · '+result.entities.length+' paths · '+result.stats.torchOn+' cuts');
+    setViewMode('kam');
+  } catch(e){ showToast('Error receiving from KODE: '+e.message); }
+}
+
 'use strict';
 // ═══════════════════════════════════════════════════════════
 //  .KAD  v0.2  — Kernel-Aided Design
