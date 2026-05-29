@@ -1,4 +1,24 @@
 <!DOCTYPE html>
+<!--
+  KERFsuite™ — Kernel-Aided Design Suite
+  Copyright (C) 2024-2025 KERFsuite / withshalom
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+  SPDX-License-Identifier: AGPL-3.0-or-later
+  Commercial use requires a separate license — see KERFsuite for details: https://withshalom.github.io
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -81,7 +101,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .tool-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; padding:6px; background:var(--border); border-bottom:1px solid var(--border); flex-shrink:0; }
 .tool-btn { background:var(--panel2); border:none; cursor:pointer; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:3px; transition:background 0.15s,box-shadow 0.15s; position:relative; overflow:hidden; }
 .tool-btn:hover { background:var(--hover); }
-.tool-btn.active { background:rgba(255,170,0,0.06); box-shadow:inset 0 0 0 1px var(--accent); border-top:2px solid var(--accent); }
+.tool-btn.active { background:var(--hover); box-shadow:inset 0 0 0 1px var(--accent);  }
 .tool-btn.active::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--accent); box-shadow:0 0 8px var(--accent); }
 .tool-icon { width:22px; height:22px; display:flex; align-items:center; justify-content:center; }
 .tool-icon svg { width:16px; height:16px; }
@@ -98,7 +118,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 
 /* File ops */
 .file-ops { padding:6px; display:flex; flex-direction:column; gap:3px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.op-btn { display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--panel2); border:1px solid var(--border); border-radius:4px; color:var(--t2); font-size:11px; font-family:var(--fm); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; }
+.op-btn { display:flex; align-items:center; gap:8px; padding:6px 10px; width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:4px; color:var(--t2); font-size:11px; font-family:var(--fm); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; }
 .op-btn:hover { background:var(--hover); border-color:var(--border-hi); color:var(--t1); }
 .op-btn.dxf { color:var(--green); border-color:var(--green-dim); }
 .op-btn.dxf:hover { background:rgba(0,255,157,0.06); border-color:var(--green); }
@@ -609,7 +629,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   letter-spacing:0.18em; text-transform:uppercase; margin-top:1px;
 }
 
-
 .sheet-badge {
   display:flex; align-items:center; gap:0;
   background:rgba(255,170,0,0.07); border:1px solid rgba(255,170,0,0.22);
@@ -642,12 +661,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   padding: 6px;
   background: var(--border);
   border-top: 1px solid var(--border);
-}
-.tool-grid-bottom .tool-btn {
-  grid-column: 1 / -1;
-}
-.tool-grid-bottom .tool-btn {
-  width: 100%;
 }
 
 /* ── TABLE / NESTING MODE ───────────────────────────────── */
@@ -772,7 +785,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="unit-seg" id="unit-seg-in">in</span>
     </button>
   
-  </div></div>
+  </div>
 </div>
 
     
