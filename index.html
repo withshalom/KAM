@@ -704,6 +704,104 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .nest-sel-btn.danger:hover { background:rgba(255,68,85,0.08); border-color:#ff4455; }
 #nest-util-bar { padding:6px 12px; font-family:var(--fm); font-size:10px; color:var(--t2); }
 #nest-util-bar span { color:var(--accent); }
+
+/* ── KAM STARTUP MODAL ─────────────────────────────────────── */
+.su-ov{position:fixed;inset:0;background:rgba(4,6,10,0.93);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;z-index:9000;}
+.su-ov.hidden{display:none;}
+.su-bx{border-radius:12px;width:490px;max-width:95vw;max-height:90vh;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.7);}
+.su-hd{padding:18px 20px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0;
+  border-bottom:1px solid rgba(255,255,255,0.07);}
+.su-mk-km{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;
+  background:linear-gradient(135deg,#2a1a00,#a06000,#ffaa00);
+  box-shadow:0 0 14px rgba(255,170,0,0.35);}
+.su-ttl-km{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#ffaa00;}
+.su-stl{font-size:8px;letter-spacing:.10em;text-transform:uppercase;opacity:.38;margin-top:2px;}
+.su-bd{overflow-y:auto;padding:16px 20px;flex:1;}
+.su-sec{margin-bottom:16px;}
+.su-lbl-km{font-size:8px;letter-spacing:.14em;text-transform:uppercase;opacity:.35;
+  margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid rgba(255,170,0,0.12);}
+.su-ugrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.su-ubtn-km{background:rgba(255,170,0,0.05);border:1px solid rgba(255,170,0,0.18);
+  border-radius:6px;padding:10px;cursor:pointer;transition:all .13s;text-align:center;
+  font-family:'Fira Code',monospace;}
+.su-ubtn-km:hover{border-color:#ffaa00;background:rgba(255,170,0,0.10);}
+.su-ubtn-km.act{border-color:#ffaa00;background:rgba(255,170,0,0.16);}
+.su-ulg-km{font-size:14px;font-weight:700;color:#ffaa00;display:block;}
+.su-usm{font-size:9px;opacity:.36;letter-spacing:.06em;}
+.su-mg{margin-bottom:10px;}
+.su-mgl{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.28;margin-bottom:4px;}
+.su-mrow{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.su-mt-km{background:rgba(255,170,0,0.04);border:1px solid rgba(255,255,255,0.06);
+  border-radius:5px;padding:7px 9px;cursor:pointer;transition:all .12s;position:relative;}
+.su-mt-km:hover{border-color:rgba(255,170,0,0.45);background:rgba(255,170,0,0.06);}
+.su-mt-km.sel{border-color:#ffaa00;background:rgba(255,170,0,0.10);}
+.su-mt-km.sel::after{content:'\2713';position:absolute;top:5px;right:7px;font-size:9px;color:#ffaa00;}
+.su-ms-km{font-family:'Fira Code',monospace;font-size:9.5px;font-weight:700;color:#ffaa00;}
+.su-mn{font-family:'Fira Code',monospace;font-size:8px;opacity:.45;margin-top:1px;}
+.su-mksi{font-family:'Fira Code',monospace;font-size:7.5px;opacity:.24;margin-top:2px;}
+.su-ft{padding:12px 20px 16px;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.06);}
+.su-go-km{width:100%;padding:11px;border-radius:6px;cursor:pointer;font-weight:700;
+  font-size:11px;letter-spacing:.08em;text-transform:uppercase;transition:all .13s;
+  font-family:'Fira Code',monospace;background:rgba(255,170,0,0.14);color:#ffaa00;
+  border:1px solid rgba(255,170,0,0.35);}
+.su-go-km:hover{background:rgba(255,170,0,0.26);}
+/* Mat selector button in sidebar */
+.mat-select-btn{width:100%;background:#111620;border:1px solid rgba(255,170,0,0.25);
+  border-radius:5px;padding:7px 10px;cursor:pointer;margin-bottom:6px;
+  display:flex;align-items:center;transition:border-color 0.15s;text-align:left;}
+.mat-select-btn:hover{border-color:rgba(255,170,0,0.55);background:rgba(255,170,0,0.05);}
+.mat-select-spec{font-family:'Fira Code',monospace;font-size:10px;color:#ffaa00;
+  font-weight:600;letter-spacing:0.04em;}
+.mat-select-name{font-family:'Fira Code',monospace;font-size:9px;color:#6a8099;
+  margin-left:8px;flex:1;}
+.mat-select-arrow{font-size:10px;color:rgba(255,170,0,0.45);}
+.mat-props-row{font-family:'Fira Code',monospace;font-size:9px;color:#6a8099;padding:0 2px 6px;}
+/* Full mat-modal */
+#mat-modal{position:fixed;inset:0;background:rgba(8,10,14,0.88);display:flex;
+  align-items:center;justify-content:center;z-index:900;opacity:0;pointer-events:none;
+  transition:opacity 0.18s;}
+#mat-modal.open{opacity:1;pointer-events:all;}
+.mat-modal-box{background:#0d1117;border:1px solid rgba(255,170,0,0.30);border-radius:10px;
+  width:640px;max-width:96vw;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;}
+.mat-modal-head{padding:16px 18px 12px;border-bottom:1px solid rgba(255,170,0,0.15);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.mat-modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#ffaa00;}
+.mat-modal-sub{font-size:9px;color:#3a5070;letter-spacing:0.10em;text-transform:uppercase;margin-top:2px;}
+.mat-modal-close{background:none;border:none;color:#3a5070;font-size:18px;cursor:pointer;
+  padding:2px 6px;border-radius:3px;}
+.mat-modal-close:hover{color:#ffaa00;}
+.mat-modal-body{overflow-y:auto;padding:14px 18px 18px;flex:1;}
+.mat-group{margin-bottom:18px;}
+.mat-group-label{font-family:'Fira Code',monospace;font-size:8px;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,170,0,0.55);margin-bottom:8px;padding-bottom:4px;
+  border-bottom:1px solid rgba(255,170,0,0.10);}
+.mat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:6px;}
+.mat-tile{background:#111620;border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+  padding:9px 11px;cursor:pointer;transition:all 0.14s;position:relative;}
+.mat-tile:hover{border-color:rgba(255,170,0,0.45);background:rgba(255,170,0,0.05);}
+.mat-tile.selected{border-color:#ffaa00;background:rgba(255,170,0,0.08);}
+.mat-tile.selected::after{content:'\2713';position:absolute;top:6px;right:8px;
+  font-size:10px;color:#ffaa00;}
+.mat-tile-spec{font-family:'Fira Code',monospace;font-size:10px;color:#ffaa00;
+  font-weight:600;margin-bottom:2px;}
+.mat-tile-name{font-family:'Fira Code',monospace;font-size:9px;color:#d0dde8;margin-bottom:4px;}
+.mat-tile-detail{font-family:'Fira Code',monospace;font-size:8px;color:#3a5070;line-height:1.5;}
+
+/* ── UNIT TOGGLE: metric=cool(cyan) imperial=hot(amber) ─────── */
+#ksm-ugrid .su-ubtn-km[data-u="mm"] { border-color:rgba(0,212,255,0.28); }
+#ksm-ugrid .su-ubtn-km[data-u="in"] { border-color:rgba(255,170,0,0.28); }
+#ksm-ugrid .su-ubtn-km[data-u="mm"] .su-ulg-km { color:#00d4ff; }
+#ksm-ugrid .su-ubtn-km[data-u="in"] .su-ulg-km { color:#ffaa00; }
+#ksm-ugrid .su-ubtn-km[data-u="mm"] .su-usm { color:rgba(0,212,255,0.40); }
+#ksm-ugrid .su-ubtn-km[data-u="in"] .su-usm { color:rgba(255,170,0,0.40); }
+#ksm-ugrid .su-ubtn-km[data-u="mm"].act {
+  border-color:#00d4ff; background:rgba(0,212,255,0.14); }
+#ksm-ugrid .su-ubtn-km[data-u="in"].act {
+  border-color:#ffaa00; background:rgba(255,170,0,0.14); }
+#ksm-ugrid .su-ubtn-km:hover { border-color:rgba(255,255,255,0.15); }
 </style>
 </head>
 <body>
@@ -1001,6 +1099,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Import .nc
     </button>
+    <button class="op-btn" style="color:var(--amber);border-color:var(--amber-dim);" onclick="explodeNCToParts()" title="Group closed contours from NC import into named parts in the Part Library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Explode NC → Parts
+    </button>
     <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNC(event)" style="display:none">
     <input type="file" id="load-kam-file" accept=".kam" onchange="loadKAM(event)" style="display:none">
     <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none" multiple>
@@ -1136,10 +1238,45 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
             <input type="checkbox" id="table-show" checked onchange="render()"/>
           </div>
         </div>
+        <!-- AutoNest -->
+        <div class="proc-section">
+          <div class="proc-label" style="color:var(--amber);">AutoNest</div>
+          <div class="proc-field">
+            <label>Part gap</label>
+            <input class="proc-input" id="nest-part-gap" type="number" value="5" min="0" step="1"/>
+            <span class="proc-unit" id="nest-gap-unit">mm</span>
+          </div>
+          <div class="proc-field">
+            <label>Edge margin</label>
+            <input class="proc-input" id="nest-edge-margin" type="number" value="10" min="0" step="1"/>
+            <span class="proc-unit" id="nest-margin-unit">mm</span>
+          </div>
+          <div class="proc-field">
+            <label title="Beam width: how many candidate layouts are kept alive at each step. 1 = greedy, 6 = smart, 12 = thorough.">Beam width</label>
+            <input class="proc-input" id="nest-beam-width" type="number" value="6" min="1" max="20" step="1"/>
+            <span class="proc-unit" style="color:var(--accent);" title="Higher = smarter but slower">paths</span>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px;">
+            <button class="op-btn" style="flex:1;color:var(--t2);border-color:var(--border);" onclick="autoNest()" title="Fast greedy bottom-left fill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              Quick
+            </button>
+            <button class="op-btn" style="flex:2;color:var(--amber);border-color:var(--amber-dim);font-weight:600;" onclick="autoNestBeam()" title="Beam search — tries multiple layouts simultaneously">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/></svg>
+              Smart Nest
+            </button>
+          </div>
+        </div>
         <!-- Material -->
         <div class="proc-section">
           <div class="proc-label">Material</div>
-          <div class="proc-field"><label>Grade</label><input class="proc-input" id="mat-grade" value="A36" placeholder="A36, 304SS…"/></div>
+          <button class="mat-select-btn" onclick="openMatModal()">
+            <span class="mat-select-spec" id="mat-spec-display">A36</span>
+            <span class="mat-select-name" id="mat-name-display">Mild Structural Steel</span>
+            <span class="mat-select-arrow">&#9662;</span>
+          </button>
+          <div class="mat-props-row" id="mat-props-display">36 ksi &#183; 0.284 lb/in&#179; &#183; Plate</div>
+          <input type="hidden" id="mat-grade" value="A36"/>
           <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="0.375" min="0.001" step="0.0625"/><span class="proc-unit" id="mat-unit">in</span></div>
         </div>
         <!-- Machine -->
@@ -1444,6 +1581,104 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 </div>
 
 <script>
+// ── KAM MATERIAL DATABASE ──────────────────────────────────────
+var KAM_MATERIALS=[
+  {id:'a1011-csb',  spec:'A1011 CS-B',    name:'Commercial Sheet',    group:'Carbon Steel - Sheet', yield:30,  density:0.284},
+  {id:'a1011-ss36', spec:'A1011 SS Gr.36', name:'Structural Sheet 36', group:'Carbon Steel - Sheet', yield:36,  density:0.284},
+  {id:'a1011-ss50', spec:'A1011 SS Gr.50', name:'HSLA Sheet 50',       group:'Carbon Steel - Sheet', yield:50,  density:0.284},
+  {id:'a1011-ss65', spec:'A1011 SS Gr.65', name:'HSLA Sheet 65',       group:'Carbon Steel - Sheet', yield:65,  density:0.284},
+  {id:'a653-33',    spec:'A653 CS/Gr.33',  name:'Galvanized Sheet',    group:'Carbon Steel - Sheet', yield:33,  density:0.291},
+  {id:'a36',        spec:'A36',            name:'Mild Structural Steel',group:'Carbon Steel - Plate', yield:36,  density:0.284},
+  {id:'a572-50',    spec:'A572 Gr.50',     name:'HSLA Plate 50',       group:'Carbon Steel - Plate', yield:50,  density:0.284},
+  {id:'a572-65',    spec:'A572 Gr.65',     name:'HSLA Plate 65',       group:'Carbon Steel - Plate', yield:65,  density:0.284},
+  {id:'a588',       spec:'A588 Gr.50',     name:'Weathering Steel',    group:'Carbon Steel - Plate', yield:50,  density:0.284},
+  {id:'a514',       spec:'A514',           name:'High-Yield Q&T',      group:'Carbon Steel - Plate', yield:100, density:0.284},
+  {id:'ss304',      spec:'304 / 304L',     name:'Austenitic SS',       group:'Stainless Steel',      yield:30,  density:0.289},
+  {id:'ss316',      spec:'316 / 316L',     name:'Marine Grade SS',     group:'Stainless Steel',      yield:30,  density:0.290},
+  {id:'ss409',      spec:'409',            name:'Ferritic SS',         group:'Stainless Steel',      yield:30,  density:0.280},
+  {id:'ss430',      spec:'430',            name:'Decorative SS',       group:'Stainless Steel',      yield:35,  density:0.280},
+  {id:'al3003',     spec:'3003-H14',       name:'Commercial Aluminum', group:'Aluminum',             yield:17,  density:0.099},
+  {id:'al5052h32',  spec:'5052-H32',       name:'Marine Aluminum',     group:'Aluminum',             yield:28,  density:0.097},
+  {id:'al5052h34',  spec:'5052-H34',       name:'Marine Alum. H34',    group:'Aluminum',             yield:31,  density:0.097},
+  {id:'al6061',     spec:'6061-T6',        name:'Structural Aluminum', group:'Aluminum',             yield:40,  density:0.098},
+  {id:'al7075',     spec:'7075-T6',        name:'Aircraft Aluminum',   group:'Aluminum',             yield:73,  density:0.101},
+];
+var _selectedMatId='a36';
+function openMatModal(){renderMatModal();document.getElementById('mat-modal').classList.add('open');}
+function closeMatModal(){document.getElementById('mat-modal').classList.remove('open');}
+function renderMatModal(){
+  var b=document.getElementById('mat-modal-body'),G={};
+  KAM_MATERIALS.forEach(function(m){if(!G[m.group])G[m.group]=[];G[m.group].push(m);});
+  var h='';
+  Object.keys(G).forEach(function(g){
+    h+='<div class="mat-group"><div class="mat-group-label">'+g+'</div><div class="mat-tiles">';
+    G[g].forEach(function(m){
+      h+='<div class="mat-tile'+(m.id===_selectedMatId?' selected':'')+'" data-matid="'+m.id+'">'+
+         '<div class="mat-tile-spec">'+m.spec+'</div>'+
+         '<div class="mat-tile-name">'+m.name+'</div>'+
+         '<div class="mat-tile-detail">'+m.yield+' ksi \u00b7 '+m.density+' lb/in\u00b3</div></div>';
+    });
+    h+='</div></div>';
+  });
+  b.innerHTML=h;
+  b.onclick=function(e){var t=e.target.closest('.mat-tile');if(t)selectMaterial(t.dataset.matid);};
+}
+function selectMaterial(id){
+  var found=null;
+  for(var i=0;i<KAM_MATERIALS.length;i++){if(KAM_MATERIALS[i].id===id){found=KAM_MATERIALS[i];break;}}
+  if(!found)return;
+  _selectedMatId=id;
+  var s=document.getElementById('mat-spec-display');if(s)s.textContent=found.spec;
+  var n=document.getElementById('mat-name-display');if(n)n.textContent=found.name;
+  var p=document.getElementById('mat-props-display');
+  if(p)p.textContent=found.yield+' ksi \u00b7 '+found.density+' lb/in\u00b3 \u00b7 '+found.group;
+  var mg=document.getElementById('mat-grade');if(mg)mg.value=found.spec;
+  closeMatModal();
+}
+document.addEventListener('click',function(e){if(e.target.id==='mat-modal')closeMatModal();});
+
+// ── KAM STARTUP ────────────────────────────────────────────────
+var _ksmU='mm',_ksmM='a36';
+(function(){
+  function renderSu(){
+    var el=document.getElementById('ksm-mat');if(!el)return;
+    var G={};
+    KAM_MATERIALS.forEach(function(m){if(!G[m.group])G[m.group]=[];G[m.group].push(m);});
+    var h='';
+    Object.keys(G).forEach(function(g){
+      h+='<div class="su-mg"><div class="su-mgl">'+g+'</div><div class="su-mrow">';
+      G[g].forEach(function(m){
+        h+='<div class="su-mt-km'+(m.id===_ksmM?' sel':'')+'" data-m="'+m.id+'">'+
+           '<div class="su-ms-km">'+m.spec+'</div>'+
+           '<div class="su-mn">'+m.name+'</div>'+
+           '<div class="su-mksi">'+m.yield+' ksi</div></div>';
+      });
+      h+='</div></div>';
+    });
+    el.innerHTML=h;
+    el.onclick=function(e){
+      var t=e.target.closest('.su-mt-km');if(!t)return;
+      _ksmM=t.dataset.m;
+      el.querySelectorAll('.su-mt-km').forEach(function(x){x.classList.toggle('sel',x.dataset.m===_ksmM);});
+    };
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    renderSu();
+    document.getElementById('ksm-ugrid').addEventListener('click',function(e){
+      var b=e.target.closest('.su-ubtn-km');if(!b||!b.dataset.u)return;
+      _ksmU=b.dataset.u;
+      document.querySelectorAll('#ksm-ugrid .su-ubtn-km').forEach(function(x){
+        x.classList.toggle('act',x.dataset.u===_ksmU);});
+    });
+    document.getElementById('ksm-go').addEventListener('click',function(){
+      unitMode=_ksmU;
+      var mu=document.getElementById('mat-unit');if(mu)mu.textContent=unitMode;
+      selectMaterial(_ksmM);
+      document.getElementById('kam-startup').classList.add('hidden');
+    });
+  });
+})();
+
 function receiveFromKODE(){
   try {
     const raw=localStorage.getItem('kode_to_kam');
@@ -1618,7 +1853,7 @@ function toggleUnits() {
   const coordCur = document.getElementById('coord-cur-unit');
   if(coordCur) coordCur.textContent = unitMode;
   // Update KAM process panel unit labels
-  ['mat-thick-unit','kerf-unit','table-w-unit','table-h-unit','leadin-unit'].forEach(id=>{
+  ['mat-thick-unit','kerf-unit','table-w-unit','table-h-unit','leadin-unit','nest-gap-unit','nest-margin-unit'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.textContent=unitMode;
   });
   const speedLbl=document.getElementById('speed-unit');
@@ -4071,6 +4306,284 @@ function getTableDims() {
   return { wMM: fromDisplay(w), hMM: fromDisplay(h) };
 }
 
+function getNestPartGap() {
+  const v = parseFloat(document.getElementById('nest-part-gap').value);
+  return fromDisplay(isNaN(v) || v < 0 ? 5 : v);
+}
+
+function getNestEdgeMargin() {
+  const v = parseFloat(document.getElementById('nest-edge-margin').value);
+  return fromDisplay(isNaN(v) || v < 0 ? 10 : v);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  AUTONEST ENGINE  —  two modes
+//
+//  autoNest()       : greedy bottom-left fill, instant
+//  autoNestBeam()   : beam search (chess-style), smarter
+//
+//  Shared geometry helpers work on plain placement arrays
+//  so neither mode mutates PartLibrary.instances until a
+//  winner is decided.
+// ══════════════════════════════════════════════════════════════
+
+// ── shared geometry ──────────────────────────────────────────
+
+// Bounding box for a placement described as a plain object
+// {partId, instX, instY, angle} without touching PartLibrary.
+function placementBBox(partId, instX, instY, angle) {
+  const part = PartLibrary.getPart(partId);
+  if (!part) return null;
+  return getInstBBox(part, { iid: '__probe__', x: instX, y: instY, angle });
+}
+
+// Does a candidate placement collide with any bbox in the
+// given placements array?  gap/2 expansion enforces spacing.
+function collidesWithPlacements(partId, instX, instY, angle, gap, placements) {
+  const cBB = placementBBox(partId, instX, instY, angle);
+  if (!cBB) return true;
+  const half = gap / 2;
+  const exp = {
+    minX: cBB.minX - half, maxX: cBB.maxX + half,
+    minY: cBB.minY - half, maxY: cBB.maxY + half,
+  };
+  for (const pl of placements) {
+    const bb = placementBBox(pl.partId, pl.instX, pl.instY, pl.angle);
+    if (bb && nestBoxesOverlap(exp, bb)) return true;
+  }
+  return false;
+}
+
+// Score a completed or partial layout.
+// Higher is better.
+//   +utilization   : fraction of sheet area covered
+//   -frontier      : weighted height of the "skyline" above placed parts
+//                    (rewards compact, low packing — fewer jagged voids)
+function scoreLayout(placements, wMM, hMM) {
+  if (!placements.length) return 0;
+
+  // Utilization: sum of bbox areas / sheet area
+  let usedArea = 0;
+  let maxY = 0;
+  for (const pl of placements) {
+    const bb = placementBBox(pl.partId, pl.instX, pl.instY, pl.angle);
+    if (!bb) continue;
+    usedArea += (bb.maxX - bb.minX) * (bb.maxY - bb.minY);
+    if (bb.maxY > maxY) maxY = bb.maxY;
+  }
+  const sheetArea   = wMM * hMM;
+  const utilScore   = usedArea / sheetArea;
+
+  // Frontier penalty: the higher (and more uneven) the packing,
+  // the more empty space is locked above placed parts.
+  // Approximate with bounding-box top / sheet height.
+  const frontierPenalty = (maxY / hMM) - utilScore;
+
+  return utilScore - 0.35 * frontierPenalty;
+}
+
+// Generate up to maxCandidates valid placements for one part
+// on top of an existing layout, sampling the sheet at 'step' grid.
+// Returns [{instX, instY, angle}] sorted by bottom-left preference.
+function generateCandidates(partId, placements, gap, innerX0, innerY0, innerX1, innerY1, step, maxCandidates) {
+  const bb = PartLibrary.partBBox(partId);
+  if (!bb) return [];
+  const W = bb.maxX - bb.minX;
+  const H = bb.maxY - bb.minY;
+  const found = [];
+
+  for (const angle of [0, 90, 180, 270]) {
+    const rad  = angle * Math.PI / 180;
+    const cosA = Math.abs(Math.cos(rad));
+    const sinA = Math.abs(Math.sin(rad));
+    const rW   = W * cosA + H * sinA;
+    const rH   = W * sinA + H * cosA;
+
+    for (let ty = innerY0; ty + rH <= innerY1 + 1e-6; ty += step) {
+      for (let tx = innerX0; tx + rW <= innerX1 + 1e-6; tx += step) {
+        const instX = tx - bb.minX;
+        const instY = ty - bb.minY;
+        if (!collidesWithPlacements(partId, instX, instY, angle, gap, placements)) {
+          // Priority key: bottom-left bias (low Y first, then low X)
+          found.push({ instX, instY, angle, _key: ty * 1e6 + tx });
+          if (found.length >= maxCandidates * 4) break; // collect pool then trim
+        }
+      }
+      if (found.length >= maxCandidates * 4) break;
+    }
+  }
+
+  // Sort by bottom-left and return top maxCandidates
+  found.sort((a, b) => a._key - b._key);
+  return found.slice(0, maxCandidates);
+}
+
+// Apply a winning placements array back to PartLibrary
+function applyPlacements(placements) {
+  nestClearAll();
+  for (const pl of placements) {
+    PartLibrary.addInstance(pl.partId, pl.instX, pl.instY, pl.angle);
+  }
+}
+
+// ── MODE 1: greedy bottom-left fill ──────────────────────────
+// Instant. Good for simple or uniform nests.
+function autoNest() {
+  const gap    = getNestPartGap();
+  const margin = getNestEdgeMargin();
+  const step   = Math.max(gap || 1, 1);
+
+  nestClearAll();
+
+  const { wMM, hMM } = getTableDims();
+  const innerX0 = margin, innerY0 = margin;
+  const innerX1 = wMM - margin, innerY1 = hMM - margin;
+
+  if (innerX1 <= innerX0 || innerY1 <= innerY0) {
+    showToast('Edge margin larger than sheet — nothing placed'); return;
+  }
+
+  const queue = buildPartQueue();
+  if (!queue.length) { showToast('No parts — import a .KAD or .DXF first'); return; }
+
+  // Greedy: accumulate placements in a local array, never branches
+  const placed = [];
+  for (const { partId } of queue) {
+    const candidates = generateCandidates(
+      partId, placed, gap, innerX0, innerY0, innerX1, innerY1, step, 1
+    );
+    if (candidates.length) {
+      const c = candidates[0];
+      placed.push({ partId, instX: c.instX, instY: c.instY, angle: c.angle });
+    }
+  }
+
+  applyPlacements(placed);
+  updateNestPanel(); updateUtilization(); render();
+  nestFinishToast(placed.length, queue.length, wMM, hMM, 'Quick');
+}
+
+// ── MODE 2: beam search ───────────────────────────────────────
+// Keeps B candidate layouts alive simultaneously.
+// At each step it expands every live beam with K placement options,
+// scores all resulting layouts, and keeps only the best B.
+// Final winner is the beam with the highest score after all parts placed.
+function autoNestBeam() {
+  const gap        = getNestPartGap();
+  const margin     = getNestEdgeMargin();
+  const beamWidth  = Math.max(1, Math.min(20,
+                       parseInt(document.getElementById('nest-beam-width').value) || 6));
+  const step       = Math.max(gap || 1, 1);
+
+  // Candidates per beam per part — more beams = fewer candidates each
+  // to keep total work O(beamWidth * candidatesPerBeam) manageable.
+  const candidatesPerBeam = Math.max(4, Math.round(24 / beamWidth));
+
+  const { wMM, hMM } = getTableDims();
+  const innerX0 = margin, innerY0 = margin;
+  const innerX1 = wMM - margin, innerY1 = hMM - margin;
+
+  if (innerX1 <= innerX0 || innerY1 <= innerY0) {
+    showToast('Edge margin larger than sheet — nothing placed'); return;
+  }
+
+  const queue = buildPartQueue();
+  if (!queue.length) { showToast('No parts — import a .KAD or .DXF first'); return; }
+
+  showToast(`Smart Nest · beam=${beamWidth} · thinking…`);
+
+  // Each beam is an array of placements: [{partId, instX, instY, angle}, ...]
+  // Start with one empty beam.
+  let beams = [ [] ];
+
+  for (let qi = 0; qi < queue.length; qi++) {
+    const { partId } = queue[qi];
+    const nextBeams  = [];
+
+    for (const beam of beams) {
+      // Generate candidate placements for this part on top of this beam's layout
+      const candidates = generateCandidates(
+        partId, beam, gap,
+        innerX0, innerY0, innerX1, innerY1,
+        step, candidatesPerBeam
+      );
+
+      if (candidates.length === 0) {
+        // This beam can't fit the part — carry it forward unchanged
+        // (part is skipped for this beam, others may succeed)
+        nextBeams.push({ placements: beam, score: scoreLayout(beam, wMM, hMM) - 0.5 });
+        continue;
+      }
+
+      for (const c of candidates) {
+        const extended = [...beam, { partId, instX: c.instX, instY: c.instY, angle: c.angle }];
+        nextBeams.push({
+          placements: extended,
+          score:      scoreLayout(extended, wMM, hMM),
+        });
+      }
+    }
+
+    // Prune: keep the top beamWidth layouts by score
+    nextBeams.sort((a, b) => b.score - a.score);
+    beams = nextBeams.slice(0, beamWidth).map(b => b.placements);
+
+    // Safety: if all beams are identical (degenerate), break early
+    if (!beams.length) break;
+  }
+
+  // Pick the winning beam — highest final score
+  let bestBeam = beams[0];
+  let bestScore = scoreLayout(beams[0], wMM, hMM);
+  for (let i = 1; i < beams.length; i++) {
+    const s = scoreLayout(beams[i], wMM, hMM);
+    if (s > bestScore) { bestScore = s; bestBeam = beams[i]; }
+  }
+
+  applyPlacements(bestBeam);
+  updateNestPanel(); updateUtilization(); render();
+  nestFinishToast(bestBeam.length, queue.length, wMM, hMM, `Smart (beam=${beamWidth})`);
+}
+
+// ── shared helpers ────────────────────────────────────────────
+
+// Build a flat queue of {partId, area}, largest area first.
+function buildPartQueue() {
+  const queue = [];
+  for (const part of PartLibrary.parts) {
+    const bb = PartLibrary.partBBox(part.partId);
+    if (!bb) continue;
+    const area = (bb.maxX - bb.minX) * (bb.maxY - bb.minY);
+    for (let q = 0; q < (part.qty || 1); q++) {
+      queue.push({ partId: part.partId, area });
+    }
+  }
+  queue.sort((a, b) => b.area - a.area);
+  return queue;
+}
+
+// Toast with utilization summary after either mode finishes.
+function nestFinishToast(placedCount, totalCount, wMM, hMM, modeName) {
+  const used    = PartLibrary.totalPlacedArea();
+  const total   = wMM * hMM;
+  const util    = total > 0 ? ((used / total) * 100).toFixed(1) : '0.0';
+  const skipped = totalCount - placedCount;
+  const base    = `${modeName} · ${placedCount}/${totalCount} placed · ${util}% util`;
+  showToast(skipped > 0 ? base + ` · ${skipped} didn't fit` : base);
+}
+
+// Legacy single-layout collision check (used by the old greedy path
+// and still referenced if called directly).
+function candidateCollides(partId, instX, instY, angle, gap) {
+  const placed = [];
+  for (const p of PartLibrary.parts) {
+    for (const inst of (p.instances || [])) {
+      placed.push({ partId: p.partId, instX: inst.x, instY: inst.y, angle: inst.angle || 0 });
+    }
+  }
+  return collidesWithPlacements(partId, instX, instY, angle, gap, placed);
+}
+
 function drawTableOutline() {
   if(!document.getElementById('table-show').checked) return;
   // Table always visible in KAM (primary spatial reference)
@@ -4154,6 +4667,115 @@ function updateKerfFromThickness() {
   // Suggest kerf — only update if user hasn't manually overridden
   const suggestedKerf = unitMode==='in' ? best[1] : best[1]*25.4;
   document.getElementById('mach-kerf').value = suggestedKerf.toFixed(unitMode==='in'?3:2);
+}
+
+// ── EXPLODE NC → PARTS ────────────────────────────────────
+// Takes whatever geometry is currently in GeoMemory (typically the result
+// of an NC import) and groups it into named PartLibrary entries.
+//
+// Algorithm:
+//   1. Find every closed POLYLINE — each is a candidate outer contour.
+//   2. Sort by bbox area, largest first.
+//   3. For each outer contour, sweep all remaining unclaimed entities:
+//      if their centroid falls inside the contour's bbox, they belong
+//      to that part (interior holes, slots, pockets, marks).
+//   4. Register the outer contour + its interior entities as one part.
+//   5. Any leftover unclaimed entities become a single "Misc" part.
+//
+// After this runs, every part is in PartLibrary and can be:
+//   — renested (Quick / Smart Nest)
+//   — extracted as .KAD or .DXF
+//   — saved in a .KAM session
+function explodeNCToParts() {
+  const all = GeoMemory.objects;
+  if (!all.length) { showToast('No geometry on canvas — import an NC file first'); return; }
+
+  // Separate closed polylines (outer contours) from everything else
+  const closedPolys = all.filter(o => o.type === 'POLYLINE' && o.closed);
+  if (!closedPolys.length) {
+    showToast('No closed contours found — import an NC file and check geometry'); return;
+  }
+
+  // Helper: axis-aligned bbox for any GeoMemory entity
+  function entityBB(o) {
+    if (o.type === 'LINE')
+      return { minX:Math.min(o.x1,o.x2), maxX:Math.max(o.x1,o.x2),
+               minY:Math.min(o.y1,o.y2), maxY:Math.max(o.y1,o.y2) };
+    if (o.type === 'POLYLINE') {
+      let x0=Infinity, x1=-Infinity, y0=Infinity, y1=-Infinity;
+      for (const p of o.pts) { x0=Math.min(x0,p.x); x1=Math.max(x1,p.x); y0=Math.min(y0,p.y); y1=Math.max(y1,p.y); }
+      return { minX:x0, maxX:x1, minY:y0, maxY:y1 };
+    }
+    return null;
+  }
+
+  // Helper: centroid of an entity's bbox
+  function centroid(bb) { return { x:(bb.minX+bb.maxX)/2, y:(bb.minY+bb.maxY)/2 }; }
+
+  // Helper: is point inside bbox (inclusive)
+  function inBB(pt, bb) {
+    return pt.x >= bb.minX && pt.x <= bb.maxX && pt.y >= bb.minY && pt.y <= bb.maxY;
+  }
+
+  // Sort closed polys by bbox area, largest first
+  // (outer shells come before any interior rings)
+  const withBB = closedPolys.map(o => ({ o, bb: entityBB(o), area: 0 }));
+  withBB.forEach(w => { w.area = (w.bb.maxX-w.bb.minX)*(w.bb.maxY-w.bb.minY); });
+  withBB.sort((a, b) => b.area - a.area);
+
+  // Track which entity IDs have already been claimed
+  const claimed = new Set();
+  const parts   = []; // [{ name, entityIds[] }]
+
+  for (let i = 0; i < withBB.length; i++) {
+    const outer = withBB[i];
+
+    // Skip if this contour was already claimed as an interior of something larger
+    if (claimed.has(outer.o.id)) continue;
+
+    claimed.add(outer.o.id);
+    const group = [outer.o.id];
+
+    // Sweep all unclaimed entities: if centroid is inside outer bbox, claim them
+    for (const o of all) {
+      if (claimed.has(o.id)) continue;
+      const bb = entityBB(o);
+      if (!bb) continue;
+      const c = centroid(bb);
+      if (inBB(c, outer.bb)) {
+        claimed.add(o.id);
+        group.push(o.id);
+      }
+    }
+
+    // Name: use a counter, pad to 3 digits
+    const name = `Part_${String(parts.length + 1).padStart(3, '0')}`;
+    parts.push({ name, entityIds: group });
+  }
+
+  // Anything still unclaimed → one "Misc" part
+  const leftovers = all.filter(o => !claimed.has(o.id)).map(o => o.id);
+  if (leftovers.length) {
+    parts.push({ name: 'Misc', entityIds: leftovers });
+  }
+
+  if (!parts.length) { showToast('No parts could be extracted'); return; }
+
+  // Clear existing PartLibrary (keep geometry intact) and register new parts
+  PartLibrary.clear();
+  for (const p of parts) {
+    PartLibrary.addPart(p.name, 'NC Import', p.entityIds, 1);
+  }
+
+  // Switch to PART mode → Parts tab so user sees the result immediately
+  if (typeof setKAMMode === 'function') setKAMMode('part');
+  showProcTab('parts');
+  setViewMode('kam');
+  updateProps();
+  render();
+
+  const misc = leftovers.length ? ` · ${leftovers.length} misc entity(s)` : '';
+  showToast(`Exploded → ${parts.length - (leftovers.length?1:0)} part(s)${misc} · ready to nest or extract`);
 }
 
 // ── NC IMPORT ─────────────────────────────────────────────
@@ -5663,5 +6285,41 @@ function convexHull(pts) {
   return [...lower,...upper];
 }
 </script>
+
+<div class="su-ov" id="kam-startup">
+  <div class="su-bx" style="background:#0b1610;border:1px solid rgba(255,170,0,0.30);">
+    <div class="su-hd">
+      <div class="su-mk-km">KM</div>
+      <div><div class="su-ttl-km">KAM</div>
+      <div class="su-stl">Kernel-Aided Manufacturing</div></div>
+    </div>
+    <div class="su-bd">
+      <div class="su-sec">
+        <div class="su-lbl-km">Units</div>
+        <div class="su-ugrid" id="ksm-ugrid">
+          <button class="su-ubtn-km act" data-u="mm">
+            <span class="su-ulg-km">mm</span><span class="su-usm">millimeters</span></button>
+          <button class="su-ubtn-km" data-u="in">
+            <span class="su-ulg-km">in</span><span class="su-usm">inches</span></button>
+        </div>
+      </div>
+      <div class="su-sec">
+        <div class="su-lbl-km">Stock Material</div>
+        <div id="ksm-mat"></div>
+      </div>
+    </div>
+    <div class="su-ft">
+      <button class="su-go-km" id="ksm-go">Begin &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<div id="mat-modal"><div class="mat-modal-box">
+  <div class="mat-modal-head"><div>
+    <div class="mat-modal-title">SELECT MATERIAL</div>
+    <div class="mat-modal-sub">ASTM sheet and plate &#183; laser &#183; plasma &#183; waterjet</div>
+  </div><button class="mat-modal-close" onclick="closeMatModal()">&#x2715;</button></div>
+  <div class="mat-modal-body" id="mat-modal-body"></div>
+</div></div>
 </body>
 </html>
