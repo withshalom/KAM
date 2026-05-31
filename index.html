@@ -378,80 +378,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   box-shadow: 0 0 12px rgba(0,212,255,0.25);
 }
 .dlg-btn.commit:hover { background: #33ddff; box-shadow: 0 0 18px rgba(0,212,255,0.4); }
-/* ── STARTUP UNIT SPLASH ── */
-#splash-overlay {
-  position: fixed; inset: 0;
-  background: rgba(4,6,10,0.92);
-  backdrop-filter: blur(6px);
-  z-index: 900;
-  display: flex; align-items: center; justify-content: center;
-}
-#splash-dialog {
-  background: var(--panel);
-  border: 1px solid var(--border-hi);
-  border-radius: 8px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,170,0,0.15);
-  width: 400px; max-width: 95vw;
-  font-family: var(--fm);
-  overflow: hidden;
-}
-#splash-dialog .dlg-head {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 24px 20px 16px;
-  background: var(--panel2);
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
-.splash-brand {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 22px; font-weight: 700; color: var(--accent);
-  letter-spacing: 0.06em; margin-bottom: 6px;
-}
-.splash-brand-dot {
-  width: 10px; height: 10px; background: var(--accent);
-  border-radius: 50%; box-shadow: 0 0 10px var(--accent);
-}
-.splash-sub {
-  font-size: 10px; color: var(--t3);
-  letter-spacing: 0.14em; text-transform: uppercase;
-}
-#splash-dialog .dlg-body { padding: 20px; }
-.splash-prompt {
-  font-size: 11px; color: var(--t2);
-  text-align: center; margin-bottom: 16px; letter-spacing: 0.04em;
-  line-height: 1.6;
-}
-.splash-prompt strong { color: var(--t1); }
-.splash-unit-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 20px;
-}
-.splash-unit-btn {
-  background: var(--panel2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 18px 12px;
-  font-family: var(--fm); cursor: pointer;
-  transition: all 0.14s; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-}
-.splash-unit-btn:hover {
-  background: var(--hover); border-color: var(--border-hi);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-}
-.splash-unit-btn.mm-btn:hover  { border-color: #00d4ff; box-shadow: 0 4px 14px rgba(0,212,255,0.20); }
-.splash-unit-btn.in-btn:hover  { border-color: var(--amber);  box-shadow: 0 4px 20px rgba(255,170,0,0.30); }
-.splash-unit-btn .sub-unit {
-  font-size: 28px; font-weight: 700; letter-spacing: 0.02em;
-}
-.splash-unit-btn.mm-btn .sub-unit { color: #00d4ff; }
-.splash-unit-btn.in-btn .sub-unit { color: var(--amber); }
-.splash-unit-btn .sub-name { font-size: 9px; color: var(--t3); letter-spacing: 0.1em; text-transform: uppercase; }
-.splash-unit-btn .sub-example { font-size: 10px; color: var(--t2); }
-.splash-note {
-  text-align: center; font-size: 9px; color: var(--t3);
-  letter-spacing: 0.06em; line-height: 1.5;
-}
-
 /* ── OFFSET DISTANCE POPUP ── */
 #offset-popup-overlay {
   position: fixed; inset: 0;
@@ -1488,48 +1414,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 </div>
 
 <!-- STARTUP UNIT SPLASH -->
-<div id="splash-overlay">
-  <div id="splash-dialog">
-    <div class="dlg-head">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(140deg,#ffaa00,#ff6b00);
-          display:flex;align-items:center;justify-content:center;font-family:var(--fm);
-          font-weight:600;font-size:11px;color:#000;box-shadow:0 0 24px rgba(255,170,0,0.40);">KM</div>
-        <div>
-          <div style="font-family:var(--fm);font-weight:700;font-size:22px;letter-spacing:0.04em;
-            background:linear-gradient(90deg,#ffaa00,#ff6b00);-webkit-background-clip:text;
-            -webkit-text-fill-color:transparent;background-clip:text;">.KAM</div>
-          <div style="font-size:8px;color:var(--t3);letter-spacing:0.16em;text-transform:uppercase;">
-            Kernel-Aided Manufacturing</div>
-        </div>
-      </div>
-      <div class="splash-sub">Kernel-Aided Manufacturing</div>
-    </div>
-    <div class="dlg-body">
-      <div class="splash-prompt">
-        <strong>Choose your working units.</strong><br>
-        All inputs, machine parameters, and NC output will use this unit.<br>
-        You can switch at any time with the <span style="color:var(--amber)">mm·in</span> toggle.
-      </div>
-      <div class="splash-unit-grid">
-        <button class="splash-unit-btn in-btn" onclick="splashSelectUnit('in')">
-          <span class="sub-unit">in</span>
-          <span class="sub-name">Inches</span>
-          <span class="sub-example">Imperial · US Shop</span>
-        </button>
-        <button class="splash-unit-btn mm-btn" onclick="splashSelectUnit('mm')">
-          <span class="sub-unit">mm</span>
-          <span class="sub-name">Millimeters</span>
-          <span class="sub-example">ISO · Metric</span>
-        </button>
-      </div>
-      <div class="splash-note">
-        Saved locally · CC BY-SA 4.0 · © <span id="splash-year"></span> · .KAM
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- NC EXPORT MODAL -->
 <div id="nc-modal" style="position:fixed;inset:0;background:rgba(4,6,10,0.88);backdrop-filter:blur(6px);z-index:400;display:none;align-items:center;justify-content:center;">
   <div style="background:var(--panel);border:1px solid var(--border-hi);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,0.8);width:460px;max-width:95vw;font-family:var(--fm);overflow:hidden;">
@@ -1778,49 +1662,7 @@ function getGridStepsForUnit() {
   return GRID_STEPS_MM;
 }
 
-// ── STARTUP SPLASH ───────────────────────────────────────
-const SPLASH_KEY = 'kam_unit_v1';
-
-function splashSelectUnit(unit) {
-  // Apply the chosen unit
-  if (unit !== unitMode) {
-    // Force unit without toggling UI redundantly
-    unitMode = unit;
-    document.getElementById('unit-seg-mm').classList.toggle('active', unit==='mm');
-    document.getElementById('unit-seg-in').classList.toggle('active', unit==='in');
-    document.getElementById('prop-units').textContent = unit;
-    const ctxLbl = document.getElementById('ctx-unit-label');
-    if(ctxLbl) ctxLbl.textContent = unit==='mm' ? 'Switch to inches' : 'Switch to mm';
-    const coordCur = document.getElementById('coord-cur-unit');
-    if(coordCur) coordCur.textContent = unit;
-    const coordLbl = document.getElementById('coord-unit-lbl');
-    if(coordLbl) coordLbl.textContent = unit;
-    // Offset dist input
-    const distInput = document.getElementById('offset-dist-input');
-    if (unit === 'in') { distInput.value='0.5'; distInput.step='0.0625'; document.getElementById('offset-dist-unit').textContent='in'; }
-    else               { distInput.value='10';  distInput.step='0.5';    document.getElementById('offset-dist-unit').textContent='mm'; }
-    updateGridLabel();
-    render();
-  }
-  // Save and close — never show again this session/browser
-  try { localStorage.setItem(SPLASH_KEY, unit); } catch(e){}
-  document.getElementById('splash-overlay').style.display = 'none';
-  canvas.focus();
-}
-
-function initSplash() {
-  document.getElementById('splash-year').textContent = new Date().getFullYear();
-  let saved = null;
-  try { saved = localStorage.getItem(SPLASH_KEY); } catch(e){}
-  if (saved === 'mm' || saved === 'in') {
-    // Already chosen — apply silently and skip splash
-    document.getElementById('splash-overlay').style.display = 'none';
-    if (saved !== unitMode) splashSelectUnit(saved);
-    else document.getElementById('splash-overlay').style.display = 'none';
-  }
-  // Otherwise splash remains visible — user must choose
-}
-
+// ── UNIT TOGGLE ─────────────────────────────────────────
 function toggleUnits() {
   unitMode = (unitMode === 'mm') ? 'in' : 'mm';
   // Update toggle button appearance
@@ -1859,9 +1701,17 @@ function toggleUnits() {
   const speedLbl=document.getElementById('speed-unit');
   if(speedLbl) speedLbl.textContent=unitMode==='in'?'ipm':'mm/min';
   updateKerfFromThickness();
-  try { localStorage.setItem(SPLASH_KEY, unitMode); } catch(e){}
+  try { localStorage.setItem('kam_unit_pref', unitMode); } catch(e){}
   render();
   showToast('Units: ' + (unitMode==='mm' ? 'millimeters (mm)' : 'inches (in)') + ' — geometry unchanged');
+}
+
+// Apply a specific unit silently — used when importing files with different units
+function applyUnitSilent(unit) {
+  if (!unit || unit === unitMode) return;
+  // Temporarily flip so toggleUnits lands on the right value
+  unitMode = (unit === 'mm') ? 'in' : 'mm';
+  toggleUnits();
 }
 
 // ── GEO MEMORY ──────────────────────────────────────────
@@ -5608,9 +5458,7 @@ function loadKAM(event) {
       if(d.material) KAM.setMaterial(d.material);
       if(d.machine)  KAM.setMachine(d.machine);
       if(d.job)      KAM.setJob(d.job);
-      if(d.displayUnits && d.displayUnits !== unitMode) {
-        splashSelectUnit(d.displayUnits);
-      }
+      if(d.displayUnits && d.displayUnits !== unitMode) applyUnitSilent(d.displayUnits);
       updateProps(); updateContourList(); render(); zoomExtents();
       showToast(`Loaded ${file.name}`);
     } catch(err) { showToast('Load failed: ' + err.message); }
@@ -5629,7 +5477,7 @@ function importKAD(event) {
       GeoMemory.objects = d.objects;
       GeoMemory.nextId  = d.nextId || 1;
       KAM.clearTags(); // fresh start on KAM tags when importing KAD
-      if(d.displayUnits && d.displayUnits !== unitMode) splashSelectUnit(d.displayUnits);
+      if(d.displayUnits && d.displayUnits !== unitMode) applyUnitSilent(d.displayUnits);
       updateProps(); render(); zoomExtents();
       showToast(`Imported ${file.name} · ${d.objects.length} entities · Tags cleared`);
     } catch(err) { showToast('Import failed: ' + err.message); }
@@ -6057,7 +5905,6 @@ initCamera();
 setTool('select');
 canvas.focus();
 document.getElementById('cc-year').textContent = new Date().getFullYear();
-initSplash();
 setKerfDir('left');       // default: G41 left compensation
 updateKerfFromThickness(); // set kerf from default thickness
 
