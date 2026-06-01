@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
-  KERFsuite™ — Kernel-Aided Design Suite
-  Copyright (C) 2024-2025 KERFsuite / withshalom
+  KADsuite™ — Kernel-Aided Design Suite
+  Copyright (C) 2024-2025 KADsuite / withshalom
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as published
@@ -17,11 +17,24 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 
   SPDX-License-Identifier: AGPL-3.0-or-later
-  Commercial use requires a separate license — see KERFsuite for details: https://withshalom.github.io
+  KADsuite™, KAD™, KAM™, KUBE™, KARVE™, KONSTRUCT™, KULTIVATE™,
+  KODE™, and KANVAS™ are trademarks of withshalom / KADsuite.
+  Trademark rights are independent of and not transferred by this
+  AGPL-3.0 license. Forks and derivative works may not use these
+  marks or any confusingly similar names without express written
+  permission. The AGPL license governs this source code only.
+
+  Forks must remain open source under AGPL — KADsuite™ trademarks
+  and branding are not licensed and may not be used in any fork or
+  derivative work without separate written permission.
+
+  KADsuite™ trademarks are not covered by the AGPL-3.0 license.
+  Native builds are separate proprietary products.
 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="copyright" content="Copyright (C) 2024-2025 KADsuite / withshalom. Licensed under AGPL-3.0-or-later. KADsuite™, KAD™, KAM™, KUBE™, KARVE™, KONSTRUCT™, KULTIVATE™, KODE™, and KANVAS™ are trademarks of withshalom / KADsuite. Forks must remain open source under AGPL. Trademarks not licensed by AGPL.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KAM — Kernel-Aided Manufacturing</title>
 <style>
@@ -378,6 +391,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   box-shadow: 0 0 12px rgba(0,212,255,0.25);
 }
 .dlg-btn.commit:hover { background: #33ddff; box-shadow: 0 0 18px rgba(0,212,255,0.4); }
+/* ── STARTUP UNIT SPLASH ── */
 /* ── OFFSET DISTANCE POPUP ── */
 #offset-popup-overlay {
   position: fixed; inset: 0;
@@ -1304,7 +1318,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
     <div class="sb-item"><span class="sb-val warn" id="sb-view-mode">.KAM · Geometry View</span></div>
     <div class="sb-cc">
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;opacity:0.7"><circle cx="12" cy="12" r="9"/><path d="M10 9.5A2.5 2.5 0 0 0 7.5 12a2.5 2.5 0 0 0 2.5 2.5"/><path d="M16 9.5A2.5 2.5 0 0 0 13.5 12a2.5 2.5 0 0 0 2.5 2.5"/></svg>
-      <span>© <span id="cc-year"></span> · Licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener" class="cc-link">CC BY-SA 4.0</a> · .KAM Kernel-Aided Manufacturing</span>
+      <span>© <span id="cc-year"></span> KADsuite™ · .KAM Kernel-Aided Manufacturing · <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener" class="cc-link">AGPL-3.0</a> · withshalom</span>
     </div>
   </div>
 </div>
@@ -1591,7 +1605,7 @@ function receiveFromKODE(){
 
 'use strict';
 // ═══════════════════════════════════════════════════════════
-//  .KAD  v0.2  — Kernel-Aided Design
+//  .KAD  v0.0  — Kernel-Aided Design
 // ═══════════════════════════════════════════════════════════
 
 // ── CANVAS ──────────────────────────────────────────────
@@ -1662,7 +1676,6 @@ function getGridStepsForUnit() {
   return GRID_STEPS_MM;
 }
 
-// ── UNIT TOGGLE ─────────────────────────────────────────
 function toggleUnits() {
   unitMode = (unitMode === 'mm') ? 'in' : 'mm';
   // Update toggle button appearance
@@ -1709,8 +1722,7 @@ function toggleUnits() {
 // Apply a specific unit silently — used when importing files with different units
 function applyUnitSilent(unit) {
   if (!unit || unit === unitMode) return;
-  // Temporarily flip so toggleUnits lands on the right value
-  unitMode = (unit === 'mm') ? 'in' : 'mm';
+  unitMode = (unit === 'mm') ? 'in' : 'mm'; // flip so toggleUnits lands correctly
   toggleUnits();
 }
 
@@ -1752,7 +1764,7 @@ const GeoMemory = {
   },
 
   serialize() {
-    return JSON.stringify({version:'0.4',units:'mm',displayUnits:unitMode,nextId:this.nextId,objects:this.objects},null,2);
+    return JSON.stringify({version: '0.0',units:'mm',displayUnits:unitMode,nextId:this.nextId,objects:this.objects},null,2);
   },
   deserialize(s){
     try{
@@ -4135,16 +4147,16 @@ function showToast(msg) {
   clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-// ── KAM v0.1 — Version tracking ──────────────────────────
+// ── KAM v0.0 — Version tracking ──────────────────────────
 // Format: v{major}.{minor} — increment minor each session
-const KAM_VERSION = '1.0';
+const KAM_VERSION = '0.0';
 // Changelog:
-// v0.1 — Initial build: KAD/KAM view, TAG tool, contour tagging,
+// v0.0 — Initial build: KAD/KAM view, TAG tool, contour tagging,
 //         auto-tag, cut sequence, kerf compensation, G-code output,
 //         .kam save/load, .kad/.dxf import/export,
 //         table/sheet display, kerf direction G41/G42/G40,
 //         thickness-kerf reference, NC import → KAM geometry
-// v0.2 — Part instance model: multi-KAD import, named parts with entity
+// v0.0 — Part instance model: multi-KAD import, named parts with entity
 //         grouping, quantity tracking, per-part color, part panel in KAM
 //         view, select-part-as-unit, extract part as .KAD,
 //         DXF import → KAM with material/machine dialog
@@ -4832,7 +4844,7 @@ const PartLibrary = {
       return c;
     });
     const data = {
-      version:'0.4',
+      version: '0.0',
       app:'kad',
       displayUnits:unitMode,
       nextId:Math.max(...entities.map(o=>o.id))+1,
@@ -5283,7 +5295,7 @@ function generateNC() {
   }
 
   const out = [];
-  out.push(`; .KAM NC Output v1.0`);
+  out.push(`; .KAM NC Output v0.0`);
   out.push(`; Job: ${job.number||'—'}  Client: ${job.client||'—'}`);
   out.push(`; Material: ${mat.grade} ${toDisplay(mat.thickness).toFixed(4)} ${unitMode}`);
   out.push(`; Machine: ${mach.name}  ${mach.amperage}A  Kerf: ${toDisplay(kerf).toFixed(4)} ${unitMode}`);
@@ -5392,7 +5404,7 @@ function sendToKODE() {
   kamMeta.last_kode = new Date().toISOString();
   const now = new Date().toISOString();
   const payload = {
-    version:'1', app:'kam',
+    version: '0.0', app:'kam',
     meta:{ session:KAM.getJob().number||'untitled', created:kamMeta.created||now, modified:now, units:unitMode },
     nextId:GeoMemory.nextId, objects:GeoMemory.objects,
     parts:PartLibrary.serialize(),
@@ -5431,7 +5443,7 @@ function saveKAM() {
     meta:{ session:KAM.getJob().number||'untitled', created:kamMeta.created, modified:now, units:unitMode },
     kode:{ nc_hash:kamMeta.nc_hash, nc_synced:kamMeta.nc_synced, last_kode:kamMeta.last_kode },
     scripts:kamScripts,
-    version:'1',
+    version: '0.0',
   };
   downloadText(JSON.stringify(data,null,2), 'drawing.kam', 'application/json');
   showToast('Saved drawing.kam');
@@ -6040,7 +6052,7 @@ function exportSTEP() {
   const NL   = '\n';
   let step   = `ISO-10303-21;${NL}HEADER;${NL}`;
   step += `FILE_DESCRIPTION(('KAM Sheet Cut Export'),'2;1');${NL}`;
-  step += `FILE_NAME('parts.step','${date}',('KAM'),('KERFsuite'),'','','');${NL}`;
+  step += `FILE_NAME('parts.step','${date}',('KAM'),('KADsuite'),'','','');${NL}`;
   step += `FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));${NL}ENDSEC;${NL}`;
   step += `DATA;${NL}/* Sheet geometry — solid kernel required for full STEP.${NL}`;
   step += `   Import this file into your CAD/KAD system and extrude profiles */${NL}`;
