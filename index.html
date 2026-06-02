@@ -79,20 +79,13 @@
   --sidebar-w:     228px;
   --toolbar-h:     40px;
   --status-h:      28px;
-  --gkode-w:       0px;   /* collapsed by default */
-
-  /* G·KODE panel accent — crimson, matching KODE's gkode mode */
-  --gk:            #cc1133;
-  --gk-dim:        #881122;
-  --gk-glow:       rgba(204,17,51,0.15);
-  --gk-text:       #ff6680;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width:100%; height:100%; overflow:hidden; background:var(--void); color:var(--t1); font-family:var(--fd); font-size:13px; }
 
 /* ── LAYOUT ── */
-#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr var(--gkode-w); grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; transition:grid-template-columns 0.22s ease; }
+#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; }
 
 /* ── TOPBAR ── */
 #topbar { grid-column:1/-1; display:flex; align-items:center; background:var(--panel); border-bottom:1px solid var(--border); padding:0 12px; position:relative; z-index:30; }
@@ -504,272 +497,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 #contour-edit .ce-body { padding:6px 8px; border-bottom:1px solid var(--border); }
 .ce-close { background:none; border:none; color:var(--t3); cursor:pointer; font-size:14px; padding:0 2px; }
 
-/* ── G·KODE PANEL ── */
-#gkode-panel {
-  grid-row: 2;
-  grid-column: 3;
-  display: flex;
-  flex-direction: column;
-  background: var(--panel);
-  border-left: 1px solid var(--gk-dim);
-  overflow: hidden;
-  width: 0;
-  transition: width 0.22s ease;
-  position: relative;
-  z-index: 20;
-}
-body.gkode-open #app {
-  --gkode-w: 300px;
-}
-body.gkode-open #gkode-panel {
-  width: 300px;
-}
-
-/* Panel header */
-.gkode-head {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  height: 36px;
-  background: rgba(204,17,51,0.08);
-  border-bottom: 1px solid var(--gk-dim);
-}
-.gkode-brand {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--fm);
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  user-select: none;
-}
-.gkode-mark {
-  width: 22px; height: 22px;
-  border-radius: 5px;
-  background: linear-gradient(135deg, var(--gk), #ff3355);
-  box-shadow: 0 0 10px var(--gk-glow);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--fm); font-size: 7px; font-weight: 700;
-  color: #fff; letter-spacing: 0.04em; flex-shrink: 0;
-}
-.gkode-title {
-  background: linear-gradient(90deg, var(--gk-text), #ffaaaa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.gkode-sub {
-  font-family: var(--fm);
-  font-size: 8px;
-  color: var(--t3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-left: 2px;
-}
-.gkode-head-right {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.gkode-btn {
-  height: 22px; padding: 0 8px;
-  font-family: var(--fm); font-size: 9px;
-  border-radius: 3px; cursor: pointer;
-  letter-spacing: 0.05em; transition: all 0.12s;
-  white-space: nowrap;
-}
-.gkode-btn-load {
-  background: var(--gk-glow);
-  border: 1px solid var(--gk-dim);
-  color: var(--gk-text);
-}
-.gkode-btn-load:hover { background: rgba(204,17,51,0.25); border-color: var(--gk); }
-.gkode-btn-import {
-  background: var(--gk);
-  border: 1px solid var(--gk);
-  color: #fff;
-  font-weight: 600;
-}
-.gkode-btn-import:hover { background: #e01a3a; }
-.gkode-btn-import:disabled { opacity: 0.35; cursor: default; }
-.gkode-btn-close {
-  background: none; border: 1px solid var(--border);
-  color: var(--t3);
-}
-.gkode-btn-close:hover { color: var(--t1); border-color: var(--border-hi); }
-
-/* Stats bar */
-.gkode-stats {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 0 10px;
-  height: 26px;
-  background: var(--panel2);
-  border-bottom: 1px solid var(--border);
-  font-family: var(--fm);
-  font-size: 9px;
-  color: var(--t3);
-  letter-spacing: 0.04em;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.gkode-stats span { color: var(--gk-text); }
-.gkode-stats-sep { margin: 0 6px; color: var(--t3); opacity: 0.4; }
-
-/* Toolpath preview canvas */
-.gkode-tp-wrap {
-  flex-shrink: 0;
-  height: 140px;
-  border-bottom: 1px solid var(--border);
-  background: #07080a;
-  position: relative;
-}
-#gkode-tp-canvas {
-  display: block; width: 100%; height: 100%;
-}
-.gkode-tp-label {
-  position: absolute; bottom: 5px; right: 7px;
-  font-family: var(--fm); font-size: 8px; color: var(--t3);
-  letter-spacing: 0.05em; pointer-events: none;
-}
-
-/* Unit toggle */
-.gkode-unit-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel2);
-}
-.gkode-unit-bar label {
-  font-family: var(--fm); font-size: 9px; color: var(--t3);
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.gkode-ub {
-  padding: 2px 8px;
-  font-family: var(--fm); font-size: 9px;
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 3px; color: var(--t3); cursor: pointer;
-  letter-spacing: 0.05em; transition: all 0.12s;
-}
-.gkode-ub.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
-.gkode-merge-lbl {
-  margin-left: auto;
-  font-family: var(--fm); font-size: 9px; color: var(--t3);
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.gkode-mb {
-  padding: 2px 8px;
-  font-family: var(--fm); font-size: 9px;
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 3px; color: var(--t3); cursor: pointer;
-  letter-spacing: 0.05em; transition: all 0.12s;
-}
-.gkode-mb.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
-
-/* Line-by-line code viewer */
-.gkode-code-head {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--fm); font-size: 8px;
-  color: var(--t3); letter-spacing: 0.1em; text-transform: uppercase;
-}
-.gkode-code-head em { color: var(--gk-text); font-style: normal; margin-left: 4px; }
-.gkode-code-scroll {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-.gkode-code-scroll::-webkit-scrollbar { width: 3px; }
-.gkode-code-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.gkode-line {
-  display: flex;
-  align-items: baseline;
-  padding: 1px 0;
-  font-family: var(--fm);
-  font-size: 10.5px;
-  line-height: 1.65;
-  cursor: default;
-  transition: background 0.08s;
-}
-.gkode-line:hover { background: var(--hover); }
-.gkode-line.is-cut { border-left: 2px solid var(--gk-dim); }
-.gkode-line.is-rapid { border-left: 2px solid rgba(50,80,120,0.5); }
-.gkode-line.is-arc { border-left: 2px solid rgba(160,80,220,0.5); }
-.gkode-line.is-comment { opacity: 0.45; }
-.gkode-ln {
-  width: 34px;
-  flex-shrink: 0;
-  text-align: right;
-  padding-right: 8px;
-  color: var(--t3);
-  font-size: 9px;
-  user-select: none;
-}
-.gkode-tok { white-space: pre-wrap; word-break: break-all; padding-right: 8px; }
-/* syntax tokens */
-.gt-g     { color: var(--gk-text); font-weight: 600; }        /* G-words */
-.gt-m     { color: #cc88ff; }                                   /* M-words */
-.gt-coord { color: #7dd8ff; }                                   /* X Y Z coords */
-.gt-ij    { color: #aaaaff; }                                   /* I J arc params */
-.gt-f     { color: var(--amber); }                              /* feed F */
-.gt-s     { color: #88ddaa; }                                   /* speed S */
-.gt-n     { color: var(--t3); }                                 /* line numbers N */
-.gt-cmt   { color: var(--t3); font-style: italic; }            /* comments */
-.gt-other { color: var(--t2); }
-
-/* Empty / drop state */
-.gkode-empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: var(--t3);
-  font-family: var(--fm);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-align: center;
-  padding: 20px;
-}
-.gkode-empty-mark {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--gk-dim), rgba(204,17,51,0.3));
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--fm); font-size: 11px; font-weight: 700;
-  color: var(--gk-text); letter-spacing: 0.04em;
-  box-shadow: 0 0 18px var(--gk-glow);
-}
-
-/* Toggle button in topbar */
-.gkode-toggle-btn {
-  height: 24px; padding: 0 10px;
-  font-family: var(--fm); font-size: 10px; font-weight: 600;
-  letter-spacing: 0.06em;
-  border-radius: 4px; cursor: pointer;
-  background: var(--gk-glow);
-  border: 1px solid var(--gk-dim);
-  color: var(--gk-text);
-  transition: all 0.15s;
-  display: flex; align-items: center; gap: 5px;
-}
-.gkode-toggle-btn:hover { background: rgba(204,17,51,0.25); border-color: var(--gk); }
-body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--gk); color: #fff; }
+/* ── NC MODAL ── */
 .nc-preview { background:var(--void); border:1px solid var(--border); border-radius:4px; padding:8px 10px; font-family:var(--fm); font-size:9px; color:var(--green); max-height:140px; overflow-y:auto; white-space:pre; letter-spacing:0.02em; margin-bottom:12px; }
 .nc-preview::-webkit-scrollbar { width:3px; }
 .nc-preview::-webkit-scrollbar-thumb { background:var(--border); }
@@ -823,61 +551,6 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
 .part-btn.ext:hover { background:rgba(0,255,157,0.06); }
 .part-btn.del   { color:var(--red); border-color:rgba(255,68,85,0.3); }
 .part-btn.del:hover { background:rgba(255,68,85,0.06); }
-
-/* ── NC IMPORT DIALOG ── */
-#nc-import-overlay {
-  position:fixed; inset:0; background:rgba(4,6,10,0.88);
-  backdrop-filter:blur(6px); z-index:400; display:none;
-  align-items:center; justify-content:center;
-}
-#nc-import-overlay.open { display:flex; }
-#nc-import-dialog {
-  background:var(--panel); border:1px solid var(--border-hi);
-  border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
-  width:480px; max-width:95vw; font-family:var(--fm); overflow:hidden;
-}
-#nc-import-dialog .dlg-head {
-  background:rgba(255,170,0,0.07); border-bottom:1px solid var(--amber-dim);
-}
-#nc-import-dialog .dlg-title { color:var(--accent); }
-#nc-tp-canvas {
-  display:block; width:100%; height:160px;
-  background:var(--void); border:1px solid var(--border);
-  border-radius:4px; margin-bottom:8px;
-}
-.nc-tp-stats {
-  font-family:var(--fm); font-size:9px; color:var(--t3);
-  margin-bottom:10px; letter-spacing:0.05em;
-}
-.nc-tp-stats span { color:var(--accent); }
-.nc-import-unit-row {
-  display:flex; align-items:center; gap:8px; margin-bottom:10px;
-}
-.nc-import-unit-row label {
-  font-size:9px; color:var(--t3); letter-spacing:0.08em;
-  text-transform:uppercase; white-space:nowrap;
-}
-.nc-unit-btn {
-  padding:3px 10px; font-family:var(--fm); font-size:9px;
-  background:var(--panel2); border:1px solid var(--border);
-  border-radius:3px; color:var(--t3); cursor:pointer;
-  letter-spacing:0.06em; transition:all 0.12s;
-}
-.nc-unit-btn.active { color:var(--accent); border-color:var(--accent-dim); background:var(--accent-glow); }
-.nc-merge-row {
-  display:flex; align-items:center; gap:8px; margin-bottom:12px;
-}
-.nc-merge-row label {
-  font-size:9px; color:var(--t3); letter-spacing:0.08em;
-  text-transform:uppercase; white-space:nowrap;
-}
-.nc-merge-btn {
-  padding:3px 10px; font-family:var(--fm); font-size:9px;
-  background:var(--panel2); border:1px solid var(--border);
-  border-radius:3px; color:var(--t3); cursor:pointer;
-  letter-spacing:0.06em; transition:all 0.12s;
-}
-.nc-merge-btn.active { color:var(--accent); border-color:var(--accent-dim); background:var(--accent-glow); }
 
 /* KAM import dialog */
 #dxf-as-part-bar {
@@ -1083,6 +756,282 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
 #ksm-ugrid .su-ubtn-km[data-u="in"].act {
   border-color:#ffaa00; background:rgba(255,170,0,0.14); }
 #ksm-ugrid .su-ubtn-km:hover { border-color:rgba(255,255,255,0.15); }
+/* ── G·KODE PANEL ── */
+#gkode-panel {
+  grid-row: 2;
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-left: 1px solid var(--gk-dim);
+  overflow: hidden;
+  width: 0;
+  transition: width 0.22s ease;
+  position: relative;
+  z-index: 20;
+}
+body.gkode-open #app {
+  --gkode-w: 300px;
+}
+body.gkode-open #gkode-panel {
+  width: 300px;
+}
+
+/* Panel header */
+.gkode-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 36px;
+  background: rgba(224,56,0,0.08);
+  border-bottom: 1px solid var(--gk-dim);
+}
+.gkode-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fm);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+.gkode-mark {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--gk), #ff3355);
+  box-shadow: 0 0 10px var(--gk-glow);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 7px; font-weight: 700;
+  color: #fff; letter-spacing: 0.04em; flex-shrink: 0;
+}
+.gkode-title {
+  background: linear-gradient(90deg, var(--gk-text), #ffaa88);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gkode-sub {
+  font-family: var(--fm);
+  font-size: 8px;
+  color: var(--t3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-left: 2px;
+}
+.gkode-head-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.gkode-btn {
+  height: 22px; padding: 0 8px;
+  font-family: var(--fm); font-size: 9px;
+  border-radius: 3px; cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+  white-space: nowrap;
+}
+.gkode-btn-load {
+  background: var(--gk-glow);
+  border: 1px solid var(--gk-dim);
+  color: var(--gk-text);
+}
+.gkode-btn-load:hover { background: rgba(224,56,0,0.25); border-color: var(--gk); }
+.gkode-btn-import {
+  background: var(--gk);
+  border: 1px solid var(--gk);
+  color: #fff;
+  font-weight: 600;
+}
+.gkode-btn-import:hover { background: #e01a3a; }
+.gkode-btn-import:disabled { opacity: 0.35; cursor: default; }
+.gkode-btn-close {
+  background: none; border: 1px solid var(--border);
+  color: var(--t3);
+}
+.gkode-btn-close:hover { color: var(--t1); border-color: var(--border-hi); }
+
+/* Stats bar */
+.gkode-stats {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 10px;
+  height: 26px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.gkode-stats span { color: var(--gk-text); }
+.gkode-stats-sep { margin: 0 6px; color: var(--t3); opacity: 0.4; }
+
+/* Toolpath preview canvas */
+.gkode-tp-wrap {
+  flex-shrink: 0;
+  height: 140px;
+  border-bottom: 1px solid var(--border);
+  background: #07080a;
+  position: relative;
+}
+#gkode-tp-canvas {
+  display: block; width: 100%; height: 100%;
+}
+.gkode-tp-label {
+  position: absolute; bottom: 5px; right: 7px;
+  font-family: var(--fm); font-size: 8px; color: var(--t3);
+  letter-spacing: 0.05em; pointer-events: none;
+}
+
+/* Unit toggle */
+.gkode-unit-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel2);
+}
+.gkode-unit-bar label {
+  font-family: var(--fm); font-size: 9px; color: var(--t3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.gkode-ub {
+  padding: 2px 8px;
+  font-family: var(--fm); font-size: 9px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--t3); cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+}
+.gkode-ub.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
+.gkode-merge-lbl {
+  margin-left: auto;
+  font-family: var(--fm); font-size: 9px; color: var(--t3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.gkode-mb {
+  padding: 2px 8px;
+  font-family: var(--fm); font-size: 9px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--t3); cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+}
+.gkode-mb.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
+
+/* Line-by-line code viewer */
+.gkode-code-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--fm); font-size: 8px;
+  color: var(--t3); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.gkode-code-head em { color: var(--gk-text); font-style: normal; margin-left: 4px; }
+.gkode-code-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.gkode-code-scroll::-webkit-scrollbar { width: 3px; }
+.gkode-code-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.gkode-line {
+  display: flex;
+  align-items: baseline;
+  padding: 1px 0;
+  font-family: var(--fm);
+  font-size: 10.5px;
+  line-height: 1.65;
+  cursor: default;
+  transition: background 0.08s;
+}
+.gkode-line:hover { background: var(--hover); }
+.gkode-line.is-cut { border-left: 2px solid var(--gk-dim); }
+.gkode-line.is-rapid { border-left: 2px solid rgba(50,80,120,0.5); }
+.gkode-line.is-arc { border-left: 2px solid rgba(160,80,220,0.5); }
+.gkode-line.is-comment { opacity: 0.45; }
+.gkode-ln {
+  width: 34px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--t3);
+  font-size: 9px;
+  user-select: none;
+}
+.gkode-tok { white-space: pre-wrap; word-break: break-all; padding-right: 8px; }
+/* syntax tokens */
+.gt-g     { color: var(--gk-text); font-weight: 600; }        /* G-words */
+.gt-m     { color: #cc88ff; }                                   /* M-words */
+.gt-coord { color: #7dd8ff; }                                   /* X Y Z coords */
+.gt-ij    { color: #aaaaff; }                                   /* I J arc params */
+.gt-f     { color: var(--amber); }                              /* feed F */
+.gt-s     { color: #88ddaa; }                                   /* speed S */
+.gt-n     { color: var(--t3); }                                 /* line numbers N */
+.gt-cmt   { color: var(--t3); font-style: italic; }            /* comments */
+.gt-other { color: var(--t2); }
+
+/* Empty / drop state */
+.gkode-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--t3);
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 20px;
+}
+.gkode-empty-mark {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gk-dim), rgba(224,56,0,0.3));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 11px; font-weight: 700;
+  color: var(--gk-text); letter-spacing: 0.04em;
+  box-shadow: 0 0 18px var(--gk-glow);
+}
+
+/* Toggle button in topbar */
+.gkode-toggle-btn {
+  height: 24px; padding: 0 10px;
+  font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 4px; cursor: pointer;
+  background: var(--gk-glow);
+  border: 1px solid var(--gk-dim);
+  color: var(--gk-text);
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.gkode-toggle-btn:hover { background: rgba(224,56,0,0.25); border-color: var(--gk); }
+body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--gk); color: #fff; }
+.nc-preview { background:var(--void); border:1px solid var(--border); border-radius:4px; padding:8px 10px; font-family:var(--fm); font-size:9px; color:var(--green); max-height:140px; overflow-y:auto; white-space:pre; letter-spacing:0.02em; margin-bottom:12px; }
+.nc-preview::-webkit-scrollbar { width:3px; }
+.nc-preview::-webkit-scrollbar-thumb { background:var(--border); }
+.nc-field-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+.nc-field { display:flex; flex-direction:column; gap:3px; }
+.nc-field label { font-size:9px; color:var(--t3); letter-spacing:0.08em; text-transform:uppercase; font-family:var(--fm); }
+.nc-field input, .nc-field select { background:var(--panel2); border:1px solid var(--border-hi); border-radius:3px; color:var(--t1); font-family:var(--fm); font-size:10px; padding:4px 6px; outline:none; }
+.nc-field input:focus, .nc-field select:focus { border-color:var(--green); }
+
+
 </style>
 </head>
 <body>
@@ -1106,7 +1055,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc → KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1180,12 +1129,6 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <span class="unit-seg active" id="unit-seg-mm">mm</span>
       <span class="unit-divider"></span>
       <span class="unit-seg" id="unit-seg-in">in</span>
-    </button>
-
-    <div class="tb-sep"></div>
-    <button class="gkode-toggle-btn" onclick="toggleGKODE()" id="gkode-toggle-btn" title="G·KODE panel — import &amp; preview NC files">
-      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-      G·KODE
     </button>
   
   </div>
@@ -1408,7 +1351,8 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Explode NC → Parts
     </button>
-    <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="openNCImportDialog(event)" style="display:none">
+    <input type="file" id="gkode-file-input" accept=".nc,.txt,.tap,.cnc,.gcode" style="display:none" onchange="gkodeLoadFile(event)">
+  <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNC(event)" style="display:none">
     <input type="file" id="load-kam-file" accept=".kam" onchange="loadKAM(event)" style="display:none">
     <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none" multiple>
     <input type="file" id="load-dxf" accept=".dxf,.DXF" onchange="importDXF(event)" style="display:none">
@@ -1688,52 +1632,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
   </div>
 </div>
 
-<!-- G·KODE PANEL — grid column 3, row 2 -->
-<div id="gkode-panel">
-  <div class="gkode-head">
-    <div class="gkode-brand">
-      <div class="gkode-mark">GK</div>
-      <span class="gkode-title">G·KODE</span>
-      <span class="gkode-sub">nc viewer</span>
-    </div>
-    <div class="gkode-head-right">
-      <button class="gkode-btn gkode-btn-load" onclick="document.getElementById('gkode-file-input').click()">Load .nc</button>
-      <button class="gkode-btn gkode-btn-import" id="gkode-import-btn" onclick="gkodeCommitImport()" disabled>Import →</button>
-      <button class="gkode-btn gkode-btn-close"  onclick="toggleGKODE()" title="Close panel">✕</button>
-    </div>
-  </div>
-
-  <div class="gkode-tp-wrap">
-    <canvas id="gkode-tp-canvas"></canvas>
-    <div class="gkode-tp-label" id="gkode-tp-label">no file loaded</div>
-  </div>
-
-  <div class="gkode-stats" id="gkode-stats">Load a .nc file to begin</div>
-
-  <div class="gkode-unit-bar">
-    <label>Units</label>
-    <button class="gkode-ub active" id="gk-ub-auto"    onclick="gkodeSetUnit('auto')">Auto</button>
-    <button class="gkode-ub"        id="gk-ub-mm"      onclick="gkodeSetUnit('mm')">mm</button>
-    <button class="gkode-ub"        id="gk-ub-in"      onclick="gkodeSetUnit('in')">in</button>
-    <span class="gkode-merge-lbl">Canvas</span>
-    <button class="gkode-mb active" id="gk-mb-replace"  onclick="gkodeSetMerge('replace')">Replace</button>
-    <button class="gkode-mb"        id="gk-mb-merge"    onclick="gkodeSetMerge('merge')">Merge</button>
-  </div>
-
-  <div class="gkode-code-head">
-    G-CODE <em id="gkode-code-label">—</em>
-  </div>
-  <div class="gkode-code-scroll" id="gkode-code-scroll">
-    <div class="gkode-empty" id="gkode-empty-state">
-      <div class="gkode-empty-mark">GK</div>
-      <div>Load a .nc / .gcode file<br>to preview and import</div>
-    </div>
-  </div>
-</div>
-
 </div><!-- end #app -->
-
-<input type="file" id="gkode-file-input" accept=".nc,.NC,.tap,.cnc,.gcode,.txt" onchange="gkodeLoadFile(event)" style="display:none">
 
 <div id="toast"></div>
 
@@ -1832,38 +1731,6 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <div class="dlg-actions">
         <button class="dlg-btn cancel" onclick="closeDxfDialog()">Cancel</button>
         <button class="dlg-btn commit" onclick="commitDxfImport()">Import</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- NC IMPORT DIALOG -->
-<div id="nc-import-overlay">
-  <div id="nc-import-dialog">
-    <div class="dlg-head" style="background:rgba(255,170,0,0.07);border-bottom:1px solid var(--amber-dim);">
-      <span class="dlg-title" style="color:var(--accent);">Import .NC — Toolpath Preview</span>
-      <button class="dlg-close" onclick="closeNCImportDialog()">&#x2715;</button>
-    </div>
-    <div class="dlg-body">
-      <canvas id="nc-tp-canvas"></canvas>
-      <div class="nc-tp-stats" id="nc-tp-stats">&#8212;</div>
-
-      <div class="nc-import-unit-row">
-        <label>Units</label>
-        <button class="nc-unit-btn" id="nc-ub-auto" onclick="ncImportSetUnit('auto')">Auto</button>
-        <button class="nc-unit-btn" id="nc-ub-mm"   onclick="ncImportSetUnit('mm')">mm</button>
-        <button class="nc-unit-btn" id="nc-ub-in"   onclick="ncImportSetUnit('in')">in</button>
-      </div>
-
-      <div class="nc-merge-row">
-        <label>Canvas</label>
-        <button class="nc-merge-btn active" id="nc-mb-replace" onclick="ncImportSetMerge('replace')">Replace</button>
-        <button class="nc-merge-btn"        id="nc-mb-merge"   onclick="ncImportSetMerge('merge')">Merge</button>
-      </div>
-
-      <div class="modal-actions">
-        <button class="dlg-btn cancel" onclick="closeNCImportDialog()">Cancel</button>
-        <button class="dlg-btn nc"     onclick="commitNCImport()" style="background:var(--accent-glow);color:var(--accent);border-color:var(--accent-dim);">Import</button>
       </div>
     </div>
   </div>
@@ -2027,8 +1894,8 @@ function receiveFromKODE(){
     const data=JSON.parse(raw);
     if(!data.nc){ showToast('KODE session has no NC data'); return; }
     const result=parseNCtoKAM(data.nc,'KODE import');
-    if(!result.entities.length){ showToast('No geometry in KODE NC — check M-code dialect or units'); return; }
-    const merge=GeoMemory.objects.length>0?confirm('Add to existing canvas?\nOK = Merge  \u00b7  Cancel = Replace'):false;
+    if(!result.entities.length){ showToast('No geometry in KODE NC'); return; }
+    const merge=GeoMemory.objects.length>0?confirm('Add to existing canvas?\nOK = Merge  ·  Cancel = Replace'):false;
     if(!merge){ GeoMemory.clear(); KAM.clearTags(); }
     for(const ent of result.entities){
       if(ent.type==='LINE'){
@@ -2041,15 +1908,8 @@ function receiveFromKODE(){
     }
     localStorage.removeItem('kode_to_kam');
     updateProps(); updateContourList(); render(); zoomExtents();
+    showToast('Received from KODE · '+result.entities.length+' paths · '+result.stats.torchOn+' cuts');
     setViewMode('kam');
-    const hasClosed=result.entities.some(e=>e.type==='POLYLINE'&&e.closed);
-    const modeLabel=result.stats.spindleMode?' \u00b7 spindle mode':(' \u00b7 '+result.stats.torchOn+' cuts');
-    if(hasClosed){
-      showToast('Received from KODE \u00b7 '+result.entities.length+' paths'+modeLabel);
-      explodeNCToParts();
-    } else {
-      showToast('Received from KODE \u00b7 '+result.entities.length+' open paths'+modeLabel);
-    }
   } catch(e){ showToast('Error receiving from KODE: '+e.message); }
 }
 
@@ -2069,10 +1929,6 @@ function resizeCanvas() {
   render();
 }
 window.addEventListener('resize', resizeCanvas);
-// Smooth resize while G·KODE panel slides open/closed
-if(typeof ResizeObserver !== 'undefined') {
-  new ResizeObserver(() => resizeCanvas()).observe(wrap);
-}
 
 // ── CAMERA ──────────────────────────────────────────────
 const cam = { panX:0, panY:0, zoom:3.0, minZoom:0.05, maxZoom:200 };
@@ -3625,7 +3481,7 @@ function onKeyDown(e) {
     if(k==='o'||k==='O') setTool('offset');
     if(k==='t'||k==='T') setTool('tag');
     if(k==='p'||k==='P') setTool('place');
-    if(k==='k'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); sendToKODE(); }
+    if(k==='k'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); if(typeof toggleGKODE==='function') toggleGKODE(); else sendToKODE(); }
     if(k==='v'||k==='V') setViewMode(viewMode==='kad'?'kam':'kad');
     if(k==='1') tagSelected('cut');
     if(k==='2') tagSelected('mark');
@@ -3751,22 +3607,11 @@ function setKAMMode(mode) {
   kamMode = mode;
   document.getElementById('mt-part').classList.toggle('active', mode==='part');
   document.getElementById('mt-table').classList.toggle('active', mode==='table');
-
-  // part-sidebar contains the tool grid + file ops + rotate/offset bars
-  // — always keep it visible so tools never disappear.
-  document.getElementById('part-sidebar').style.display = '';
-
-  // nest-panel sits above part-sidebar; show it only in table mode.
-  document.getElementById('nest-panel').style.display = mode==='table' ? 'flex' : 'none';
-
-  // In part mode show kad-props/process panels; in table mode hide them
-  // (nest-panel replaces them as the primary sidebar content).
-  const partOnlyPanels = ['kad-props-panel', 'process-panel'];
-  partOnlyPanels.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = mode==='table' ? 'none' : '';
-  });
-
+  document.getElementById('part-sidebar').style.display = mode==='part' ? '' : 'none';
+  document.getElementById('nest-panel').style.display   = mode==='table' ? 'flex' : 'none';
+  // Mode-specific view toggle bar
+  const vtBar = document.querySelector('.view-toggle');
+  if (vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
   if (mode==='table') {
     nestSel = null; nestPlacing = null; nestDrag = null;
     fitTableView();
@@ -5131,178 +4976,9 @@ function explodeNCToParts() {
   showToast(`Exploded → ${parts.length - (leftovers.length?1:0)} part(s)${misc} · ready to nest or extract`);
 }
 
-// ── NC IMPORT DIALOG ──────────────────────────────────────────────────────────
-// Shows a live toolpath preview canvas + unit/merge options before committing.
-// Mirrors KODE's drawToolpath so the user sees exactly what will land on canvas.
-
-let _ncImportText = '';
-let _ncImportName = '';
-let _ncImportUnit  = 'auto';   // 'auto' | 'mm' | 'in'
-let _ncImportMerge = 'replace';
-
-function openNCImportDialog(event) {
-  const file = event.target.files[0]; if(!file) return;
-  event.target.value = '';
-  const reader = new FileReader();
-  reader.onload = e => {
-    _ncImportText = e.target.result;
-    _ncImportName = file.name;
-    _ncImportUnit  = 'auto';
-    _ncImportMerge = GeoMemory.objects.length > 0 ? 'merge' : 'replace';
-    _ncImportUpdateUnitBtns();
-    _ncImportUpdateMergeBtns();
-    document.getElementById('nc-import-overlay').classList.add('open');
-    // Defer canvas draw until dialog is visible and sized
-    requestAnimationFrame(() => _ncImportDraw());
-  };
-  reader.readAsText(file);
-}
-
-function closeNCImportDialog() {
-  document.getElementById('nc-import-overlay').classList.remove('open');
-  _ncImportText = '';
-}
-
-function ncImportSetUnit(u) {
-  _ncImportUnit = u;
-  _ncImportUpdateUnitBtns();
-  _ncImportDraw();
-}
-
-function ncImportSetMerge(m) {
-  _ncImportMerge = m;
-  _ncImportUpdateMergeBtns();
-}
-
-function _ncImportUpdateUnitBtns() {
-  ['auto','mm','in'].forEach(u => {
-    const b = document.getElementById('nc-ub-' + u);
-    if(b) b.classList.toggle('active', _ncImportUnit === u);
-  });
-}
-
-function _ncImportUpdateMergeBtns() {
-  ['replace','merge'].forEach(m => {
-    const b = document.getElementById('nc-mb-' + m);
-    if(b) b.classList.toggle('active', _ncImportMerge === m);
-  });
-}
-
-function _ncImportDraw() {
-  const cv = document.getElementById('nc-tp-canvas'); if(!cv) return;
-  const ctx = cv.getContext('2d');
-  const W = cv.clientWidth || cv.offsetWidth || 440;
-  const H = 160;
-  cv.width = W; cv.height = H;
-  ctx.fillStyle = '#08090a'; ctx.fillRect(0,0,W,H);
-
-  if(!_ncImportText.trim()) return;
-
-  // Parse with current unit override
-  const overrideText = _ncImportUnit === 'auto' ? _ncImportText
-    : (_ncImportUnit === 'mm'
-        ? 'G21\n' + _ncImportText
-        : 'G20\n' + _ncImportText);
-  const result = parseNCtoKAM(overrideText, _ncImportName);
-
-  const stats = document.getElementById('nc-tp-stats');
-  if(!result.entities.length) {
-    ctx.fillStyle = 'rgba(204,17,51,0.3)'; ctx.font = '10px Fira Code,monospace';
-    ctx.textAlign = 'center'; ctx.fillText('No toolpath geometry — try changing units', W/2, H/2);
-    if(stats) stats.innerHTML = 'No geometry detected';
-    return;
-  }
-
-  // Collect all points for bounds
-  let minX=1e9, maxX=-1e9, minY=1e9, maxY=-1e9;
-  for(const ent of result.entities) {
-    const pts = ent.type==='LINE'
-      ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}]
-      : ent.pts;
-    for(const p of pts) {
-      minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
-      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
-    }
-  }
-  if(!isFinite(minX)){minX=0;maxX=100;minY=0;maxY=100;}
-  const pad=20, rx=maxX-minX||1, ry=maxY-minY||1;
-  const sc = Math.min((W-pad*2)/rx, (H-pad*2)/ry);
-  const ox = (W - rx*sc)/2 - minX*sc;
-  const oy = (H + ry*sc)/2 + minY*sc;
-  function sv(px,py){ return {x: px*sc+ox, y: -py*sc+oy}; }
-
-  // Draw cut paths
-  const colors = ['#cc1133','#ff4455','#e03358','#ff6677'];
-  result.entities.forEach((ent,i) => {
-    ctx.strokeStyle = colors[i % colors.length];
-    ctx.lineWidth = 1.1;
-    ctx.beginPath();
-    const pts = ent.type==='LINE'
-      ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}]
-      : ent.pts;
-    pts.forEach((p,j) => {
-      const s = sv(p.x,p.y);
-      j===0 ? ctx.moveTo(s.x,s.y) : ctx.lineTo(s.x,s.y);
-    });
-    if(ent.closed) { const s=sv(pts[0].x,pts[0].y); ctx.lineTo(s.x,s.y); }
-    ctx.stroke();
-  });
-
-  // Stats bar
-  const closed = result.entities.filter(e=>e.type==='POLYLINE'&&e.closed).length;
-  const open   = result.entities.length - closed;
-  const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
-  const unitStr = _ncImportUnit==='auto'
-    ? (result.entities.length && rx < 500 ? 'mm (auto)' : 'in (auto)')
-    : _ncImportUnit;
-  if(stats) stats.innerHTML =
-    '<span>' + result.entities.length + '</span> paths \u00b7 ' +
-    '<span>' + closed + '</span> closed \u00b7 ' +
-    '<span>' + open + '</span> open \u00b7 ' +
-    rx.toFixed(1) + '\u00d7' + ry.toFixed(1) + ' mm \u00b7 ' +
-    modeStr + ' \u00b7 ' + unitStr;
-}
-
-function commitNCImport() {
-  closeNCImportDialog();
-  if(!_ncImportText) return;
-
-  const overrideText = _ncImportUnit === 'auto' ? _ncImportText
-    : (_ncImportUnit === 'mm'
-        ? 'G21\n' + _ncImportText
-        : 'G20\n' + _ncImportText);
-  const result = parseNCtoKAM(overrideText, _ncImportName);
-  if(!result.entities.length) { showToast('No toolpath geometry found — try a different unit setting'); return; }
-
-  if(_ncImportMerge === 'replace') { GeoMemory.clear(); KAM.clearTags(); }
-
-  for(const ent of result.entities) {
-    if(ent.type==='LINE') {
-      const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,'NC_Import');
-      if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
-    } else if(ent.type==='POLYLINE') {
-      const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
-      if(pl && ent.isCut) KAM.setTag(pl.id,'cut','outside');
-    }
-  }
-
-  updateProps(); updateContourList(); render(); zoomExtents();
-  setViewMode('kam');
-
-  const hasClosed = result.entities.some(e=>e.type==='POLYLINE'&&e.closed);
-  const modeLabel = result.stats.spindleMode ? ' \u00b7 spindle mode' : (' \u00b7 ' + result.stats.torchOn + ' cuts');
-  if(hasClosed) {
-    showToast('Imported ' + _ncImportName + ' \u00b7 ' + result.entities.length + ' paths' + modeLabel);
-    explodeNCToParts();
-  } else {
-    showToast('Imported ' + _ncImportName + ' \u00b7 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
-  }
-}
-
 // ── NC IMPORT ─────────────────────────────────────────────
 // Parse G-code, reconstruct geometry, create KAM from toolpath.
 // Handles G00 (rapid), G01 (linear), G02/G03 (arc), M08/M09 (torch).
-// Spindle/router/laser files (no M-codes) handled via spindleMode fallback.
 function importNC(event) {
   const file = event.target.files[0]; if(!file) return;
   const reader = new FileReader();
@@ -5310,10 +4986,11 @@ function importNC(event) {
     const result = parseNCtoKAM(e.target.result, file.name);
     event.target.value = '';
     if(result.error) { showToast('NC parse error: ' + result.error); return; }
-    if(!result.entities.length) { showToast('No toolpath geometry found — check units or M-code dialect'); return; }
+    if(!result.entities.length) { showToast('No toolpath geometry found in NC file'); return; }
 
+    // Ask: replace or merge
     const mode = GeoMemory.objects.length > 0
-      ? confirm('Add NC geometry to existing canvas?\nOK = Merge  \u00b7  Cancel = Replace')
+      ? confirm(`Add NC geometry to existing canvas?\nOK = Merge  ·  Cancel = Replace`)
       : false;
 
     if(!mode) { GeoMemory.clear(); KAM.clearTags(); }
@@ -5324,33 +5001,33 @@ function importNC(event) {
         if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
       } else if(ent.type==='POLYLINE') {
         const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
-        if(pl && ent.isCut) KAM.setTag(pl.id,'cut', ent.closed ? 'outside' : 'outside');
+        if(pl && ent.isCut) KAM.setTag(pl.id,'cut', ent.closed?'outside':'outside');
       }
     }
 
     updateProps(); updateContourList(); render(); zoomExtents();
+    const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
+    showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr);
     setViewMode('kam');
-
-    // Fix 3: only auto-explode when closed contours exist.
-    // Open-profile programs (router passes, engraving) land cleanly on canvas
-    // without a misleading "No closed contours" toast.
-    const hasClosed = result.entities.some(e => e.type==='POLYLINE' && e.closed);
-    const modeLabel = result.stats.spindleMode ? ' \u00b7 spindle mode' : (' \u00b7 ' + result.stats.torchOn + ' cuts');
-    if(hasClosed) {
-      showToast('Imported ' + file.name + ' \u00b7 ' + result.entities.length + ' paths' + modeLabel);
-      explodeNCToParts();
-    } else {
-      showToast('Imported ' + file.name + ' \u00b7 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
+    explodeNCToParts();
+    // Open G·KODE panel to show the imported NC
+    if(typeof toggleGKODE === 'function') {
+      _gkText = e.target.result;
+      _gkName = file.name;
+      _gkUnit = 'auto';
+      _gkMerge = 'replace';
+      if(typeof _gkUpdateUnitBtns === 'function') _gkUpdateUnitBtns();
+      if(typeof _gkRenderCode === 'function') _gkRenderCode();
+      if(typeof _gkDrawToolpath === 'function') _gkDrawToolpath();
+      if(!document.body.classList.contains('gkode-open')) toggleGKODE();
     }
   };
   reader.readAsText(file);
 }
 
 function parseNCtoKAM(text, filename) {
-  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arcs
-  // Fix: default metric (most modern CNC files); torchless spindle-mode fallback
+  // Parser v2 — metric default, spindle/torch auto-detect, N-words, modal G
   const lines = text.replace(/\r/g,'').split('\n');
-  // ── Fix 1: default metric — only override if file explicitly declares G20 ──
   let x=0, y=0, torchOn=false, inchMode=false;
   const entities = [];
   let cur = null;
@@ -5361,12 +5038,10 @@ function parseNCtoKAM(text, filename) {
   let hasTorchCodes = false;
   for(const hl of lines) {
     const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
-    if(hu.includes('G21')) { inchMode=false; }
-    if(hu.includes('G20')) { inchMode=true;  }
+    if(hu.includes('G21')) inchMode=false;
+    if(hu.includes('G20')) inchMode=true;
     if(/\bM0*(3|5|7|8|9|64|65)\b/.test(hu)) hasTorchCodes = true;
   }
-  // ── Fix 2: spindle/router/laser mode — no M torch codes found ──
-  // Treat every G1/G2/G3 move as a cut (router, laser, waterjet without M-codes)
   const spindleMode = !hasTorchCodes;
 
   function toMM(v) { return inchMode ? v*25.4 : v; }
@@ -5374,7 +5049,6 @@ function parseNCtoKAM(text, filename) {
     const m=s.match(new RegExp(t+'([+-]?[0-9]*\.?[0-9]+)','i'));
     return m ? parseFloat(m[1]) : null;
   }
-
   function commitPath() {
     if(!cur || cur.pts.length < 2) { cur=null; return; }
     const first=cur.pts[0], last=cur.pts[cur.pts.length-1];
@@ -5395,38 +5069,23 @@ function parseNCtoKAM(text, filename) {
       .replace(/\([^)]*\)/g,'')
       .toUpperCase();
     if(!line) continue;
-
     if(line.includes('G20')) inchMode=true;
     if(line.includes('G21')) inchMode=false;
-
-    // Modal G tracking
     if(line.match(/G0*0\b/)) lastGMotion='G0';
     if(line.match(/G0*1\b/)) lastGMotion='G1';
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
-
-    // Torch on/off (only relevant when torch codes exist in the file)
-    const onCodes  = ['M08','M03','M07','M64'];
-    const offCodes = ['M09','M05','M65'];
     if(!spindleMode) {
-      if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-      if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+      if(['M08','M03','M07','M64'].some(mc=>line.includes(mc))) { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      if(['M09','M05','M65'].some(mc=>line.includes(mc)))       { if(torchOn) { torchOn=false; commitPath(); } }
     }
-
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
     if(nx2===null && ny2===null) continue;
     const nx=nx2!==null ? toMM(nx2) : x;
     const ny=ny2!==null ? toMM(ny2) : y;
-
-    const gM = line.match(/G0*([0-3])\b/);
-    const effG = gM ? 'G'+gM[1] : lastGMotion;
-
-    // In spindleMode: treat G1/G2/G3 as cuts; G0 = rapid (skip)
-    // In torchMode:   only process moves while torchOn
-    const isCutMove = spindleMode
-      ? (effG==='G1' || effG==='G2' || effG==='G3')
-      : torchOn;
-
+    const gM=line.match(/G0*([0-3])\b/);
+    const effG=gM ? 'G'+gM[1] : lastGMotion;
+    const isCutMove = spindleMode ? (effG==='G1'||effG==='G2'||effG==='G3') : torchOn;
     if(isCutMove) {
       if(effG==='G1') {
         if(!cur) cur={pts:[{x,y}]};
@@ -5435,8 +5094,8 @@ function parseNCtoKAM(text, filename) {
         const iM=line.match(/I([+-]?[0-9]*\.?[0-9]+)/i);
         const jM=line.match(/J([+-]?[0-9]*\.?[0-9]+)/i);
         const ci=iM?toMM(parseFloat(iM[1])):0, cj=jM?toMM(parseFloat(jM[1])):0;
-        const cx=x+ci, cy=y+cj, r=Math.hypot(ci,cj);
-        const sa=Math.atan2(y-cy,x-cx), ea=Math.atan2(ny-cy,nx-cx);
+        const cx2=x+ci, cy2=y+cj, r=Math.hypot(ci,cj);
+        const sa=Math.atan2(y-cy2,x-cx2), ea=Math.atan2(ny-cy2,nx-cx2);
         const ccw=(effG==='G3');
         let span=ccw?(ea-sa+2*Math.PI)%(2*Math.PI):(sa-ea+2*Math.PI)%(2*Math.PI);
         if(span===0) span=2*Math.PI;
@@ -5444,18 +5103,15 @@ function parseNCtoKAM(text, filename) {
         if(!cur) cur={pts:[{x,y}]};
         for(let i=1;i<=segs;i++){
           const t=i/segs, a=ccw?sa+t*span:sa-t*span;
-          cur.pts.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
+          cur.pts.push({x:parseFloat((cx2+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy2+r*Math.sin(a)).toFixed(6))});
         }
       }
-      // G0 = rapid — in spindleMode skip building geometry; in torchMode = lead-in, also skip
     } else if(spindleMode && effG==='G0') {
-      // Rapid in spindle mode: commit any open path and start fresh on next G1
       commitPath();
     }
     x=nx; y=ny;
   }
   if(cur) commitPath();
-
   return { entities, stats:{ torchOn: spindleMode ? entities.length : torchOnCount, spindleMode } };
 }
 
@@ -5851,10 +5507,8 @@ function setViewMode(mode) {
   viewMode = mode;
   document.getElementById('vt-kad').className = 'vt-btn kad' + (mode==='kad'?' active':'');
   document.getElementById('vt-kam').className = 'vt-btn kam' + (mode==='kam'?' active':'');
-  // In table mode the nest-panel owns the sidebar — don't fight it
-  const inTable = (typeof kamMode !== 'undefined' && kamMode === 'table');
-  document.getElementById('kad-props-panel').style.display = (mode==='kad' && !inTable) ? '' : 'none';
-  document.getElementById('process-panel').classList.toggle('visible', mode==='kam' && !inTable);
+  document.getElementById('kad-props-panel').style.display = mode==='kad' ? '' : 'none';
+  document.getElementById('process-panel').classList.toggle('visible', mode==='kam');
   document.getElementById('sb-view-mode').textContent = `.KAM · ${mode.toUpperCase()} View`;
   document.getElementById('sb-view-mode').style.color = mode==='kad' ? 'var(--accent)' : 'var(--amber)';
   if(mode==='kam') updateContourList();
@@ -6618,8 +6272,6 @@ setKerfDir('left');       // default: G41 left compensation
 updateKerfFromThickness(); // set kerf from default thickness
 
 setTimeout(()=>{
-  GeoMemory.addLine(-15,0,15,0);
-  GeoMemory.addLine(0,-15,0,15);
   render();
   showToast(`KAM · S=select  T=tag  P=place  R=rotate  Ctrl+E=NC  Ctrl+K=KODE`);
 }, 250);
@@ -6945,15 +6597,7 @@ function updateSheetPlateLabel() {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// G·KODE PANEL — inline NC viewer, syntax highlighter, toolpath preview
-// ═══════════════════════════════════════════════════════════════════════════
-
-let _gkText   = '';
-let _gkName   = '';
-let _gkUnit   = 'auto';
-let _gkMerge  = 'replace';
-
+// ── G·KODE PANEL ──
 function toggleGKODE() {
   document.body.classList.toggle('gkode-open');
   // Give CSS transition time then force canvas resize
@@ -7023,7 +6667,7 @@ function _gkDrawToolpath() {
   ctx.fillStyle = '#07080a'; ctx.fillRect(0,0,W,H);
 
   if(!_gkText.trim()) {
-    ctx.fillStyle = 'rgba(204,17,51,0.25)'; ctx.font = '10px Fira Code,monospace';
+    ctx.fillStyle = 'rgba(224,56,0,0.25)'; ctx.font = '10px Fira Code,monospace';
     ctx.textAlign = 'center'; ctx.fillText('no file loaded', W/2, H/2);
     return;
   }
@@ -7038,7 +6682,7 @@ function _gkDrawToolpath() {
   const lbl   = document.getElementById('gkode-tp-label');
 
   if(!result.entities.length) {
-    ctx.fillStyle = 'rgba(204,17,51,0.3)'; ctx.font = '10px Fira Code,monospace';
+    ctx.fillStyle = 'rgba(224,56,0,0.3)'; ctx.font = '10px Fira Code,monospace';
     ctx.textAlign = 'center';
     ctx.fillText('no geometry — try changing units', W/2, H/2);
     if(stats) stats.textContent = 'No geometry detected — try mm or in override';
@@ -7063,7 +6707,7 @@ function _gkDrawToolpath() {
   const sv = (px,py) => ({x: px*sc+ox, y: -py*sc+oy});
 
   // Draw
-  const colors = ['#cc1133','#ff4455','#e03358','#ff6677'];
+  const colors = ['#e03800','#ff5522','#c83000','#ff6633'];
   result.entities.forEach((ent,i) => {
     ctx.strokeStyle = colors[i % colors.length];
     ctx.lineWidth = 1.0;
@@ -7249,5 +6893,7 @@ function gkodeCommitImport() {
   </div><button class="mat-modal-close" onclick="closeMatModal()">&#x2715;</button></div>
   <div class="mat-modal-body" id="mat-modal-body"></div>
 </div></div>
+
+
 </body>
 </html>
