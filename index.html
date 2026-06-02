@@ -1106,7 +1106,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-preview-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('gkode-file-input').click();closeMenus()">Import .nc → G·KODE</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1400,11 +1400,10 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       Export .nc
     </button>
-    <button class="op-btn" onclick="document.getElementById('load-nc-preview-file').click()">
+    <button class="op-btn" onclick="document.getElementById('gkode-file-input').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Import .nc
+      Import .nc → G·KODE
     </button>
-    <input type="file" id="load-nc-preview-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="openNCImportDialog(event)" style="display:none">
     <button class="op-btn" style="color:var(--amber);border-color:var(--amber-dim);" onclick="explodeNCToParts()" title="Group closed contours from NC import into named parts in the Part Library">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Explode NC → Parts
@@ -3752,11 +3751,22 @@ function setKAMMode(mode) {
   kamMode = mode;
   document.getElementById('mt-part').classList.toggle('active', mode==='part');
   document.getElementById('mt-table').classList.toggle('active', mode==='table');
-  document.getElementById('part-sidebar').style.display = mode==='part' ? '' : 'none';
-  document.getElementById('nest-panel').style.display   = mode==='table' ? 'flex' : 'none';
-  // Mode-specific view toggle bar
-  const vtBar = document.querySelector('.view-toggle');
-  if (vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
+
+  // part-sidebar contains the tool grid + file ops + rotate/offset bars
+  // — always keep it visible so tools never disappear.
+  document.getElementById('part-sidebar').style.display = '';
+
+  // nest-panel sits above part-sidebar; show it only in table mode.
+  document.getElementById('nest-panel').style.display = mode==='table' ? 'flex' : 'none';
+
+  // In part mode show kad-props/process panels; in table mode hide them
+  // (nest-panel replaces them as the primary sidebar content).
+  const partOnlyPanels = ['kad-props-panel', 'process-panel'];
+  partOnlyPanels.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = mode==='table' ? 'none' : '';
+  });
+
   if (mode==='table') {
     nestSel = null; nestPlacing = null; nestDrag = null;
     fitTableView();
@@ -5337,56 +5347,31 @@ function importNC(event) {
 }
 
 function parseNCtoKAM(text, filename) {
-  // ── parseNCtoKAM v2 ────────────────────────────────────────────────────────
-  // Aligned with KODE's parseNCtoGeom.
-  //
-  // Key fixes vs previous beta:
-  //
-  //  Fix 1 — default metric, full-file unit pre-scan (no early break).
-  //           Eliminates 25.4× scaling on files that declare G21 after line 30.
-  //
-  //  Fix 2 — geometry is ALWAYS built for G1/G2/G3 moves, regardless of torch
-  //           state. Torch on/off now only controls the isCut tag on the entity,
-  //           not whether the entity is built at all. This makes router, laser,
-  //           spindle, and waterjet files (with M3/M5 instead of M07/M08) render
-  //           correctly — the old gate silently discarded every move when M03
-  //           was present but no M07/M08 was ever seen.
-  //
-  //  Fix 3 — spindleMode detection tightened: only plasma/torch M-codes
-  //           (M07, M08, M09, M64, M65) trip plasma mode; M03/M05 alone are
-  //           treated as spindle-on/off and leave spindleMode=true so all
-  //           G1/G2/G3 moves are captured as geometry.
-  // ──────────────────────────────────────────────────────────────────────────
-
+  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arcs
+  // Fix: default metric (most modern CNC files); torchless spindle-mode fallback
   const lines = text.replace(/\r/g,'').split('\n');
-
-  // Fix 1: default metric — pre-scan the whole file without break so late
-  // G20/G21 declarations are honoured correctly.
-  let inchMode = false;
-  for(const hl of lines) {
-    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
-    if(hu.includes('G21')) inchMode = false;
-    if(hu.includes('G20')) inchMode = true;
-  }
-
-  // Fix 3: spindleMode — only true plasma/torch M-codes put us in torch-gate
-  // mode. M03/M05 (spindle speed) do NOT count as torch codes.
-  let hasPlasmaCode = false;
-  for(const hl of lines) {
-    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
-    if(/\bM0*(7|8|9|64|65)\b/.test(hu)) { hasPlasmaCode = true; break; }
-  }
-  const spindleMode = !hasPlasmaCode;
-
-  let x=0, y=0, torchOn=false;
+  // ── Fix 1: default metric — only override if file explicitly declares G20 ──
+  let x=0, y=0, torchOn=false, inchMode=false;
   const entities = [];
   let cur = null;
   let torchOnCount = 0;
   let lastGMotion = 'G0';
 
+  // Pre-scan whole file for unit mode AND torch-code presence
+  let hasTorchCodes = false;
+  for(const hl of lines) {
+    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
+    if(hu.includes('G21')) { inchMode=false; }
+    if(hu.includes('G20')) { inchMode=true;  }
+    if(/\bM0*(3|5|7|8|9|64|65)\b/.test(hu)) hasTorchCodes = true;
+  }
+  // ── Fix 2: spindle/router/laser mode — no M torch codes found ──
+  // Treat every G1/G2/G3 move as a cut (router, laser, waterjet without M-codes)
+  const spindleMode = !hasTorchCodes;
+
   function toMM(v) { return inchMode ? v*25.4 : v; }
   function coord(s,t) {
-    const m = s.match(new RegExp(t+'([+-]?[0-9]*\\.?[0-9]+)','i'));
+    const m=s.match(new RegExp(t+'([+-]?[0-9]*\.?[0-9]+)','i'));
     return m ? parseFloat(m[1]) : null;
   }
 
@@ -5395,20 +5380,13 @@ function parseNCtoKAM(text, filename) {
     const first=cur.pts[0], last=cur.pts[cur.pts.length-1];
     const closed = Math.hypot(first.x-last.x, first.y-last.y) < 0.5;
     if(closed && cur.pts.length>2) cur.pts.pop();
-    // isCut: in plasma mode use torchOn state captured at path-open time;
-    // in spindleMode everything built is a cut move.
-    const isCut = cur.isCut !== undefined ? cur.isCut : true;
     if(cur.pts.length===2 && !closed) {
-      entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut});
+      entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut:true});
     } else if(cur.pts.length>2) {
-      entities.push({type:'POLYLINE',pts:[...cur.pts],closed,isCut});
+      entities.push({type:'POLYLINE',pts:[...cur.pts],closed,isCut:true});
     }
     cur=null;
   }
-
-  // Plasma torch M-codes (Fix 3: M03/M05 excluded — they are spindle codes)
-  const plasmaOnCodes  = ['M08','M07','M64'];
-  const plasmaOffCodes = ['M09','M65'];
 
   for(const raw of lines) {
     const line = raw.trim()
@@ -5418,7 +5396,6 @@ function parseNCtoKAM(text, filename) {
       .toUpperCase();
     if(!line) continue;
 
-    // Inline unit override (re-apply in case of mid-program switch)
     if(line.includes('G20')) inchMode=true;
     if(line.includes('G21')) inchMode=false;
 
@@ -5428,10 +5405,12 @@ function parseNCtoKAM(text, filename) {
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
 
-    // Plasma torch gate (only active when plasma M-codes present in file)
+    // Torch on/off (only relevant when torch codes exist in the file)
+    const onCodes  = ['M08','M03','M07','M64'];
+    const offCodes = ['M09','M05','M65'];
     if(!spindleMode) {
-      if(plasmaOnCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-      if(plasmaOffCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+      if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
     }
 
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
@@ -5439,21 +5418,20 @@ function parseNCtoKAM(text, filename) {
     const nx=nx2!==null ? toMM(nx2) : x;
     const ny=ny2!==null ? toMM(ny2) : y;
 
-    const gM   = line.match(/G0*([0-3])\b/);
-    const effG  = gM ? 'G'+gM[1] : lastGMotion;
+    const gM = line.match(/G0*([0-3])\b/);
+    const effG = gM ? 'G'+gM[1] : lastGMotion;
 
-    // Fix 2 — always build geometry for G1/G2/G3; torch state tags isCut only.
-    // G0 (rapid) commits any open path and moves position without drawing.
-    if(effG==='G0') {
-      commitPath();
-    } else if(effG==='G1') {
-      // In plasma mode, only build when torch is on; in spindle mode always build.
-      if(spindleMode || torchOn) {
-        if(!cur) cur={pts:[{x,y}], isCut: spindleMode ? true : torchOn};
+    // In spindleMode: treat G1/G2/G3 as cuts; G0 = rapid (skip)
+    // In torchMode:   only process moves while torchOn
+    const isCutMove = spindleMode
+      ? (effG==='G1' || effG==='G2' || effG==='G3')
+      : torchOn;
+
+    if(isCutMove) {
+      if(effG==='G1') {
+        if(!cur) cur={pts:[{x,y}]};
         cur.pts.push({x:nx,y:ny});
-      }
-    } else if(effG==='G2'||effG==='G3') {
-      if(spindleMode || torchOn) {
+      } else if(effG==='G2'||effG==='G3') {
         const iM=line.match(/I([+-]?[0-9]*\.?[0-9]+)/i);
         const jM=line.match(/J([+-]?[0-9]*\.?[0-9]+)/i);
         const ci=iM?toMM(parseFloat(iM[1])):0, cj=jM?toMM(parseFloat(jM[1])):0;
@@ -5463,14 +5441,17 @@ function parseNCtoKAM(text, filename) {
         let span=ccw?(ea-sa+2*Math.PI)%(2*Math.PI):(sa-ea+2*Math.PI)%(2*Math.PI);
         if(span===0) span=2*Math.PI;
         const segs=Math.max(4,Math.round(36*span/(2*Math.PI)));
-        if(!cur) cur={pts:[{x,y}], isCut: spindleMode ? true : torchOn};
+        if(!cur) cur={pts:[{x,y}]};
         for(let i=1;i<=segs;i++){
           const t=i/segs, a=ccw?sa+t*span:sa-t*span;
           cur.pts.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
         }
       }
+      // G0 = rapid — in spindleMode skip building geometry; in torchMode = lead-in, also skip
+    } else if(spindleMode && effG==='G0') {
+      // Rapid in spindle mode: commit any open path and start fresh on next G1
+      commitPath();
     }
-
     x=nx; y=ny;
   }
   if(cur) commitPath();
@@ -5870,8 +5851,10 @@ function setViewMode(mode) {
   viewMode = mode;
   document.getElementById('vt-kad').className = 'vt-btn kad' + (mode==='kad'?' active':'');
   document.getElementById('vt-kam').className = 'vt-btn kam' + (mode==='kam'?' active':'');
-  document.getElementById('kad-props-panel').style.display = mode==='kad' ? '' : 'none';
-  document.getElementById('process-panel').classList.toggle('visible', mode==='kam');
+  // In table mode the nest-panel owns the sidebar — don't fight it
+  const inTable = (typeof kamMode !== 'undefined' && kamMode === 'table');
+  document.getElementById('kad-props-panel').style.display = (mode==='kad' && !inTable) ? '' : 'none';
+  document.getElementById('process-panel').classList.toggle('visible', mode==='kam' && !inTable);
   document.getElementById('sb-view-mode').textContent = `.KAM · ${mode.toUpperCase()} View`;
   document.getElementById('sb-view-mode').style.color = mode==='kad' ? 'var(--accent)' : 'var(--amber)';
   if(mode==='kam') updateContourList();
@@ -7212,8 +7195,10 @@ function gkodeCommitImport() {
     }
   }
 
-  updateProps(); updateContourList(); render(); zoomExtents();
+  updateProps(); updateContourList();
   setViewMode('kam');
+  zoomExtents();
+  render();
 
   const hasClosed = result.entities.some(e => e.type==='POLYLINE' && e.closed);
   const modeLabel = result.stats.spindleMode
