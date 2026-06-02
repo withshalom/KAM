@@ -5337,31 +5337,56 @@ function importNC(event) {
 }
 
 function parseNCtoKAM(text, filename) {
-  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arcs
-  // Fix: default metric (most modern CNC files); torchless spindle-mode fallback
+  // ── parseNCtoKAM v2 ────────────────────────────────────────────────────────
+  // Aligned with KODE's parseNCtoGeom.
+  //
+  // Key fixes vs previous beta:
+  //
+  //  Fix 1 — default metric, full-file unit pre-scan (no early break).
+  //           Eliminates 25.4× scaling on files that declare G21 after line 30.
+  //
+  //  Fix 2 — geometry is ALWAYS built for G1/G2/G3 moves, regardless of torch
+  //           state. Torch on/off now only controls the isCut tag on the entity,
+  //           not whether the entity is built at all. This makes router, laser,
+  //           spindle, and waterjet files (with M3/M5 instead of M07/M08) render
+  //           correctly — the old gate silently discarded every move when M03
+  //           was present but no M07/M08 was ever seen.
+  //
+  //  Fix 3 — spindleMode detection tightened: only plasma/torch M-codes
+  //           (M07, M08, M09, M64, M65) trip plasma mode; M03/M05 alone are
+  //           treated as spindle-on/off and leave spindleMode=true so all
+  //           G1/G2/G3 moves are captured as geometry.
+  // ──────────────────────────────────────────────────────────────────────────
+
   const lines = text.replace(/\r/g,'').split('\n');
-  // ── Fix 1: default metric — only override if file explicitly declares G20 ──
-  let x=0, y=0, torchOn=false, inchMode=false;
+
+  // Fix 1: default metric — pre-scan the whole file without break so late
+  // G20/G21 declarations are honoured correctly.
+  let inchMode = false;
+  for(const hl of lines) {
+    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
+    if(hu.includes('G21')) inchMode = false;
+    if(hu.includes('G20')) inchMode = true;
+  }
+
+  // Fix 3: spindleMode — only true plasma/torch M-codes put us in torch-gate
+  // mode. M03/M05 (spindle speed) do NOT count as torch codes.
+  let hasPlasmaCode = false;
+  for(const hl of lines) {
+    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
+    if(/\bM0*(7|8|9|64|65)\b/.test(hu)) { hasPlasmaCode = true; break; }
+  }
+  const spindleMode = !hasPlasmaCode;
+
+  let x=0, y=0, torchOn=false;
   const entities = [];
   let cur = null;
   let torchOnCount = 0;
   let lastGMotion = 'G0';
 
-  // Pre-scan whole file for unit mode AND torch-code presence
-  let hasTorchCodes = false;
-  for(const hl of lines) {
-    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
-    if(hu.includes('G21')) { inchMode=false; }
-    if(hu.includes('G20')) { inchMode=true;  }
-    if(/\bM0*(3|5|7|8|9|64|65)\b/.test(hu)) hasTorchCodes = true;
-  }
-  // ── Fix 2: spindle/router/laser mode — no M torch codes found ──
-  // Treat every G1/G2/G3 move as a cut (router, laser, waterjet without M-codes)
-  const spindleMode = !hasTorchCodes;
-
   function toMM(v) { return inchMode ? v*25.4 : v; }
   function coord(s,t) {
-    const m=s.match(new RegExp(t+'([+-]?[0-9]*\.?[0-9]+)','i'));
+    const m = s.match(new RegExp(t+'([+-]?[0-9]*\\.?[0-9]+)','i'));
     return m ? parseFloat(m[1]) : null;
   }
 
@@ -5370,13 +5395,20 @@ function parseNCtoKAM(text, filename) {
     const first=cur.pts[0], last=cur.pts[cur.pts.length-1];
     const closed = Math.hypot(first.x-last.x, first.y-last.y) < 0.5;
     if(closed && cur.pts.length>2) cur.pts.pop();
+    // isCut: in plasma mode use torchOn state captured at path-open time;
+    // in spindleMode everything built is a cut move.
+    const isCut = cur.isCut !== undefined ? cur.isCut : true;
     if(cur.pts.length===2 && !closed) {
-      entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut:true});
+      entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut});
     } else if(cur.pts.length>2) {
-      entities.push({type:'POLYLINE',pts:[...cur.pts],closed,isCut:true});
+      entities.push({type:'POLYLINE',pts:[...cur.pts],closed,isCut});
     }
     cur=null;
   }
+
+  // Plasma torch M-codes (Fix 3: M03/M05 excluded — they are spindle codes)
+  const plasmaOnCodes  = ['M08','M07','M64'];
+  const plasmaOffCodes = ['M09','M65'];
 
   for(const raw of lines) {
     const line = raw.trim()
@@ -5386,6 +5418,7 @@ function parseNCtoKAM(text, filename) {
       .toUpperCase();
     if(!line) continue;
 
+    // Inline unit override (re-apply in case of mid-program switch)
     if(line.includes('G20')) inchMode=true;
     if(line.includes('G21')) inchMode=false;
 
@@ -5395,12 +5428,10 @@ function parseNCtoKAM(text, filename) {
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
 
-    // Torch on/off (only relevant when torch codes exist in the file)
-    const onCodes  = ['M08','M03','M07','M64'];
-    const offCodes = ['M09','M05','M65'];
+    // Plasma torch gate (only active when plasma M-codes present in file)
     if(!spindleMode) {
-      if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-      if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+      if(plasmaOnCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      if(plasmaOffCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
     }
 
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
@@ -5408,20 +5439,21 @@ function parseNCtoKAM(text, filename) {
     const nx=nx2!==null ? toMM(nx2) : x;
     const ny=ny2!==null ? toMM(ny2) : y;
 
-    const gM = line.match(/G0*([0-3])\b/);
-    const effG = gM ? 'G'+gM[1] : lastGMotion;
+    const gM   = line.match(/G0*([0-3])\b/);
+    const effG  = gM ? 'G'+gM[1] : lastGMotion;
 
-    // In spindleMode: treat G1/G2/G3 as cuts; G0 = rapid (skip)
-    // In torchMode:   only process moves while torchOn
-    const isCutMove = spindleMode
-      ? (effG==='G1' || effG==='G2' || effG==='G3')
-      : torchOn;
-
-    if(isCutMove) {
-      if(effG==='G1') {
-        if(!cur) cur={pts:[{x,y}]};
+    // Fix 2 — always build geometry for G1/G2/G3; torch state tags isCut only.
+    // G0 (rapid) commits any open path and moves position without drawing.
+    if(effG==='G0') {
+      commitPath();
+    } else if(effG==='G1') {
+      // In plasma mode, only build when torch is on; in spindle mode always build.
+      if(spindleMode || torchOn) {
+        if(!cur) cur={pts:[{x,y}], isCut: spindleMode ? true : torchOn};
         cur.pts.push({x:nx,y:ny});
-      } else if(effG==='G2'||effG==='G3') {
+      }
+    } else if(effG==='G2'||effG==='G3') {
+      if(spindleMode || torchOn) {
         const iM=line.match(/I([+-]?[0-9]*\.?[0-9]+)/i);
         const jM=line.match(/J([+-]?[0-9]*\.?[0-9]+)/i);
         const ci=iM?toMM(parseFloat(iM[1])):0, cj=jM?toMM(parseFloat(jM[1])):0;
@@ -5431,17 +5463,14 @@ function parseNCtoKAM(text, filename) {
         let span=ccw?(ea-sa+2*Math.PI)%(2*Math.PI):(sa-ea+2*Math.PI)%(2*Math.PI);
         if(span===0) span=2*Math.PI;
         const segs=Math.max(4,Math.round(36*span/(2*Math.PI)));
-        if(!cur) cur={pts:[{x,y}]};
+        if(!cur) cur={pts:[{x,y}], isCut: spindleMode ? true : torchOn};
         for(let i=1;i<=segs;i++){
           const t=i/segs, a=ccw?sa+t*span:sa-t*span;
           cur.pts.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
         }
       }
-      // G0 = rapid — in spindleMode skip building geometry; in torchMode = lead-in, also skip
-    } else if(spindleMode && effG==='G0') {
-      // Rapid in spindle mode: commit any open path and start fresh on next G1
-      commitPath();
     }
+
     x=nx; y=ny;
   }
   if(cur) commitPath();
