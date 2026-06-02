@@ -552,6 +552,61 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .part-btn.del   { color:var(--red); border-color:rgba(255,68,85,0.3); }
 .part-btn.del:hover { background:rgba(255,68,85,0.06); }
 
+/* ── NC IMPORT DIALOG ── */
+#nc-import-overlay {
+  position:fixed; inset:0; background:rgba(4,6,10,0.88);
+  backdrop-filter:blur(6px); z-index:400; display:none;
+  align-items:center; justify-content:center;
+}
+#nc-import-overlay.open { display:flex; }
+#nc-import-dialog {
+  background:var(--panel); border:1px solid var(--border-hi);
+  border-radius:6px; box-shadow:0 20px 60px rgba(0,0,0,0.8);
+  width:480px; max-width:95vw; font-family:var(--fm); overflow:hidden;
+}
+#nc-import-dialog .dlg-head {
+  background:rgba(255,170,0,0.07); border-bottom:1px solid var(--amber-dim);
+}
+#nc-import-dialog .dlg-title { color:var(--accent); }
+#nc-tp-canvas {
+  display:block; width:100%; height:160px;
+  background:var(--void); border:1px solid var(--border);
+  border-radius:4px; margin-bottom:8px;
+}
+.nc-tp-stats {
+  font-family:var(--fm); font-size:9px; color:var(--t3);
+  margin-bottom:10px; letter-spacing:0.05em;
+}
+.nc-tp-stats span { color:var(--accent); }
+.nc-import-unit-row {
+  display:flex; align-items:center; gap:8px; margin-bottom:10px;
+}
+.nc-import-unit-row label {
+  font-size:9px; color:var(--t3); letter-spacing:0.08em;
+  text-transform:uppercase; white-space:nowrap;
+}
+.nc-unit-btn {
+  padding:3px 10px; font-family:var(--fm); font-size:9px;
+  background:var(--panel2); border:1px solid var(--border);
+  border-radius:3px; color:var(--t3); cursor:pointer;
+  letter-spacing:0.06em; transition:all 0.12s;
+}
+.nc-unit-btn.active { color:var(--accent); border-color:var(--accent-dim); background:var(--accent-glow); }
+.nc-merge-row {
+  display:flex; align-items:center; gap:8px; margin-bottom:12px;
+}
+.nc-merge-row label {
+  font-size:9px; color:var(--t3); letter-spacing:0.08em;
+  text-transform:uppercase; white-space:nowrap;
+}
+.nc-merge-btn {
+  padding:3px 10px; font-family:var(--fm); font-size:9px;
+  background:var(--panel2); border:1px solid var(--border);
+  border-radius:3px; color:var(--t3); cursor:pointer;
+  letter-spacing:0.06em; transition:all 0.12s;
+}
+.nc-merge-btn.active { color:var(--accent); border-color:var(--accent-dim); background:var(--accent-glow); }
+
 /* KAM import dialog */
 #dxf-as-part-bar {
   background:rgba(255,170,0,0.07); border:1px solid var(--amber-dim);
@@ -779,7 +834,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-preview-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1067,10 +1122,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       Export .nc
     </button>
-    <button class="op-btn" onclick="document.getElementById('load-nc-file').click()">
+    <button class="op-btn" onclick="document.getElementById('load-nc-preview-file').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Import .nc
     </button>
+    <input type="file" id="load-nc-preview-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="openNCImportDialog(event)" style="display:none">
     <button class="op-btn" style="color:var(--amber);border-color:var(--amber-dim);" onclick="explodeNCToParts()" title="Group closed contours from NC import into named parts in the Part Library">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Explode NC → Parts
@@ -1459,6 +1515,38 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   </div>
 </div>
 
+<!-- NC IMPORT DIALOG -->
+<div id="nc-import-overlay">
+  <div id="nc-import-dialog">
+    <div class="dlg-head" style="background:rgba(255,170,0,0.07);border-bottom:1px solid var(--amber-dim);">
+      <span class="dlg-title" style="color:var(--accent);">Import .NC — Toolpath Preview</span>
+      <button class="dlg-close" onclick="closeNCImportDialog()">&#x2715;</button>
+    </div>
+    <div class="dlg-body">
+      <canvas id="nc-tp-canvas"></canvas>
+      <div class="nc-tp-stats" id="nc-tp-stats">&#8212;</div>
+
+      <div class="nc-import-unit-row">
+        <label>Units</label>
+        <button class="nc-unit-btn" id="nc-ub-auto" onclick="ncImportSetUnit('auto')">Auto</button>
+        <button class="nc-unit-btn" id="nc-ub-mm"   onclick="ncImportSetUnit('mm')">mm</button>
+        <button class="nc-unit-btn" id="nc-ub-in"   onclick="ncImportSetUnit('in')">in</button>
+      </div>
+
+      <div class="nc-merge-row">
+        <label>Canvas</label>
+        <button class="nc-merge-btn active" id="nc-mb-replace" onclick="ncImportSetMerge('replace')">Replace</button>
+        <button class="nc-merge-btn"        id="nc-mb-merge"   onclick="ncImportSetMerge('merge')">Merge</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="dlg-btn cancel" onclick="closeNCImportDialog()">Cancel</button>
+        <button class="dlg-btn nc"     onclick="commitNCImport()" style="background:var(--accent-glow);color:var(--accent);border-color:var(--accent-dim);">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- STARTUP UNIT SPLASH -->
 <!-- NC EXPORT MODAL -->
 <div id="nc-modal" style="position:fixed;inset:0;background:rgba(4,6,10,0.88);backdrop-filter:blur(6px);z-index:400;display:none;align-items:center;justify-content:center;">
@@ -1617,8 +1705,8 @@ function receiveFromKODE(){
     const data=JSON.parse(raw);
     if(!data.nc){ showToast('KODE session has no NC data'); return; }
     const result=parseNCtoKAM(data.nc,'KODE import');
-    if(!result.entities.length){ showToast('No geometry in KODE NC'); return; }
-    const merge=GeoMemory.objects.length>0?confirm('Add to existing canvas?\nOK = Merge  ·  Cancel = Replace'):false;
+    if(!result.entities.length){ showToast('No geometry in KODE NC — check M-code dialect or units'); return; }
+    const merge=GeoMemory.objects.length>0?confirm('Add to existing canvas?\nOK = Merge  \u00b7  Cancel = Replace'):false;
     if(!merge){ GeoMemory.clear(); KAM.clearTags(); }
     for(const ent of result.entities){
       if(ent.type==='LINE'){
@@ -1631,8 +1719,15 @@ function receiveFromKODE(){
     }
     localStorage.removeItem('kode_to_kam');
     updateProps(); updateContourList(); render(); zoomExtents();
-    showToast('Received from KODE · '+result.entities.length+' paths · '+result.stats.torchOn+' cuts');
     setViewMode('kam');
+    const hasClosed=result.entities.some(e=>e.type==='POLYLINE'&&e.closed);
+    const modeLabel=result.stats.spindleMode?' \u00b7 spindle mode':(' \u00b7 '+result.stats.torchOn+' cuts');
+    if(hasClosed){
+      showToast('Received from KODE \u00b7 '+result.entities.length+' paths'+modeLabel);
+      explodeNCToParts();
+    } else {
+      showToast('Received from KODE \u00b7 '+result.entities.length+' open paths'+modeLabel);
+    }
   } catch(e){ showToast('Error receiving from KODE: '+e.message); }
 }
 
@@ -4699,9 +4794,178 @@ function explodeNCToParts() {
   showToast(`Exploded → ${parts.length - (leftovers.length?1:0)} part(s)${misc} · ready to nest or extract`);
 }
 
+// ── NC IMPORT DIALOG ──────────────────────────────────────────────────────────
+// Shows a live toolpath preview canvas + unit/merge options before committing.
+// Mirrors KODE's drawToolpath so the user sees exactly what will land on canvas.
+
+let _ncImportText = '';
+let _ncImportName = '';
+let _ncImportUnit  = 'auto';   // 'auto' | 'mm' | 'in'
+let _ncImportMerge = 'replace';
+
+function openNCImportDialog(event) {
+  const file = event.target.files[0]; if(!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    _ncImportText = e.target.result;
+    _ncImportName = file.name;
+    _ncImportUnit  = 'auto';
+    _ncImportMerge = GeoMemory.objects.length > 0 ? 'merge' : 'replace';
+    _ncImportUpdateUnitBtns();
+    _ncImportUpdateMergeBtns();
+    document.getElementById('nc-import-overlay').classList.add('open');
+    // Defer canvas draw until dialog is visible and sized
+    requestAnimationFrame(() => _ncImportDraw());
+  };
+  reader.readAsText(file);
+}
+
+function closeNCImportDialog() {
+  document.getElementById('nc-import-overlay').classList.remove('open');
+  _ncImportText = '';
+}
+
+function ncImportSetUnit(u) {
+  _ncImportUnit = u;
+  _ncImportUpdateUnitBtns();
+  _ncImportDraw();
+}
+
+function ncImportSetMerge(m) {
+  _ncImportMerge = m;
+  _ncImportUpdateMergeBtns();
+}
+
+function _ncImportUpdateUnitBtns() {
+  ['auto','mm','in'].forEach(u => {
+    const b = document.getElementById('nc-ub-' + u);
+    if(b) b.classList.toggle('active', _ncImportUnit === u);
+  });
+}
+
+function _ncImportUpdateMergeBtns() {
+  ['replace','merge'].forEach(m => {
+    const b = document.getElementById('nc-mb-' + m);
+    if(b) b.classList.toggle('active', _ncImportMerge === m);
+  });
+}
+
+function _ncImportDraw() {
+  const cv = document.getElementById('nc-tp-canvas'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.clientWidth || cv.offsetWidth || 440;
+  const H = 160;
+  cv.width = W; cv.height = H;
+  ctx.fillStyle = '#08090a'; ctx.fillRect(0,0,W,H);
+
+  if(!_ncImportText.trim()) return;
+
+  // Parse with current unit override
+  const overrideText = _ncImportUnit === 'auto' ? _ncImportText
+    : (_ncImportUnit === 'mm'
+        ? 'G21\n' + _ncImportText
+        : 'G20\n' + _ncImportText);
+  const result = parseNCtoKAM(overrideText, _ncImportName);
+
+  const stats = document.getElementById('nc-tp-stats');
+  if(!result.entities.length) {
+    ctx.fillStyle = 'rgba(255,170,0,0.3)'; ctx.font = '10px Fira Code,monospace';
+    ctx.textAlign = 'center'; ctx.fillText('No toolpath geometry — try changing units', W/2, H/2);
+    if(stats) stats.innerHTML = 'No geometry detected';
+    return;
+  }
+
+  // Collect all points for bounds
+  let minX=1e9, maxX=-1e9, minY=1e9, maxY=-1e9;
+  for(const ent of result.entities) {
+    const pts = ent.type==='LINE'
+      ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}]
+      : ent.pts;
+    for(const p of pts) {
+      minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+    }
+  }
+  if(!isFinite(minX)){minX=0;maxX=100;minY=0;maxY=100;}
+  const pad=20, rx=maxX-minX||1, ry=maxY-minY||1;
+  const sc = Math.min((W-pad*2)/rx, (H-pad*2)/ry);
+  const ox = (W - rx*sc)/2 - minX*sc;
+  const oy = (H + ry*sc)/2 + minY*sc;
+  function sv(px,py){ return {x: px*sc+ox, y: -py*sc+oy}; }
+
+  // Draw cut paths
+  const colors = ['#ffaa00','#ff6b00','#ffcc44','#e08800'];
+  result.entities.forEach((ent,i) => {
+    ctx.strokeStyle = colors[i % colors.length];
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    const pts = ent.type==='LINE'
+      ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}]
+      : ent.pts;
+    pts.forEach((p,j) => {
+      const s = sv(p.x,p.y);
+      j===0 ? ctx.moveTo(s.x,s.y) : ctx.lineTo(s.x,s.y);
+    });
+    if(ent.closed) { const s=sv(pts[0].x,pts[0].y); ctx.lineTo(s.x,s.y); }
+    ctx.stroke();
+  });
+
+  // Stats bar
+  const closed = result.entities.filter(e=>e.type==='POLYLINE'&&e.closed).length;
+  const open   = result.entities.length - closed;
+  const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
+  const unitStr = _ncImportUnit==='auto'
+    ? (result.entities.length && rx < 500 ? 'mm (auto)' : 'in (auto)')
+    : _ncImportUnit;
+  if(stats) stats.innerHTML =
+    '<span>' + result.entities.length + '</span> paths \u00b7 ' +
+    '<span>' + closed + '</span> closed \u00b7 ' +
+    '<span>' + open + '</span> open \u00b7 ' +
+    rx.toFixed(1) + '\u00d7' + ry.toFixed(1) + ' mm \u00b7 ' +
+    modeStr + ' \u00b7 ' + unitStr;
+}
+
+function commitNCImport() {
+  closeNCImportDialog();
+  if(!_ncImportText) return;
+
+  const overrideText = _ncImportUnit === 'auto' ? _ncImportText
+    : (_ncImportUnit === 'mm'
+        ? 'G21\n' + _ncImportText
+        : 'G20\n' + _ncImportText);
+  const result = parseNCtoKAM(overrideText, _ncImportName);
+  if(!result.entities.length) { showToast('No toolpath geometry found — try a different unit setting'); return; }
+
+  if(_ncImportMerge === 'replace') { GeoMemory.clear(); KAM.clearTags(); }
+
+  for(const ent of result.entities) {
+    if(ent.type==='LINE') {
+      const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,'NC_Import');
+      if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
+    } else if(ent.type==='POLYLINE') {
+      const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
+      if(pl && ent.isCut) KAM.setTag(pl.id,'cut','outside');
+    }
+  }
+
+  updateProps(); updateContourList(); render(); zoomExtents();
+  setViewMode('kam');
+
+  const hasClosed = result.entities.some(e=>e.type==='POLYLINE'&&e.closed);
+  const modeLabel = result.stats.spindleMode ? ' \u00b7 spindle mode' : (' \u00b7 ' + result.stats.torchOn + ' cuts');
+  if(hasClosed) {
+    showToast('Imported ' + _ncImportName + ' \u00b7 ' + result.entities.length + ' paths' + modeLabel);
+    explodeNCToParts();
+  } else {
+    showToast('Imported ' + _ncImportName + ' \u00b7 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
+  }
+}
+
 // ── NC IMPORT ─────────────────────────────────────────────
 // Parse G-code, reconstruct geometry, create KAM from toolpath.
 // Handles G00 (rapid), G01 (linear), G02/G03 (arc), M08/M09 (torch).
+// Spindle/router/laser files (no M-codes) handled via spindleMode fallback.
 function importNC(event) {
   const file = event.target.files[0]; if(!file) return;
   const reader = new FileReader();
@@ -4709,11 +4973,10 @@ function importNC(event) {
     const result = parseNCtoKAM(e.target.result, file.name);
     event.target.value = '';
     if(result.error) { showToast('NC parse error: ' + result.error); return; }
-    if(!result.entities.length) { showToast('No toolpath geometry found in NC file'); return; }
+    if(!result.entities.length) { showToast('No toolpath geometry found — check units or M-code dialect'); return; }
 
-    // Ask: replace or merge
     const mode = GeoMemory.objects.length > 0
-      ? confirm(`Add NC geometry to existing canvas?\nOK = Merge  ·  Cancel = Replace`)
+      ? confirm('Add NC geometry to existing canvas?\nOK = Merge  \u00b7  Cancel = Replace')
       : false;
 
     if(!mode) { GeoMemory.clear(); KAM.clearTags(); }
@@ -4724,33 +4987,50 @@ function importNC(event) {
         if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
       } else if(ent.type==='POLYLINE') {
         const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
-        if(pl && ent.isCut) KAM.setTag(pl.id,'cut', ent.closed?'outside':'outside');
+        if(pl && ent.isCut) KAM.setTag(pl.id,'cut', ent.closed ? 'outside' : 'outside');
       }
     }
 
     updateProps(); updateContourList(); render(); zoomExtents();
-    showToast(`Imported ${file.name} · ${result.entities.length} paths · ${result.stats.torchOn} cuts`);
     setViewMode('kam');
-    explodeNCToParts();
+
+    // Fix 3: only auto-explode when closed contours exist.
+    // Open-profile programs (router passes, engraving) land cleanly on canvas
+    // without a misleading "No closed contours" toast.
+    const hasClosed = result.entities.some(e => e.type==='POLYLINE' && e.closed);
+    const modeLabel = result.stats.spindleMode ? ' \u00b7 spindle mode' : (' \u00b7 ' + result.stats.torchOn + ' cuts');
+    if(hasClosed) {
+      showToast('Imported ' + file.name + ' \u00b7 ' + result.entities.length + ' paths' + modeLabel);
+      explodeNCToParts();
+    } else {
+      showToast('Imported ' + file.name + ' \u00b7 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
+    }
   };
   reader.readAsText(file);
 }
 
 function parseNCtoKAM(text, filename) {
-  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arc arcs
+  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arcs
+  // Fix: default metric (most modern CNC files); torchless spindle-mode fallback
   const lines = text.replace(/\r/g,'').split('\n');
-  let x=0, y=0, torchOn=false, inchMode=true;
+  // ── Fix 1: default metric — only override if file explicitly declares G20 ──
+  let x=0, y=0, torchOn=false, inchMode=false;
   const entities = [];
   let cur = null;
   let torchOnCount = 0;
   let lastGMotion = 'G0';
 
-  // Pre-scan first 30 lines for unit mode
-  for(const hl of lines.slice(0,30)) {
-    const hu = hl.replace(/^N[0-9]+\s*/i,'').toUpperCase();
-    if(hu.includes('G21')) { inchMode=false; break; }
-    if(hu.includes('G20')) { inchMode=true;  break; }
+  // Pre-scan whole file for unit mode AND torch-code presence
+  let hasTorchCodes = false;
+  for(const hl of lines) {
+    const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
+    if(hu.includes('G21')) { inchMode=false; }
+    if(hu.includes('G20')) { inchMode=true;  }
+    if(/\bM0*(3|5|7|8|9|64|65)\b/.test(hu)) hasTorchCodes = true;
   }
+  // ── Fix 2: spindle/router/laser mode — no M torch codes found ──
+  // Treat every G1/G2/G3 move as a cut (router, laser, waterjet without M-codes)
+  const spindleMode = !hasTorchCodes;
 
   function toMM(v) { return inchMode ? v*25.4 : v; }
   function coord(s,t) {
@@ -4788,21 +5068,29 @@ function parseNCtoKAM(text, filename) {
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
 
-    // Torch on/off
+    // Torch on/off (only relevant when torch codes exist in the file)
     const onCodes  = ['M08','M03','M07','M64'];
     const offCodes = ['M09','M05','M65'];
-    if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-    if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+    if(!spindleMode) {
+      if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+    }
 
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
     if(nx2===null && ny2===null) continue;
     const nx=nx2!==null ? toMM(nx2) : x;
     const ny=ny2!==null ? toMM(ny2) : y;
 
-    if(torchOn) {
-      const gM = line.match(/G0*([0-3])\b/);
-      const effG = gM ? 'G'+gM[1] : lastGMotion;
+    const gM = line.match(/G0*([0-3])\b/);
+    const effG = gM ? 'G'+gM[1] : lastGMotion;
 
+    // In spindleMode: treat G1/G2/G3 as cuts; G0 = rapid (skip)
+    // In torchMode:   only process moves while torchOn
+    const isCutMove = spindleMode
+      ? (effG==='G1' || effG==='G2' || effG==='G3')
+      : torchOn;
+
+    if(isCutMove) {
       if(effG==='G1') {
         if(!cur) cur={pts:[{x,y}]};
         cur.pts.push({x:nx,y:ny});
@@ -4822,13 +5110,16 @@ function parseNCtoKAM(text, filename) {
           cur.pts.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
         }
       }
-      // G0 while torch on = rapid lead-in, skip
+      // G0 = rapid — in spindleMode skip building geometry; in torchMode = lead-in, also skip
+    } else if(spindleMode && effG==='G0') {
+      // Rapid in spindle mode: commit any open path and start fresh on next G1
+      commitPath();
     }
     x=nx; y=ny;
   }
   if(cur) commitPath();
 
-  return { entities, stats:{ torchOn:torchOnCount } };
+  return { entities, stats:{ torchOn: spindleMode ? entities.length : torchOnCount, spindleMode } };
 }
 
 // ── PART LIBRARY ─────────────────────────────────────────
