@@ -79,13 +79,20 @@
   --sidebar-w:     228px;
   --toolbar-h:     40px;
   --status-h:      28px;
+  --gkode-w:       0px;   /* collapsed by default */
+
+  /* G·KODE panel accent — crimson, matching KODE's gkode mode */
+  --gk:            #cc1133;
+  --gk-dim:        #881122;
+  --gk-glow:       rgba(204,17,51,0.15);
+  --gk-text:       #ff6680;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width:100%; height:100%; overflow:hidden; background:var(--void); color:var(--t1); font-family:var(--fd); font-size:13px; }
 
 /* ── LAYOUT ── */
-#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; }
+#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr var(--gkode-w); grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; transition:grid-template-columns 0.22s ease; }
 
 /* ── TOPBAR ── */
 #topbar { grid-column:1/-1; display:flex; align-items:center; background:var(--panel); border-bottom:1px solid var(--border); padding:0 12px; position:relative; z-index:30; }
@@ -497,7 +504,272 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 #contour-edit .ce-body { padding:6px 8px; border-bottom:1px solid var(--border); }
 .ce-close { background:none; border:none; color:var(--t3); cursor:pointer; font-size:14px; padding:0 2px; }
 
-/* ── NC MODAL ── */
+/* ── G·KODE PANEL ── */
+#gkode-panel {
+  grid-row: 2;
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-left: 1px solid var(--gk-dim);
+  overflow: hidden;
+  width: 0;
+  transition: width 0.22s ease;
+  position: relative;
+  z-index: 20;
+}
+body.gkode-open #app {
+  --gkode-w: 300px;
+}
+body.gkode-open #gkode-panel {
+  width: 300px;
+}
+
+/* Panel header */
+.gkode-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 36px;
+  background: rgba(204,17,51,0.08);
+  border-bottom: 1px solid var(--gk-dim);
+}
+.gkode-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fm);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+.gkode-mark {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--gk), #ff3355);
+  box-shadow: 0 0 10px var(--gk-glow);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 7px; font-weight: 700;
+  color: #fff; letter-spacing: 0.04em; flex-shrink: 0;
+}
+.gkode-title {
+  background: linear-gradient(90deg, var(--gk-text), #ffaaaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gkode-sub {
+  font-family: var(--fm);
+  font-size: 8px;
+  color: var(--t3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-left: 2px;
+}
+.gkode-head-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.gkode-btn {
+  height: 22px; padding: 0 8px;
+  font-family: var(--fm); font-size: 9px;
+  border-radius: 3px; cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+  white-space: nowrap;
+}
+.gkode-btn-load {
+  background: var(--gk-glow);
+  border: 1px solid var(--gk-dim);
+  color: var(--gk-text);
+}
+.gkode-btn-load:hover { background: rgba(204,17,51,0.25); border-color: var(--gk); }
+.gkode-btn-import {
+  background: var(--gk);
+  border: 1px solid var(--gk);
+  color: #fff;
+  font-weight: 600;
+}
+.gkode-btn-import:hover { background: #e01a3a; }
+.gkode-btn-import:disabled { opacity: 0.35; cursor: default; }
+.gkode-btn-close {
+  background: none; border: 1px solid var(--border);
+  color: var(--t3);
+}
+.gkode-btn-close:hover { color: var(--t1); border-color: var(--border-hi); }
+
+/* Stats bar */
+.gkode-stats {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 10px;
+  height: 26px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--t3);
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.gkode-stats span { color: var(--gk-text); }
+.gkode-stats-sep { margin: 0 6px; color: var(--t3); opacity: 0.4; }
+
+/* Toolpath preview canvas */
+.gkode-tp-wrap {
+  flex-shrink: 0;
+  height: 140px;
+  border-bottom: 1px solid var(--border);
+  background: #07080a;
+  position: relative;
+}
+#gkode-tp-canvas {
+  display: block; width: 100%; height: 100%;
+}
+.gkode-tp-label {
+  position: absolute; bottom: 5px; right: 7px;
+  font-family: var(--fm); font-size: 8px; color: var(--t3);
+  letter-spacing: 0.05em; pointer-events: none;
+}
+
+/* Unit toggle */
+.gkode-unit-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel2);
+}
+.gkode-unit-bar label {
+  font-family: var(--fm); font-size: 9px; color: var(--t3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.gkode-ub {
+  padding: 2px 8px;
+  font-family: var(--fm); font-size: 9px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--t3); cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+}
+.gkode-ub.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
+.gkode-merge-lbl {
+  margin-left: auto;
+  font-family: var(--fm); font-size: 9px; color: var(--t3);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.gkode-mb {
+  padding: 2px 8px;
+  font-family: var(--fm); font-size: 9px;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 3px; color: var(--t3); cursor: pointer;
+  letter-spacing: 0.05em; transition: all 0.12s;
+}
+.gkode-mb.active { color: var(--gk-text); border-color: var(--gk-dim); background: var(--gk-glow); }
+
+/* Line-by-line code viewer */
+.gkode-code-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--fm); font-size: 8px;
+  color: var(--t3); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.gkode-code-head em { color: var(--gk-text); font-style: normal; margin-left: 4px; }
+.gkode-code-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.gkode-code-scroll::-webkit-scrollbar { width: 3px; }
+.gkode-code-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.gkode-line {
+  display: flex;
+  align-items: baseline;
+  padding: 1px 0;
+  font-family: var(--fm);
+  font-size: 10.5px;
+  line-height: 1.65;
+  cursor: default;
+  transition: background 0.08s;
+}
+.gkode-line:hover { background: var(--hover); }
+.gkode-line.is-cut { border-left: 2px solid var(--gk-dim); }
+.gkode-line.is-rapid { border-left: 2px solid rgba(50,80,120,0.5); }
+.gkode-line.is-arc { border-left: 2px solid rgba(160,80,220,0.5); }
+.gkode-line.is-comment { opacity: 0.45; }
+.gkode-ln {
+  width: 34px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 8px;
+  color: var(--t3);
+  font-size: 9px;
+  user-select: none;
+}
+.gkode-tok { white-space: pre-wrap; word-break: break-all; padding-right: 8px; }
+/* syntax tokens */
+.gt-g     { color: var(--gk-text); font-weight: 600; }        /* G-words */
+.gt-m     { color: #cc88ff; }                                   /* M-words */
+.gt-coord { color: #7dd8ff; }                                   /* X Y Z coords */
+.gt-ij    { color: #aaaaff; }                                   /* I J arc params */
+.gt-f     { color: var(--amber); }                              /* feed F */
+.gt-s     { color: #88ddaa; }                                   /* speed S */
+.gt-n     { color: var(--t3); }                                 /* line numbers N */
+.gt-cmt   { color: var(--t3); font-style: italic; }            /* comments */
+.gt-other { color: var(--t2); }
+
+/* Empty / drop state */
+.gkode-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--t3);
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 20px;
+}
+.gkode-empty-mark {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gk-dim), rgba(204,17,51,0.3));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 11px; font-weight: 700;
+  color: var(--gk-text); letter-spacing: 0.04em;
+  box-shadow: 0 0 18px var(--gk-glow);
+}
+
+/* Toggle button in topbar */
+.gkode-toggle-btn {
+  height: 24px; padding: 0 10px;
+  font-family: var(--fm); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 4px; cursor: pointer;
+  background: var(--gk-glow);
+  border: 1px solid var(--gk-dim);
+  color: var(--gk-text);
+  transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px;
+}
+.gkode-toggle-btn:hover { background: rgba(204,17,51,0.25); border-color: var(--gk); }
+body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--gk); color: #fff; }
 .nc-preview { background:var(--void); border:1px solid var(--border); border-radius:4px; padding:8px 10px; font-family:var(--fm); font-size:9px; color:var(--green); max-height:140px; overflow-y:auto; white-space:pre; letter-spacing:0.02em; margin-bottom:12px; }
 .nc-preview::-webkit-scrollbar { width:3px; }
 .nc-preview::-webkit-scrollbar-thumb { background:var(--border); }
@@ -908,6 +1180,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
       <span class="unit-seg active" id="unit-seg-mm">mm</span>
       <span class="unit-divider"></span>
       <span class="unit-seg" id="unit-seg-in">in</span>
+    </button>
+
+    <div class="tb-sep"></div>
+    <button class="gkode-toggle-btn" onclick="toggleGKODE()" id="gkode-toggle-btn" title="G·KODE panel — import &amp; preview NC files">
+      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      G·KODE
     </button>
   
   </div>
@@ -1411,7 +1689,52 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   </div>
 </div>
 
+<!-- G·KODE PANEL — grid column 3, row 2 -->
+<div id="gkode-panel">
+  <div class="gkode-head">
+    <div class="gkode-brand">
+      <div class="gkode-mark">GK</div>
+      <span class="gkode-title">G·KODE</span>
+      <span class="gkode-sub">nc viewer</span>
+    </div>
+    <div class="gkode-head-right">
+      <button class="gkode-btn gkode-btn-load" onclick="document.getElementById('gkode-file-input').click()">Load .nc</button>
+      <button class="gkode-btn gkode-btn-import" id="gkode-import-btn" onclick="gkodeCommitImport()" disabled>Import →</button>
+      <button class="gkode-btn gkode-btn-close"  onclick="toggleGKODE()" title="Close panel">✕</button>
+    </div>
+  </div>
+
+  <div class="gkode-tp-wrap">
+    <canvas id="gkode-tp-canvas"></canvas>
+    <div class="gkode-tp-label" id="gkode-tp-label">no file loaded</div>
+  </div>
+
+  <div class="gkode-stats" id="gkode-stats">Load a .nc file to begin</div>
+
+  <div class="gkode-unit-bar">
+    <label>Units</label>
+    <button class="gkode-ub active" id="gk-ub-auto"    onclick="gkodeSetUnit('auto')">Auto</button>
+    <button class="gkode-ub"        id="gk-ub-mm"      onclick="gkodeSetUnit('mm')">mm</button>
+    <button class="gkode-ub"        id="gk-ub-in"      onclick="gkodeSetUnit('in')">in</button>
+    <span class="gkode-merge-lbl">Canvas</span>
+    <button class="gkode-mb active" id="gk-mb-replace"  onclick="gkodeSetMerge('replace')">Replace</button>
+    <button class="gkode-mb"        id="gk-mb-merge"    onclick="gkodeSetMerge('merge')">Merge</button>
+  </div>
+
+  <div class="gkode-code-head">
+    G-CODE <em id="gkode-code-label">—</em>
+  </div>
+  <div class="gkode-code-scroll" id="gkode-code-scroll">
+    <div class="gkode-empty" id="gkode-empty-state">
+      <div class="gkode-empty-mark">GK</div>
+      <div>Load a .nc / .gcode file<br>to preview and import</div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end #app -->
+
+<input type="file" id="gkode-file-input" accept=".nc,.NC,.tap,.cnc,.gcode,.txt" onchange="gkodeLoadFile(event)" style="display:none">
 
 <div id="toast"></div>
 
@@ -1747,6 +2070,10 @@ function resizeCanvas() {
   render();
 }
 window.addEventListener('resize', resizeCanvas);
+// Smooth resize while G·KODE panel slides open/closed
+if(typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(() => resizeCanvas()).observe(wrap);
+}
 
 // ── CAMERA ──────────────────────────────────────────────
 const cam = { panX:0, panY:0, zoom:3.0, minZoom:0.05, maxZoom:200 };
@@ -6603,6 +6930,272 @@ function updateSheetPlateLabel() {
     const w = toDisplay(wMM).toFixed(unitMode==='in'?3:0);
     const h = toDisplay(hMM).toFixed(unitMode==='in'?3:0);
     pill.textContent = w + ' × ' + h + ' ' + unitMode + ' ' + label;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// G·KODE PANEL — inline NC viewer, syntax highlighter, toolpath preview
+// ═══════════════════════════════════════════════════════════════════════════
+
+let _gkText   = '';
+let _gkName   = '';
+let _gkUnit   = 'auto';
+let _gkMerge  = 'replace';
+
+function toggleGKODE() {
+  document.body.classList.toggle('gkode-open');
+  // Give CSS transition time then force canvas resize
+  setTimeout(() => {
+    resizeCanvas();
+    if(document.body.classList.contains('gkode-open') && _gkText) {
+      _gkDrawToolpath();
+    }
+  }, 240);
+}
+
+function gkodeLoadFile(event) {
+  const file = event.target.files[0]; if(!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = e => {
+    _gkText = e.target.result;
+    _gkName = file.name;
+    _gkUnit = 'auto';
+    _gkMerge = GeoMemory.objects.length > 0 ? 'merge' : 'replace';
+    _gkUpdateUnitBtns();
+    _gkUpdateMergeBtns();
+    document.getElementById('gkode-code-label').textContent = file.name;
+    document.getElementById('gkode-empty-state') && (document.getElementById('gkode-empty-state').style.display = 'none');
+    document.getElementById('gkode-import-btn').disabled = false;
+    // Open panel if closed
+    if(!document.body.classList.contains('gkode-open')) {
+      document.body.classList.add('gkode-open');
+      setTimeout(() => { resizeCanvas(); _gkDrawToolpath(); _gkRenderCode(); }, 240);
+    } else {
+      _gkDrawToolpath();
+      _gkRenderCode();
+    }
+  };
+  reader.readAsText(file);
+}
+
+function gkodeSetUnit(u) {
+  _gkUnit = u;
+  _gkUpdateUnitBtns();
+  if(_gkText) _gkDrawToolpath();
+}
+function gkodeSetMerge(m) {
+  _gkMerge = m;
+  _gkUpdateMergeBtns();
+}
+function _gkUpdateUnitBtns() {
+  ['auto','mm','in'].forEach(u => {
+    const b = document.getElementById('gk-ub-' + u);
+    if(b) b.classList.toggle('active', _gkUnit === u);
+  });
+}
+function _gkUpdateMergeBtns() {
+  ['replace','merge'].forEach(m => {
+    const b = document.getElementById('gk-mb-' + m);
+    if(b) b.classList.toggle('active', _gkMerge === m);
+  });
+}
+
+// ── Toolpath preview ────────────────────────────────────────────────────────
+function _gkDrawToolpath() {
+  const cv = document.getElementById('gkode-tp-canvas'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.parentElement.clientWidth || 300;
+  const H = 140;
+  cv.width = W; cv.height = H;
+  ctx.fillStyle = '#07080a'; ctx.fillRect(0,0,W,H);
+
+  if(!_gkText.trim()) {
+    ctx.fillStyle = 'rgba(204,17,51,0.25)'; ctx.font = '10px Fira Code,monospace';
+    ctx.textAlign = 'center'; ctx.fillText('no file loaded', W/2, H/2);
+    return;
+  }
+
+  const overrideText = _gkUnit === 'mm' ? 'G21\n'+_gkText
+                     : _gkUnit === 'in' ? 'G20\n'+_gkText
+                     : _gkText;
+  const result = parseNCtoKAM(overrideText, _gkName);
+
+  // Update stats bar
+  const stats = document.getElementById('gkode-stats');
+  const lbl   = document.getElementById('gkode-tp-label');
+
+  if(!result.entities.length) {
+    ctx.fillStyle = 'rgba(204,17,51,0.3)'; ctx.font = '10px Fira Code,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('no geometry — try changing units', W/2, H/2);
+    if(stats) stats.textContent = 'No geometry detected — try mm or in override';
+    if(lbl)   lbl.textContent = 'no geometry';
+    return;
+  }
+
+  // Collect bounds
+  let minX=1e9, maxX=-1e9, minY=1e9, maxY=-1e9;
+  for(const ent of result.entities) {
+    const pts = ent.type==='LINE' ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}] : ent.pts;
+    for(const p of pts) {
+      minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+      minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+    }
+  }
+  if(!isFinite(minX)){minX=0;maxX=100;minY=0;maxY=100;}
+  const pad=16, rx=maxX-minX||1, ry=maxY-minY||1;
+  const sc = Math.min((W-pad*2)/rx, (H-pad*2)/ry);
+  const ox = (W - rx*sc)/2 - minX*sc;
+  const oy = (H + ry*sc)/2 + minY*sc;
+  const sv = (px,py) => ({x: px*sc+ox, y: -py*sc+oy});
+
+  // Draw
+  const colors = ['#cc1133','#ff4455','#e03358','#ff6677'];
+  result.entities.forEach((ent,i) => {
+    ctx.strokeStyle = colors[i % colors.length];
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    const pts = ent.type==='LINE'
+      ? [{x:ent.x1,y:ent.y1},{x:ent.x2,y:ent.y2}]
+      : ent.pts;
+    pts.forEach((p,j) => { const s=sv(p.x,p.y); j===0?ctx.moveTo(s.x,s.y):ctx.lineTo(s.x,s.y); });
+    if(ent.closed) { const s=sv(pts[0].x,pts[0].y); ctx.lineTo(s.x,s.y); }
+    ctx.stroke();
+  });
+
+  // Stats
+  const closed = result.entities.filter(e=>e.type==='POLYLINE'&&e.closed).length;
+  const open   = result.entities.length - closed;
+  const modeStr = result.stats.spindleMode ? 'spindle' : result.stats.torchOn+' cuts';
+  if(stats) stats.innerHTML =
+    '<span>'+result.entities.length+'</span> paths \u00b7 '+
+    '<span>'+closed+'</span> closed \u00b7 '+
+    '<span>'+open+'</span> open \u00b7 '+
+    rx.toFixed(0)+'\u00d7'+ry.toFixed(0)+' mm \u00b7 '+modeStr;
+  if(lbl) lbl.textContent = rx.toFixed(0)+'\u00d7'+ry.toFixed(0)+' mm';
+}
+
+// ── Syntax highlighter ───────────────────────────────────────────────────────
+function _gkTokenize(line) {
+  // Returns HTML string for one stripped line
+  let s = line;
+
+  // Comments: semicolon to end of line
+  let cmt = '';
+  const semi = s.indexOf(';');
+  if(semi >= 0) { cmt = s.slice(semi); s = s.slice(0, semi); }
+
+  // Parenthetical comments
+  s = s.replace(/\([^)]*\)/g, m => '<span class="gt-cmt">'+_esc(m)+'</span>');
+
+  // N-word line numbers
+  s = s.replace(/\bN\d+\b/gi, m => '<span class="gt-n">'+_esc(m)+'</span>');
+
+  // G-words
+  s = s.replace(/\bG\d+(\.\d+)?\b/gi, m => '<span class="gt-g">'+_esc(m)+'</span>');
+
+  // M-words
+  s = s.replace(/\bM\d+\b/gi, m => '<span class="gt-m">'+_esc(m)+'</span>');
+
+  // Coordinates X Y Z
+  s = s.replace(/\b([XYZ])([+-]?\d*\.?\d+)\b/gi,
+    (_, l, v) => '<span class="gt-coord">'+_esc(l+v)+'</span>');
+
+  // Arc params I J K
+  s = s.replace(/\b([IJK])([+-]?\d*\.?\d+)\b/gi,
+    (_, l, v) => '<span class="gt-ij">'+_esc(l+v)+'</span>');
+
+  // Feed rate F
+  s = s.replace(/\bF(\d*\.?\d+)\b/gi,
+    (_, v) => '<span class="gt-f">F'+_esc(v)+'</span>');
+
+  // Speed S
+  s = s.replace(/\bS(\d*\.?\d+)\b/gi,
+    (_, v) => '<span class="gt-s">S'+_esc(v)+'</span>');
+
+  return s + (cmt ? '<span class="gt-cmt">'+_esc(cmt)+'</span>' : '');
+}
+function _esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function _gkLineClass(raw) {
+  const u = raw.toUpperCase();
+  if(u.match(/^\s*;/) || u.match(/^\s*\(/)) return 'is-comment';
+  if(u.match(/\bG0*0\b/)) return 'is-rapid';
+  if(u.match(/\bG0*[23]\b/)) return 'is-arc';
+  if(u.match(/\bG0*1\b/) || u.match(/\bM0*(3|7|8|64)\b/)) return 'is-cut';
+  return '';
+}
+
+function _gkRenderCode() {
+  const scroll = document.getElementById('gkode-code-scroll'); if(!scroll) return;
+  const lines = _gkText.replace(/\r/g,'').split('\n');
+
+  // Limit to 2000 lines for performance; show a note if truncated
+  const MAX = 2000;
+  const truncated = lines.length > MAX;
+  const display = truncated ? lines.slice(0, MAX) : lines;
+
+  let html = '';
+  display.forEach((raw, i) => {
+    const cls = _gkLineClass(raw);
+    html += '<div class="gkode-line' + (cls ? ' '+cls : '') + '">'
+      + '<span class="gkode-ln">' + (i+1) + '</span>'
+      + '<span class="gkode-tok">' + _gkTokenize(raw) + '</span>'
+      + '</div>';
+  });
+  if(truncated) {
+    html += '<div class="gkode-line"><span class="gkode-ln"></span>'
+      +'<span class="gkode-tok" style="color:var(--t3);font-style:italic;">'
+      +'… '+(lines.length-MAX)+' more lines (first 2000 shown)</span></div>';
+  }
+
+  // Remove empty state, inject lines
+  const empty = document.getElementById('gkode-empty-state');
+  if(empty) empty.remove();
+  scroll.innerHTML = html;
+}
+
+// ── Commit import ────────────────────────────────────────────────────────────
+function gkodeCommitImport() {
+  if(!_gkText) { showToast('No file loaded in G\u00b7KODE panel'); return; }
+
+  const overrideText = _gkUnit === 'mm' ? 'G21\n'+_gkText
+                     : _gkUnit === 'in' ? 'G20\n'+_gkText
+                     : _gkText;
+  const result = parseNCtoKAM(overrideText, _gkName);
+  if(!result.entities.length) {
+    showToast('No geometry found \u2014 try switching units in the G\u00b7KODE panel');
+    return;
+  }
+
+  if(_gkMerge === 'replace') { GeoMemory.clear(); KAM.clearTags(); }
+
+  for(const ent of result.entities) {
+    if(ent.type==='LINE') {
+      const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,'NC_Import');
+      if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
+    } else if(ent.type==='POLYLINE') {
+      const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
+      if(pl && ent.isCut) KAM.setTag(pl.id,'cut','outside');
+    }
+  }
+
+  updateProps(); updateContourList(); render(); zoomExtents();
+  setViewMode('kam');
+
+  const hasClosed = result.entities.some(e => e.type==='POLYLINE' && e.closed);
+  const modeLabel = result.stats.spindleMode
+    ? ' \u00b7 spindle mode'
+    : (' \u00b7 ' + result.stats.torchOn + ' cuts');
+
+  if(hasClosed) {
+    showToast('G\u00b7KODE \u2192 Imported ' + _gkName + ' \u00b7 ' + result.entities.length + ' paths' + modeLabel);
+    explodeNCToParts();
+  } else {
+    showToast('G\u00b7KODE \u2192 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
   }
 }
 </script>
