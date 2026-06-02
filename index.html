@@ -756,6 +756,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 #ksm-ugrid .su-ubtn-km[data-u="in"].act {
   border-color:#ffaa00; background:rgba(255,170,0,0.14); }
 #ksm-ugrid .su-ubtn-km:hover { border-color:rgba(255,255,255,0.15); }
+@keyframes kodePulse {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(255,170,0,0.4); }
+  50%      { opacity:0.85; box-shadow:0 0 0 4px rgba(255,170,0,0); }
+}
 </style>
 </head>
 <body>
@@ -771,6 +775,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
     </div>
   </div>
   <div class="tb-sep"></div>
+  <!-- KODE-waiting badge: lights up when kode_to_kam is in localStorage -->
+  <div id="kode-waiting-badge" onclick="receiveFromKODE()" title="KODE has geometry waiting — click to receive"
+    style="display:none;align-items:center;gap:5px;padding:2px 8px;margin-right:6px;
+    background:rgba(255,170,0,0.15);border:1px solid var(--accent);border-radius:10px;
+    font-family:var(--fm);font-size:9px;color:var(--accent);cursor:pointer;
+    letter-spacing:0.06em;animation:kodePulse 1.8s ease-in-out infinite;">
+    <span style="width:6px;height:6px;background:var(--accent);border-radius:50%;box-shadow:0 0 6px var(--accent);flex-shrink:0;"></span>
+    ← KODE READY
+  </div>
   <div class="tb-menu">
     <div class="tb-menu-item" id="menu-file" onmouseenter="openMenu('file')" onmouseleave="scheduleClose()">File
       <div class="tb-dropdown" id="dd-file" onmouseenter="cancelClose()" onmouseleave="scheduleClose()">
@@ -779,7 +792,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc → KAM</div>
+        <div class="tb-dd-item" id="dd-receive-kode" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE <span id="kode-badge-dd" style="display:none;background:var(--accent);color:#000;font-size:8px;padding:1px 5px;border-radius:8px;margin-left:4px;font-weight:700;">READY</span></div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1124,10 +1138,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
     <!-- TAB: Parts -->
     <div id="panel-parts" class="proc-tab-panel visible">
       <div style="padding:5px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:4px;">
-        <button onclick="document.getElementById('load-kad-file').click()" style="flex:1;font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ Import .KAD</button>
-        <button onclick="document.getElementById('load-dxf-as-part').click()" style="flex:1;font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ Import .DXF</button>
+        <button onclick="document.getElementById('load-kad-file').click()" style="flex:1;font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ .KAD</button>
+        <button onclick="document.getElementById('load-dxf-as-part').click()" style="flex:1;font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--accent);padding:4px;cursor:pointer;">+ .DXF</button>
+        <button onclick="document.getElementById('load-nc-as-part').click()" style="flex:1;font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--green);padding:4px;cursor:pointer;" title="Import NC file — auto-explodes to parts">+ .NC</button>
         <button onclick="clearAllParts()" style="font-family:var(--fm);font-size:8px;background:var(--panel2);border:1px solid var(--border);border-radius:3px;color:var(--red);padding:4px 6px;cursor:pointer;" title="Remove all parts">✕</button>
       </div>
+      <input type="file" id="load-nc-as-part" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNCasParts(event)" style="display:none">
       <input type="file" id="load-dxf-as-part" accept=".dxf,.DXF" onchange="importDXFasPart(event)" style="display:none">
       <div style="padding:4px 6px;font-family:var(--fm);font-size:9px;color:var(--t3);border-bottom:1px solid var(--border);flex-shrink:0;" id="part-summary">0 parts · 0 entities</div>
       <div class="part-list" id="part-list">
@@ -1249,7 +1265,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
           </button>
           <div class="mat-props-row" id="mat-props-display">36 ksi &#183; 0.284 lb/in&#179; &#183; Plate</div>
           <input type="hidden" id="mat-grade" value="A36"/>
-          <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="9.525" min="0.01" step="0.5" oninput="updateSheetPlateLabel()" onchange="updateSheetPlateLabel()"/><span class="proc-unit" id="mat-unit">mm</span></div>
+          <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="6.35" min="0.01" step="0.5" oninput="updateSheetPlateLabel()" onchange="updateSheetPlateLabel()"/><span class="proc-unit" id="mat-unit">mm</span></div>
         </div>
         <!-- Machine -->
         <div class="proc-section">
@@ -1630,9 +1646,15 @@ function receiveFromKODE(){
       }
     }
     localStorage.removeItem('kode_to_kam');
+    // Clear badge immediately without waiting for next poll
+    try { document.getElementById('kode-waiting-badge').style.display='none'; } catch(e){}
+    try { document.getElementById('kode-badge-dd').style.display='none'; } catch(e){}
     updateProps(); updateContourList(); render(); zoomExtents();
     showToast('Received from KODE · '+result.entities.length+' paths · '+result.stats.torchOn+' cuts');
     setViewMode('kam');
+    // Auto-explode into named parts
+    explodeNCToParts();
+    showProcTab('parts');
   } catch(e){ showToast('Error receiving from KODE: '+e.message); }
 }
 
@@ -4731,8 +4753,16 @@ function importNC(event) {
     updateProps(); updateContourList(); render(); zoomExtents();
     showToast(`Imported ${file.name} · ${result.entities.length} paths · ${result.stats.torchOn} cuts reconstructed`);
     setViewMode('kam');
+    // Auto-explode into named parts so they're immediately usable
+    explodeNCToParts();
+    showProcTab('parts');
   };
   reader.readAsText(file);
+}
+
+// Convenience wrapper called from the Parts panel "+ .NC" button
+function importNCasParts(event) {
+  importNC(event);
 }
 
 function parseNCtoKAM(text, filename) {
@@ -6277,6 +6307,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if(tbu) tbu.textContent = isIn ? 'in' : 'mm';
     initToolbarSheetInputs();
   };
+
+  // ── KODE-waiting badge poller ──────────────────────────────
+  // Checks localStorage every 2s; lights up the topbar badge and
+  // the dropdown indicator when KODE has geometry ready to receive.
+  function pollKodeBus() {
+    let waiting = false;
+    try { waiting = !!localStorage.getItem('kode_to_kam'); } catch(e) {}
+    const badge  = document.getElementById('kode-waiting-badge');
+    const ddBadge = document.getElementById('kode-badge-dd');
+    if (badge)   badge.style.display   = waiting ? 'flex' : 'none';
+    if (ddBadge) ddBadge.style.display = waiting ? 'inline' : 'none';
+  }
+  pollKodeBus(); // run once immediately
+  setInterval(pollKodeBus, 2000);
 });
 
 // ── Sheet / Plate label logic ──────────────────────────────────────────────
