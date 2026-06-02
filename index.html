@@ -97,6 +97,20 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 .tb-menu-item:hover { color:var(--t1); background:var(--hover); }
 .tb-menu-item.open { color:var(--t1); background:var(--hover); }
 .tb-sep { width:1px; height:18px; background:var(--border); margin:0 4px; }
+.tb-dim-input {
+  width:52px; background:var(--panel); border:1px solid var(--border-hi);
+  border-radius:3px; color:var(--t1); font-family:var(--fm); font-size:10px;
+  padding:2px 5px; outline:none; text-align:right;
+  transition:border-color 0.13s;
+}
+.tb-dim-input:focus { border-color:var(--accent); }
+.tb-preset {
+  font-family:var(--fm); font-size:9px; padding:2px 7px;
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:3px; color:var(--t3); cursor:pointer;
+  letter-spacing:0.04em; transition:all 0.13s;
+}
+.tb-preset:hover { border-color:var(--accent-dim); color:var(--t1); }
 .tb-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
 .tb-badge { font-family:var(--fm); font-size:10px; color:var(--t3); background:var(--panel2); border:1px solid var(--border); padding:2px 7px; border-radius:3px; letter-spacing:0.06em; }
 
@@ -816,7 +830,25 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
   </div>
 
   <div class="tb-right">
-    
+
+    <!-- Sheet size — toolbar items -->
+    <div class="tb-sep"></div>
+    <span id="tb-sheet-label" style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:0.1em;">SHEET</span>
+    <input id="tb-sheet-w" type="number" min="1" step="1" title="Sheet width"
+      class="tb-dim-input"
+      oninput="syncSheetInput('w',this.value)"
+      onchange="syncSheetInput('w',this.value);render();updateUtilization()"/>
+    <span style="font-family:var(--fm);font-size:10px;color:var(--t3);">×</span>
+    <input id="tb-sheet-h" type="number" min="1" step="1" title="Sheet height"
+      class="tb-dim-input"
+      oninput="syncSheetInput('h',this.value)"
+      onchange="syncSheetInput('h',this.value);render();updateUtilization()"/>
+    <span id="tb-sheet-unit" style="font-family:var(--fm);font-size:9px;color:var(--t3);">in</span>
+    <button class="tb-preset" onclick="setSheetPreset(48,96)"  title="4×8 ft sheet">4×8ft</button>
+    <button class="tb-preset" onclick="setSheetPreset(60,120)" title="5×10 ft table (default)">5×10ft</button>
+    <button class="tb-preset" onclick="setSheetPreset(60,144)" title="5×12 ft table">5×12ft</button>
+    <div class="tb-sep"></div>
+
     <button id="unit-toggle" onclick="toggleUnits()" title="Toggle mm/in (U)">
       <span class="unit-seg active" id="unit-seg-mm">mm</span>
       <span class="unit-divider"></span>
@@ -970,7 +1002,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
         style="width:46px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
         border-radius:4px;color:#d0dde8;font-family:'Fira Code',monospace;font-size:10px;
         padding:2px 5px;outline:none;text-align:right;">
-      <span style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;">mm</span>
+      <span id="stl-thick-unit" style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;">mm</span>
     </div>
     <!-- Export — STL + STEP together, same green/blue family -->
     <div style="padding:3px 8px 5px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -1165,13 +1197,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
           <div class="proc-label">Table / Sheet Size</div>
           <div class="proc-field">
             <label>Width</label>
-            <input class="proc-input" id="table-w" type="number" value="120" min="1" step="6" onchange="render();updateUtilization()"/>
-            <span class="proc-unit" id="table-w-unit">in</span>
+            <input class="proc-input" id="table-w" type="number" value="1524" min="1" step="25" onchange="render();updateUtilization()"/>
+            <span class="proc-unit" id="table-w-unit">mm</span>
           </div>
           <div class="proc-field">
             <label>Height</label>
-            <input class="proc-input" id="table-h" type="number" value="60" min="1" step="6" onchange="render();updateUtilization()"/>
-            <span class="proc-unit" id="table-h-unit">in</span>
+            <input class="proc-input" id="table-h" type="number" value="3048" min="1" step="25" onchange="render();updateUtilization()"/>
+            <span class="proc-unit" id="table-h-unit">mm</span>
           </div>
           <div class="proc-field">
             <label style="font-size:8px;color:var(--t3);">Show table</label>
@@ -1217,14 +1249,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
           </button>
           <div class="mat-props-row" id="mat-props-display">36 ksi &#183; 0.284 lb/in&#179; &#183; Plate</div>
           <input type="hidden" id="mat-grade" value="A36"/>
-          <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="0.375" min="0.001" step="0.0625"/><span class="proc-unit" id="mat-unit">in</span></div>
+          <div class="proc-field"><label>Thickness</label><input class="proc-input" id="mat-thick" type="number" value="9.525" min="0.01" step="0.5" oninput="updateSheetPlateLabel()" onchange="updateSheetPlateLabel()"/><span class="proc-unit" id="mat-unit">mm</span></div>
         </div>
         <!-- Machine -->
         <div class="proc-section">
           <div class="proc-label">Machine</div>
           <div class="proc-field"><label>Name</label><input class="proc-input" id="mach-name" value="Plasma Table"/></div>
           <div class="proc-field"><label>Amperage</label><input class="proc-input" id="mach-amps" type="number" value="65" min="1" step="5"/><span class="proc-unit">A</span></div>
-          <div class="proc-field"><label>Kerf</label><input class="proc-input" id="mach-kerf" type="number" value="0.06" min="0.001" step="0.005" onchange="updateKerfFromThickness()"/><span class="proc-unit" id="kerf-unit">in</span></div>
+          <div class="proc-field"><label>Kerf</label><input class="proc-input" id="mach-kerf" type="number" value="1.524" min="0.01" step="0.1" onchange="updateKerfFromThickness()"/><span class="proc-unit" id="kerf-unit">mm</span></div>
           <div class="proc-field" style="flex-direction:column;align-items:flex-start;gap:3px;">
             <label style="margin-bottom:2px;">Kerf Direction</label>
             <div class="kerf-dir-grid" style="width:100%">
@@ -1249,7 +1281,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
           </div>
           <div class="proc-field"><label>Cut Speed</label><input class="proc-input" id="mach-speed" type="number" value="80" min="1" step="5"/><span class="proc-unit" id="speed-unit">ipm</span></div>
           <div class="proc-field"><label>Pierce ms</label><input class="proc-input" id="mach-pierce" type="number" value="500" min="0" step="50"/></div>
-          <div class="proc-field"><label>Lead-In R</label><input class="proc-input" id="mach-leadin" type="number" value="0.125" min="0" step="0.0625"/><span class="proc-unit" id="leadin-unit">in</span></div>
+          <div class="proc-field"><label>Lead-In R</label><input class="proc-input" id="mach-leadin" type="number" value="3.175" min="0" step="0.5"/><span class="proc-unit" id="leadin-unit">mm</span></div>
           <div class="proc-field"><label>Dialect</label>
             <select class="proc-select" id="mach-dialect">
               <option value="generic">Generic Plasma</option>
@@ -1569,10 +1601,11 @@ var _ksmU='mm',_ksmM='a36';
         x.classList.toggle('act',x.dataset.u===_ksmU);});
     });
     document.getElementById('ksm-go').addEventListener('click',function(){
-      unitMode=_ksmU;
-      var mu=document.getElementById('mat-unit');if(mu)mu.textContent=unitMode;
+      // Apply unit via toggleUnits so all inputs and labels convert correctly
+      if(_ksmU !== unitMode) applyUnitSilent(_ksmU);
       selectMaterial(_ksmM);
       document.getElementById('kam-startup').classList.add('hidden');
+      updateSheetPlateLabel();
     });
   });
 })();
@@ -1707,10 +1740,36 @@ function toggleUnits() {
   // Update coord help panel unit label
   const coordCur = document.getElementById('coord-cur-unit');
   if(coordCur) coordCur.textContent = unitMode;
-  // Update KAM process panel unit labels
-  ['mat-thick-unit','kerf-unit','table-w-unit','table-h-unit','leadin-unit','nest-gap-unit','nest-margin-unit'].forEach(id=>{
+  // Convert and update KAM process panel numeric inputs
+  const _cvt = (id, isSmall) => {
+    const el = document.getElementById(id); if(!el) return;
+    const v = parseFloat(el.value); if(isNaN(v)) return;
+    if(unitMode==='in') {
+      // Converting mm → in: round small (thickness) to 4dp, large (dims) to 2dp
+      const inVal = v / MM_PER_IN;
+      el.value = isSmall ? inVal.toFixed(4) : Math.round(inVal * 100) / 100;
+      el.step  = isSmall ? '0.0625' : '0.5';
+    } else {
+      // Converting in → mm: round small to 2dp, large to whole mm
+      const mmVal = v * MM_PER_IN;
+      el.value = isSmall ? mmVal.toFixed(2) : Math.round(mmVal);
+      el.step  = isSmall ? '0.1' : '10';
+    }
+  };
+  _cvt('mat-thick',       true);  // process thickness
+  _cvt('kam-stl-thickness', true);  // 3D export thickness
+  _cvt('table-w',    false);  // sheet dims are large
+  _cvt('table-h',    false);
+  _cvt('tb-sheet-w', false);  // toolbar mirrors
+  _cvt('tb-sheet-h', false);
+  // Update all unit labels — note mat-unit (not mat-thick-unit) is the real ID
+  ['mat-unit','kerf-unit','table-w-unit','table-h-unit','leadin-unit','nest-gap-unit','nest-margin-unit','stl-thick-unit'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.textContent=unitMode;
   });
+  const tbu = document.getElementById('tb-sheet-unit');
+  if(tbu) tbu.textContent = unitMode;
+  // Update sheet/plate label based on thickness
+  updateSheetPlateLabel();
   const speedLbl=document.getElementById('speed-unit');
   if(speedLbl) speedLbl.textContent=unitMode==='in'?'ipm':'mm/min';
   updateKerfFromThickness();
@@ -4677,89 +4736,96 @@ function importNC(event) {
 }
 
 function parseNCtoKAM(text, filename) {
-  const lines = text.split(/\r?\n/);
-  let x=0, y=0;
+  // Parser aligned with KODE's parseNCtoGeom — handles N-words, modal G codes, arc arcs
+  const lines = text.replace(/\r/g,'').split('\n');
+  let x=0, y=0, torchOn=false, inchMode=true;
   const entities = [];
-  let torchOn = false;
-  let currentPath = [];  // accumulate points while torch is on
+  let cur = null;
   let torchOnCount = 0;
+  let lastGMotion = 'G0';
 
-  // G-code unit detection
-  let inchMode = true; // default inches for plasma
+  // Pre-scan first 30 lines for unit mode
+  for(const hl of lines.slice(0,30)) {
+    const hu = hl.replace(/^N[0-9]+\s*/i,'').toUpperCase();
+    if(hu.includes('G21')) { inchMode=false; break; }
+    if(hu.includes('G20')) { inchMode=true;  break; }
+  }
 
-  function toMM(val) { return inchMode ? val*25.4 : val; }
-
-  function parseCoord(str, token) {
-    const m = str.match(new RegExp(token+'([+-]?[0-9]*\\.?[0-9]+)', 'i'));
+  function toMM(v) { return inchMode ? v*25.4 : v; }
+  function coord(s,t) {
+    const m=s.match(new RegExp(t+'([+-]?[0-9]*\.?[0-9]+)','i'));
     return m ? parseFloat(m[1]) : null;
   }
 
   function commitPath() {
-    if(currentPath.length < 2) { currentPath=[]; return; }
-    // Try to detect if this is a closed contour
-    const first=currentPath[0], last=currentPath[currentPath.length-1];
-    const closed = Math.hypot(first.x-last.x, first.y-last.y) < 0.5; // within 0.5mm
-    if(closed && currentPath.length>2) currentPath.pop();
-    if(currentPath.length===2 && !closed) {
-      entities.push({type:'LINE',x1:currentPath[0].x,y1:currentPath[0].y,x2:currentPath[1].x,y2:currentPath[1].y,isCut:true});
-    } else if(currentPath.length>2) {
-      entities.push({type:'POLYLINE',pts:[...currentPath],closed,isCut:true});
+    if(!cur || cur.pts.length < 2) { cur=null; return; }
+    const first=cur.pts[0], last=cur.pts[cur.pts.length-1];
+    const closed = Math.hypot(first.x-last.x, first.y-last.y) < 0.5;
+    if(closed && cur.pts.length>2) cur.pts.pop();
+    if(cur.pts.length===2 && !closed) {
+      entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut:true});
+    } else if(cur.pts.length>2) {
+      entities.push({type:'POLYLINE',pts:[...cur.pts],closed,isCut:true});
     }
-    currentPath=[];
+    cur=null;
   }
 
-  for(const rawLine of lines) {
-    const line = rawLine.trim().replace(/;.*$/,'').replace(/\(.*?\)/g,'').toUpperCase();
+  for(const raw of lines) {
+    const line = raw.trim()
+      .replace(/^N[0-9]+\s*/i,'')
+      .replace(/;.*$/,'')
+      .replace(/\([^)]*\)/g,'')
+      .toUpperCase();
     if(!line) continue;
 
-    // Unit mode
     if(line.includes('G20')) inchMode=true;
     if(line.includes('G21')) inchMode=false;
 
-    // Torch on/off
-    const torchOnCodes  = ['M08','M03','M07','M64'];
-    const torchOffCodes = ['M09','M05','M65'];
-    if(torchOnCodes.some(c=>line.includes(c)))  { if(!torchOn){torchOn=true;torchOnCount++;} }
-    if(torchOffCodes.some(c=>line.includes(c))) { if(torchOn){torchOn=false;commitPath();} }
+    // Modal G tracking
+    if(line.match(/G0*0\b/)) lastGMotion='G0';
+    if(line.match(/G0*1\b/)) lastGMotion='G1';
+    if(line.match(/G0*2\b/)) lastGMotion='G2';
+    if(line.match(/G0*3\b/)) lastGMotion='G3';
 
-    // Parse X Y coordinates
-    const newX = parseCoord(line,'X');
-    const newY = parseCoord(line,'Y');
-    if(newX===null && newY===null) continue;
-    const nx = newX!==null ? toMM(newX) : x;
-    const ny = newY!==null ? toMM(newY) : y;
+    // Torch on/off
+    const onCodes  = ['M08','M03','M07','M64'];
+    const offCodes = ['M09','M05','M65'];
+    if(onCodes.some(mc=>line.includes(mc)))  { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+    if(offCodes.some(mc=>line.includes(mc))) { if(torchOn) { torchOn=false; commitPath(); } }
+
+    const nx2=coord(line,'X'), ny2=coord(line,'Y');
+    if(nx2===null && ny2===null) continue;
+    const nx=nx2!==null ? toMM(nx2) : x;
+    const ny=ny2!==null ? toMM(ny2) : y;
 
     if(torchOn) {
-      if(line.match(/^G0*1/) || line.match(/^[XY]/)) {
-        // Linear move while cutting
-        if(currentPath.length===0) currentPath.push({x,y});
-        currentPath.push({x:nx,y:ny});
-      } else if(line.match(/^G0*[23]/)) {
-        // Arc move — tessellate into line segments
-        const iStr = line.match(/I([+-]?[0-9]*\.?[0-9]+)/i);
-        const jStr = line.match(/J([+-]?[0-9]*\.?[0-9]+)/i);
-        const ci   = iStr ? toMM(parseFloat(iStr[1])) : 0;
-        const cj   = jStr ? toMM(parseFloat(jStr[1])) : 0;
-        const cx   = x + ci, cy = y + cj;
-        const r    = Math.hypot(ci, cj);
-        const sa   = Math.atan2(y-cy, x-cx);
-        const ea   = Math.atan2(ny-cy, nx-cx);
-        const ccw  = line.match(/^G0*3/) ? true : false;
-        let span = ccw ? (ea-sa+2*Math.PI)%(2*Math.PI) : (sa-ea+2*Math.PI)%(2*Math.PI);
+      const gM = line.match(/G0*([0-3])\b/);
+      const effG = gM ? 'G'+gM[1] : lastGMotion;
+
+      if(effG==='G1') {
+        if(!cur) cur={pts:[{x,y}]};
+        cur.pts.push({x:nx,y:ny});
+      } else if(effG==='G2'||effG==='G3') {
+        const iM=line.match(/I([+-]?[0-9]*\.?[0-9]+)/i);
+        const jM=line.match(/J([+-]?[0-9]*\.?[0-9]+)/i);
+        const ci=iM?toMM(parseFloat(iM[1])):0, cj=jM?toMM(parseFloat(jM[1])):0;
+        const cx=x+ci, cy=y+cj, r=Math.hypot(ci,cj);
+        const sa=Math.atan2(y-cy,x-cx), ea=Math.atan2(ny-cy,nx-cx);
+        const ccw=(effG==='G3');
+        let span=ccw?(ea-sa+2*Math.PI)%(2*Math.PI):(sa-ea+2*Math.PI)%(2*Math.PI);
         if(span===0) span=2*Math.PI;
-        const segs = Math.max(4, Math.round(36*span/(2*Math.PI)));
-        if(currentPath.length===0) currentPath.push({x,y});
+        const segs=Math.max(4,Math.round(36*span/(2*Math.PI)));
+        if(!cur) cur={pts:[{x,y}]};
         for(let i=1;i<=segs;i++){
-          const t=i/segs;
-          const a = ccw ? sa+t*span : sa-t*span;
-          currentPath.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
+          const t=i/segs, a=ccw?sa+t*span:sa-t*span;
+          cur.pts.push({x:parseFloat((cx+r*Math.cos(a)).toFixed(6)),y:parseFloat((cy+r*Math.sin(a)).toFixed(6))});
         }
       }
+      // G0 while torch on = rapid lead-in, skip
     }
-    // Track position always
     x=nx; y=ny;
   }
-  if(torchOn) commitPath(); // commit any open path at EOF
+  if(cur) commitPath();
 
   return { entities, stats:{ torchOn:torchOnCount } };
 }
@@ -6142,6 +6208,110 @@ function convexHull(pts) {
   }
   upper.pop(); lower.pop();
   return [...lower,...upper];
+}
+
+// ── Sheet size toolbar sync ──────────────────────────────────────────────────
+// Keep toolbar inputs (tb-sheet-w/h) and sidebar inputs (table-w/h) in sync
+
+function syncSheetInput(axis, val) {
+  // Update the sidebar input to match toolbar
+  const sidebarId = axis==='w' ? 'table-w' : 'table-h';
+  const sidebar = document.getElementById(sidebarId);
+  if (sidebar && sidebar.value !== val) sidebar.value = val;
+}
+
+function syncToolbarFromSidebar() {
+  // Call this when sidebar inputs change — updates toolbar display
+  const tw = document.getElementById('table-w');
+  const th = document.getElementById('table-h');
+  const tbw = document.getElementById('tb-sheet-w');
+  const tbh = document.getElementById('tb-sheet-h');
+  if (tw && tbw && tbw.value !== tw.value) tbw.value = tw.value;
+  if (th && tbh && tbh.value !== th.value) tbh.value = th.value;
+}
+
+function setSheetPreset(wIn, hIn) {
+  // Presets are in inches — convert if in mm mode
+  const isIn = unitMode === 'in';
+  const w = isIn ? wIn : Math.round(wIn * 25.4);
+  const h = isIn ? hIn : Math.round(hIn * 25.4);
+  ['table-w','tb-sheet-w'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = w;
+  });
+  ['table-h','tb-sheet-h'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = h;
+  });
+  render(); updateUtilization();
+  const label = isIn ? `${wIn/12}×${hIn/12} ft` : `${w}×${h} mm`;
+  showToast('Sheet: ' + label);
+}
+
+function initToolbarSheetInputs() {
+  // Populate toolbar inputs from sidebar on load
+  const tw = document.getElementById('table-w');
+  const th = document.getElementById('table-h');
+  const tbw = document.getElementById('tb-sheet-w');
+  const tbh = document.getElementById('tb-sheet-h');
+  const tbu = document.getElementById('tb-sheet-unit');
+  if (tw && tbw) tbw.value = tw.value;
+  if (th && tbh) tbh.value = th.value;
+  // Keep unit label in sync
+  const isIn = document.getElementById('unit-seg-in')?.classList.contains('active');
+  if (tbu) tbu.textContent = isIn ? 'in' : 'mm';
+}
+
+// Also patch sidebar table inputs to sync back to toolbar on change
+document.addEventListener('DOMContentLoaded', function() {
+  initToolbarSheetInputs();
+  updateSheetPlateLabel();
+  const tw = document.getElementById('table-w');
+  const th = document.getElementById('table-h');
+  if(tw) tw.addEventListener('input', syncToolbarFromSidebar);
+  if(th) th.addEventListener('input', syncToolbarFromSidebar);
+  // Keep unit label updated when units toggle
+  const origToggle = window.toggleUnits;
+  if(origToggle) window.toggleUnits = function() {
+    origToggle();
+    const isIn = document.getElementById('unit-seg-in')?.classList.contains('active');
+    const tbu = document.getElementById('tb-sheet-unit');
+    if(tbu) tbu.textContent = isIn ? 'in' : 'mm';
+    initToolbarSheetInputs();
+  };
+});
+
+// ── Sheet / Plate label logic ──────────────────────────────────────────────
+// Gauge materials (thin): called "Sheet"
+// Plate materials (thick): called "Plate"
+// Threshold: 3/16" (4.76mm) — industry standard dividing line for steel
+// Non-ferrous (aluminum, copper, brass): always "Sheet" regardless of thickness
+
+const SHEET_MATERIALS = ['aluminum','aluminium','copper','brass','titanium','stainless'];
+const GAUGE_THRESHOLD_MM = 4.76; // 3/16 inch
+
+function isSheetMaterial() {
+  const grade = (document.getElementById('mat-grade')?.value || '').toLowerCase();
+  const name  = (document.getElementById('mat-name-display')?.textContent || '').toLowerCase();
+  // Non-ferrous = always sheet
+  if (SHEET_MATERIALS.some(m => grade.includes(m) || name.includes(m))) return true;
+  // Ferrous: check thickness
+  const thickVal = parseFloat(document.getElementById('mat-thick')?.value) || 0;
+  const thickMM  = unitMode === 'in' ? thickVal * 25.4 : thickVal;
+  return thickMM <= GAUGE_THRESHOLD_MM;
+}
+
+function updateSheetPlateLabel() {
+  const label = isSheetMaterial() ? 'Sheet' : 'Plate';
+  // Update toolbar label
+  const tblLabel = document.getElementById('tb-sheet-label');
+  if (tblLabel) tblLabel.textContent = label.toUpperCase();
+  // Update sheet-dim-label pill in canvas overlay
+  const pill = document.getElementById('sheet-dim-label');
+  if (pill) {
+    const { wMM, hMM } = getTableDims();
+    const w = toDisplay(wMM).toFixed(unitMode==='in'?3:0);
+    const h = toDisplay(hMM).toFixed(unitMode==='in'?3:0);
+    pill.textContent = w + ' × ' + h + ' ' + unitMode + ' ' + label;
+  }
 }
 </script>
 
