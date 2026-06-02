@@ -1106,7 +1106,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('gkode-file-input').click();closeMenus()">Import .nc → G·KODE</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc → KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1400,15 +1400,15 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
       Export .nc
     </button>
-    <button class="op-btn" onclick="document.getElementById('gkode-file-input').click()">
+    <button class="op-btn" onclick="document.getElementById('load-nc-file').click()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Import .nc → G·KODE
+      Import .nc
     </button>
     <button class="op-btn" style="color:var(--amber);border-color:var(--amber-dim);" onclick="explodeNCToParts()" title="Group closed contours from NC import into named parts in the Part Library">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Explode NC → Parts
     </button>
-    <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNC(event)" style="display:none">
+    <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="openNCImportDialog(event)" style="display:none">
     <input type="file" id="load-kam-file" accept=".kam" onchange="loadKAM(event)" style="display:none">
     <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none" multiple>
     <input type="file" id="load-dxf" accept=".dxf,.DXF" onchange="importDXF(event)" style="display:none">
@@ -5207,7 +5207,7 @@ function _ncImportDraw() {
 
   const stats = document.getElementById('nc-tp-stats');
   if(!result.entities.length) {
-    ctx.fillStyle = 'rgba(255,170,0,0.3)'; ctx.font = '10px Fira Code,monospace';
+    ctx.fillStyle = 'rgba(204,17,51,0.3)'; ctx.font = '10px Fira Code,monospace';
     ctx.textAlign = 'center'; ctx.fillText('No toolpath geometry — try changing units', W/2, H/2);
     if(stats) stats.innerHTML = 'No geometry detected';
     return;
@@ -5232,7 +5232,7 @@ function _ncImportDraw() {
   function sv(px,py){ return {x: px*sc+ox, y: -py*sc+oy}; }
 
   // Draw cut paths
-  const colors = ['#ffaa00','#ff6b00','#ffcc44','#e08800'];
+  const colors = ['#cc1133','#ff4455','#e03358','#ff6677'];
   result.entities.forEach((ent,i) => {
     ctx.strokeStyle = colors[i % colors.length];
     ctx.lineWidth = 1.1;
