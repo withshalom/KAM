@@ -1182,6 +1182,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     <div class="mode-tab-bar">
       <button class="mode-tab active" id="mt-part" onclick="setKAMMode('part')">⚙ PART</button>
       <button class="mode-tab" id="mt-table" onclick="setKAMMode('table')">⬛ TABLE</button>
+      <button class="mode-tab" id="mt-nc" onclick="setKAMMode('nc')" style="color:#ff6b35;">&lt;/&gt; NC</button>
     </div>
   </div>
 
@@ -1238,6 +1239,40 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       <button class="op-btn" style="color:#ff4455;border-color:rgba(255,68,85,0.2)" onclick="nestClearAll()">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Clear All</button>
     </div>
+  </div>
+
+  <!-- ── NC MODE SIDEBAR ───────────────────────────────────────── -->
+  <div id="nc-sidebar" style="display:none;flex-direction:column;flex:1;overflow-y:auto;">
+    <div class="section-head" style="color:#ff6b35;letter-spacing:0.14em;">NC TOOLPATH</div>
+    <div style="padding:6px 8px;font-family:var(--fm);font-size:9px;color:var(--t2);line-height:1.6;">
+      <span id="nc-mode-status">No NC file loaded</span>
+    </div>
+    <div style="padding:4px 8px;display:flex;flex-direction:column;gap:4px;">
+      <div style="font-family:var(--fm);font-size:8px;color:var(--t3);letter-spacing:0.1em;padding:2px 0;">LEGEND</div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:9px;color:var(--t2);">
+        <div style="width:24px;height:3px;background:#ffaa00;border-radius:1px;"></div> Cut (G1/G2/G3)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-family:var(--fm);font-size:9px;color:var(--t2);">
+        <div style="width:24px;height:0;border-top:2px dashed #4488cc;"></div> Rapid (G0)
+      </div>
+    </div>
+    <div class="file-ops-sep" style="margin:6px 8px;"></div>
+    <div style="padding:4px 8px;display:flex;flex-direction:column;gap:4px;">
+      <div style="font-family:var(--fm);font-size:8px;color:var(--t3);letter-spacing:0.1em;padding:2px 0;">EXTRACT</div>
+      <button class="op-btn-color" style="--c:0,212,255;" onclick="ncAutoExtract()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Auto-detect Parts
+      </button>
+      <button class="op-btn-color" style="--c:0,255,157;" onclick="ncExtractSelected()" id="nc-extract-btn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Extract → Part Library
+      </button>
+      <button class="op-btn-color" style="--c:255,170,0;" onclick="explodeNCToParts()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Explode All → Parts
+      </button>
+    </div>
+    <div id="nc-contour-list" style="padding:4px 8px;display:flex;flex-direction:column;gap:3px;"></div>
   </div>
   <!-- ── PART MODE SIDEBAR ─────────────────── -->
   <div id="part-sidebar">
@@ -2298,7 +2333,7 @@ function findSnap(wx, wy) {
 let activeTool   = 'select';
 let placePartId  = null;  // which part is being placed (PLACE tool)
 let mouseWorld   = {x:0,y:0};
-let kamMode      = 'part';   // 'part' | 'table'
+let kamMode      = 'part';   // 'part' | 'table' | 'nc'
 let nestSel      = null;     // { partId, iid } selected in TABLE mode
 let nestPlacing  = null;     // partId being placed
 let nestDrag     = null;     // { partId, iid, ox, oy } active drag
@@ -3758,17 +3793,25 @@ const C={
 // ═══════════════════════════════════════════════════════════
 function setKAMMode(mode) {
   kamMode = mode;
-  document.getElementById('mt-part').classList.toggle('active', mode==='part');
+  document.getElementById('mt-part').classList.toggle('active',  mode==='part');
   document.getElementById('mt-table').classList.toggle('active', mode==='table');
-  document.getElementById('part-sidebar').style.display = mode==='part' ? '' : 'none';
+  const ncBtn = document.getElementById('mt-nc');
+  if(ncBtn) ncBtn.classList.toggle('active', mode==='nc');
+  document.getElementById('part-sidebar').style.display = mode==='part'  ? ''     : 'none';
   document.getElementById('nest-panel').style.display   = mode==='table' ? 'flex' : 'none';
-  // Mode-specific view toggle bar
+  const ncSidebar = document.getElementById('nc-sidebar');
+  if(ncSidebar) ncSidebar.style.display = mode==='nc' ? 'flex' : 'none';
+  // View toggle only relevant in part mode
   const vtBar = document.querySelector('.view-toggle');
-  if (vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
-  if (mode==='table') {
+  if(vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
+  if(mode==='table') {
     nestSel = null; nestPlacing = null; nestDrag = null;
     fitTableView();
     updateNestPanel();
+  }
+  if(mode==='nc') {
+    fitNCView();
+    updateNCStatus();
   }
   render();
 }
@@ -3841,6 +3884,139 @@ function hitTestNest(wx, wy) {
       return { partId:part.partId, iid:inst.iid };
   }
   return null;
+}
+
+
+// ── NC MODE RENDER ────────────────────────────────────────────────────────────
+function renderNCMode(W, H) {
+  // Plain dark canvas — no table, no grid lines, just the toolpath
+  ctx.fillStyle = '#07090c';
+  ctx.fillRect(0, 0, W, H);
+
+  if (!GeoMemory.objects.length) {
+    ctx.fillStyle = 'rgba(255,107,53,0.4)';
+    ctx.font = '13px Fira Code,monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Import NC via NC IN button', W/2, H/2);
+    return;
+  }
+
+  // Draw all entities — cut moves bright amber, rapids dim blue dashed
+  for(const o of GeoMemory.objects) {
+    const isRapid = (o.layer === 'NC_Rapid');
+    const isSel   = selectedIds.has(o.id);
+    const isHighlighted = o._ncHighlight; // set by auto-detect
+
+    if(isRapid) {
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#5599cc';
+      ctx.lineWidth   = 1.0;
+      ctx.setLineDash([6, 5]);
+    } else if(isSel) {
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#ffff00';
+      ctx.lineWidth   = 3.0;
+      ctx.setLineDash([]);
+    } else if(isHighlighted) {
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#00ff9d';
+      ctx.lineWidth   = 2.5;
+      ctx.setLineDash([]);
+    } else {
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#ffbb33';
+      ctx.lineWidth   = 2.2;
+      ctx.setLineDash([]);
+    }
+
+    if(o.type === 'LINE') {
+      const a = worldToScreen(o.x1, o.y1), b = worldToScreen(o.x2, o.y2);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    } else if(o.type === 'POLYLINE' && o.pts.length > 1) {
+      const p0 = worldToScreen(o.pts[0].x, o.pts[0].y);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y);
+      for(let i = 1; i < o.pts.length; i++) {
+        const p = worldToScreen(o.pts[i].x, o.pts[i].y);
+        ctx.lineTo(p.x, p.y);
+      }
+      if(o.closed) ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw selection box
+  drawSelBox();
+}
+
+function fitNCView() {
+  // Fit all geometry into view with padding
+  const objs = GeoMemory.objects.filter(o => o.layer !== 'NC_Rapid');
+  if(!objs.length) return;
+  let minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
+  for(const o of objs) {
+    if(o.type==='LINE') {
+      minX=Math.min(minX,o.x1,o.x2); maxX=Math.max(maxX,o.x1,o.x2);
+      minY=Math.min(minY,o.y1,o.y2); maxY=Math.max(maxY,o.y1,o.y2);
+    } else if(o.type==='POLYLINE') {
+      for(const p of o.pts) {
+        minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x);
+        minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y);
+      }
+    }
+  }
+  if(!isFinite(minX)) return;
+  const W=canvas.width, H=canvas.height, pad=60;
+  const gW=maxX-minX, gH=maxY-minY;
+  if(gW<1||gH<1) return;
+  cam.zoom = Math.min((W-pad*2)/gW, (H-pad*2)/gH);
+  cam.panX = (W - gW*cam.zoom)/2 - minX*cam.zoom;
+  cam.panY = (H + gH*cam.zoom)/2 + minY*cam.zoom;
+  updateGridLabel();
+}
+
+function updateNCStatus() {
+  const el = document.getElementById('nc-mode-status');
+  if(!el) return;
+  const cuts   = GeoMemory.objects.filter(o => o.layer==='NC_Import').length;
+  const rapids = GeoMemory.objects.filter(o => o.layer==='NC_Rapid').length;
+  const closed = GeoMemory.objects.filter(o => o.type==='POLYLINE' && o.closed).length;
+  if(!cuts && !rapids) { el.textContent = 'No NC file loaded'; return; }
+  el.textContent = cuts + ' cut paths · ' + rapids + ' rapids · ' + closed + ' closed contours';
+}
+
+function ncAutoExtract() {
+  // Highlight all closed polylines in NC_Import layer
+  let count = 0;
+  for(const o of GeoMemory.objects) {
+    if(o.type==='POLYLINE' && o.closed && o.layer==='NC_Import') {
+      o._ncHighlight = true; count++;
+    }
+  }
+  if(!count) { showToast('No closed contours detected — check NC units and geometry'); return; }
+  showToast(count + ' closed contour' + (count>1?'s':'') + ' found — select to extract');
+  const btn = document.getElementById('nc-extract-btn');
+  if(btn) btn.disabled = false;
+  render();
+}
+
+function ncExtractSelected() {
+  // Extract all highlighted closed polylines as parts
+  const toExtract = GeoMemory.objects.filter(o => o._ncHighlight && o.type==='POLYLINE' && o.closed);
+  if(!toExtract.length) { showToast('No highlighted contours to extract'); return; }
+  let count = 0;
+  for(const o of toExtract) {
+    const ids = [o.id];
+    PartLibrary.addPart('NC Part ' + (PartLibrary.parts.length+1), 'NC Import', ids, 1);
+    o._ncHighlight = false;
+    count++;
+  }
+  updateNCStatus(); updateContourList(); render();
+  showToast(count + ' part' + (count>1?'s':'') + ' added to Part Library · switch to TABLE to nest');
+  const btn = document.getElementById('nc-extract-btn');
+  if(btn) btn.disabled = true;
 }
 
 function renderTableMode(W, H) {
@@ -4030,8 +4206,10 @@ function render() {
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
   if (kamMode==='table') { renderTableMode(W,H); return; }
+  if (kamMode==='nc')    { renderNCMode(W,H);    return; }
   if(showGrid) drawGrid(W,H);
-  drawTableOutline();
+  // Table outline only in table mode (not part or nc view)
+  if(kamMode==='table') drawTableOutline();
   if(viewMode==='kam') drawKAMOverlay();
   drawEntities();
   drawRubberBand();
@@ -5200,9 +5378,10 @@ function importNC(event) {
     const unitStr = result.stats.inchMode ? 'in→mm' : 'mm';
     showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr + ' · ' + unitStr);
     setViewMode('kam');
+    // Switch to NC view so user sees the toolpath immediately
+    setKAMMode('nc');
     // Silent auto-explode — registers closed contours as parts without showing errors
     explodeNCToParts(true);
-    updateContourList();
     // Open G·KODE panel as viewer (geometry already imported — hide Import btn)
     openGkodeAsViewer(e.target.result, file.name);
   };
