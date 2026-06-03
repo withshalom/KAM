@@ -5165,9 +5165,9 @@ function importNC(event) {
     const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
     showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr);
     setViewMode('kam');
-    explodeNCToParts();
     // Open G·KODE panel as viewer (geometry already imported — hide Import btn)
     openGkodeAsViewer(e.target.result, file.name);
+    // Don't auto-explode — user can trigger manually once geometry is verified
   };
   reader.readAsText(file);
 }
@@ -5222,7 +5222,11 @@ function parseNCtoKAM(text, filename) {
   function commitPath() {
     if(!cur || cur.pts.length < 2) { cur=null; return; }
     const first=cur.pts[0], last=cur.pts[cur.pts.length-1];
-    const closed = Math.hypot(first.x-last.x, first.y-last.y) < 0.5;
+    // Closure tolerance: 1% of path bbox diagonal, min 0.1mm max 5mm
+    const pts=cur.pts, xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+    const diag=Math.hypot(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+    const closeTol=Math.min(5, Math.max(0.1, diag*0.01));
+    const closed = Math.hypot(first.x-last.x, first.y-last.y) < closeTol;
     if(closed && cur.pts.length>2) cur.pts.pop();
     if(cur.pts.length===2 && !closed) {
       entities.push({type:'LINE',x1:cur.pts[0].x,y1:cur.pts[0].y,x2:cur.pts[1].x,y2:cur.pts[1].y,isCut:true});
