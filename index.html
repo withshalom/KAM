@@ -3745,7 +3745,7 @@ const C={
   grid:'#181610',        // warm dark grid
   gridMaj:'#252018',     // slightly warmer major grid
   axis:'#2a2215',
-  entity:'#e8c97a',      // warm steel/brass for untagged geometry
+  entity:'#ffdd88',      // bright warm brass for untagged geometry
   entitySel:'#ffaa00',   // amber selection
   point:'#ffaa00',
   rubberLine:'#ffaa00',  // amber rubber band (was cyan in KAD)
@@ -4067,9 +4067,8 @@ function drawEntities() {
     // KAM view: dim untagged entities so tagged contours stand out
     const _tag = KAM.getTag(o.id);
     const _isRapid = (o.layer === 'NC_Rapid');
-    if(_isRapid) ctx.globalAlpha = 0.35;
-    else if(viewMode==='kam' && !_tag) ctx.globalAlpha = 0.65;
-    else ctx.globalAlpha = 1;
+    if(_isRapid) ctx.globalAlpha = 0.45;
+    else ctx.globalAlpha = 1;  // always full opacity — dim only rapids
     // Part color: entities belonging to a named part take that part's color
     const _part = PartLibrary.getPartForEntity(o.id);
     const _col  = sel ? C.entitySel : (_part ? _part.color : C.entity);
@@ -4077,9 +4076,9 @@ function drawEntities() {
       const a=worldToScreen(o.x1,o.y1), b=worldToScreen(o.x2,o.y2);
       const isRapid = (o.layer==='NC_Rapid');
       if(sel){ ctx.shadowColor='rgba(255,170,0,0.5)'; ctx.shadowBlur=8; }
-      ctx.strokeStyle = isRapid ? 'rgba(80,140,200,0.45)' : _col;
-      ctx.lineWidth = sel ? 2 : (isRapid ? 0.7 : 1.2);
-      if(isRapid) ctx.setLineDash([4,4]);
+      ctx.strokeStyle = isRapid ? 'rgba(80,140,200,0.55)' : _col;
+      ctx.lineWidth = sel ? 2.5 : (isRapid ? 0.8 : 1.8);
+      if(isRapid) ctx.setLineDash([5,4]);
       ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
       if(isRapid) ctx.setLineDash([]);
       ctx.shadowBlur=0;
@@ -4089,7 +4088,7 @@ function drawEntities() {
       if(o.pts.length < 2) continue;
       if(sel){ ctx.shadowColor='rgba(255,170,0,0.5)'; ctx.shadowBlur=10; }
       ctx.strokeStyle=_col;
-      ctx.lineWidth=sel?2:1.2;
+      ctx.lineWidth=sel?2.5:1.8;
       ctx.beginPath();
       const p0=worldToScreen(o.pts[0].x, o.pts[0].y);
       ctx.moveTo(p0.x, p0.y);
