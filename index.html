@@ -85,7 +85,7 @@
 html, body { width:100%; height:100%; overflow:hidden; background:var(--void); color:var(--t1); font-family:var(--fd); font-size:13px; }
 
 /* ── LAYOUT ── */
-#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr; grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; }
+#app { display:grid; grid-template-columns:var(--sidebar-w) 1fr var(--gkode-w,0px); grid-template-rows:var(--toolbar-h) 1fr var(--status-h); width:100vw; height:100vh; transition:grid-template-columns 0.22s ease; }
 
 /* ── TOPBAR ── */
 #topbar { grid-column:1/-1; display:flex; align-items:center; background:var(--panel); border-bottom:1px solid var(--border); padding:0 12px; position:relative; z-index:30; }
@@ -144,12 +144,29 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--void); c
 #offset-dist-unit { font-family:var(--fm); font-size:9px; color:var(--t3); }
 
 /* File ops */
-.file-ops { padding:6px; display:flex; flex-direction:column; gap:3px; border-bottom:1px solid var(--border); flex-shrink:0; }
+
 .op-btn { display:flex; align-items:center; gap:8px; padding:6px 10px; width:100%; background:var(--panel2); border:1px solid var(--border); border-radius:4px; color:var(--t2); font-size:11px; font-family:var(--fm); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; }
 .op-btn:hover { background:var(--hover); border-color:var(--border-hi); color:var(--t1); }
 .op-btn.dxf { color:var(--green); border-color:var(--green-dim); }
 .op-btn.dxf:hover { background:rgba(0,255,157,0.06); border-color:var(--green); }
 .op-btn svg { width:12px; height:12px; flex-shrink:0; }
+/* Color-coded file buttons — set --c:r,g,b on each button */
+.op-btn-color {
+  display:flex; align-items:center; gap:8px; padding:7px 10px; width:100%;
+  background: rgba(var(--c),0.09);
+  border: 1px solid rgba(var(--c),0.32);
+  border-radius:4px;
+  color: rgb(var(--c));
+  font-size:10px; font-family:var(--fm); cursor:pointer;
+  transition:all 0.15s; letter-spacing:0.05em;
+}
+.op-btn-color:hover {
+  background: rgba(var(--c),0.18);
+  border-color: rgba(var(--c),0.7);
+}
+.op-btn-color svg { width:12px; height:12px; flex-shrink:0; color:inherit; }
+.file-ops { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px 8px 6px; }
+.file-ops-sep { grid-column:1/-1; height:1px; background:rgba(255,255,255,0.05); margin:2px 0; }
 #load-kad { display:none; }
 
 /* Coord input panel */
@@ -775,6 +792,7 @@ body.gkode-open #app {
 }
 body.gkode-open #gkode-panel {
   width: 300px;
+  min-width: 300px;
 }
 
 /* Panel header */
@@ -1008,7 +1026,55 @@ body.gkode-open #gkode-panel {
   box-shadow: 0 0 18px var(--gk-glow);
 }
 
-/* Toggle button in topbar */
+/* ── NC action buttons in topbar ─────────────────────────────────────────── */
+.tb-nc-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+.tb-nc-btn {
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 3px;
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.12s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+/* Import — amber/orange (incoming) */
+.tb-nc-btn.import {
+  background: rgba(255,170,0,0.12);
+  border-color: rgba(255,170,0,0.4);
+  color: var(--amber);
+}
+.tb-nc-btn.import:hover {
+  background: rgba(255,170,0,0.22);
+  border-color: var(--amber);
+}
+/* Export — accent cyan (outgoing) */
+.tb-nc-btn.export {
+  background: rgba(0,212,255,0.10);
+  border-color: rgba(0,212,255,0.35);
+  color: var(--accent);
+}
+.tb-nc-btn.export:hover {
+  background: rgba(0,212,255,0.20);
+  border-color: var(--accent);
+}
+/* Arrow icons */
+.tb-nc-btn .nc-arrow { font-size: 10px; opacity: 0.8; }
+
+/* ── Toggle button in topbar */
+
 .gkode-toggle-btn {
   height: 24px; padding: 0 10px;
   font-family: var(--fm); font-size: 10px; font-weight: 600;
@@ -1055,7 +1121,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="document.getElementById('load-kad-file').click();closeMenus()">Import .kad</div>
         <div class="tb-dd-item" onclick="document.getElementById('load-dxf').click();closeMenus()">Import .dxf</div>
-        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM</div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
+        <div class="tb-dd-item" onclick="document.getElementById('load-nc-file').click();closeMenus()">Import .nc / .txt → .KAM<span class="dd-key">Ctrl+I</span></div><div class="tb-dd-item" onclick="receiveFromKODE();closeMenus()" style="color:var(--accent)">← Receive from KODE</div>
         <div class="tb-dd-sep"></div>
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Export .nc<span class="dd-key">Ctrl+E</span></div>
         <div class="tb-dd-item" onclick="exportDXF();closeMenus()">Export .dxf</div>
@@ -1090,6 +1156,20 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
         <div class="tb-dd-item" onclick="openNCModal();closeMenus()">Generate .NC<span class="dd-key">Ctrl+E</span></div>
       </div>
     </div>
+  </div>
+
+  <!-- NC import / export quick-access buttons -->
+  <div class="tb-nc-group">
+    <button class="tb-nc-btn import"
+            onclick="document.getElementById('load-nc-file').click()"
+            title="Import .nc file → geometry on canvas (Ctrl+I)">
+      <span class="nc-arrow">↓</span> NC IN
+    </button>
+    <button class="tb-nc-btn export"
+            onclick="openNCasGKODE()"
+            title="Generate & view NC output (Ctrl+E)">
+      <span class="nc-arrow">↑</span> NC OUT
+    </button>
   </div>
 
   <div style="margin-left:12px;">
@@ -1161,6 +1241,98 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
   </div>
   <!-- ── PART MODE SIDEBAR ─────────────────── -->
   <div id="part-sidebar">
+  <!-- ── FILE · NC · 3D — color per file type ─────────────────────────────── -->
+  <div class="section-head" style="letter-spacing:0.14em;">FILES &amp; NC</div>
+  <div class="file-ops" style="gap:4px;">
+
+    <!-- .nc — amber · full-width pair at top (primary workflow) -->
+    <button class="op-btn-color" style="--c:220,50,50;"
+            onclick="document.getElementById('load-nc-file').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+      Import .nc
+    </button>
+    <button class="op-btn-color" style="--c:220,50,50;"
+            onclick="openNCasGKODE()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Export .nc
+    </button>
+
+    <div class="file-ops-sep"></div>
+
+    <!-- .kam — gold -->
+    <button class="op-btn-color" style="--c:255,140,0;"
+            onclick="document.getElementById('load-kam-file').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Open .kam
+    </button>
+    <button class="op-btn-color" style="--c:255,140,0;"
+            onclick="saveKAM()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save .kam
+    </button>
+
+    <div class="file-ops-sep"></div>
+
+    <!-- .kad — cyan (KAD's color) -->
+    <button class="op-btn-color" style="--c:0,212,255;grid-column:1/-1;"
+            onclick="document.getElementById('load-kad-file').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import .kad
+    </button>
+
+    <!-- .dxf — green · import + export same color -->
+    <button class="op-btn-color" style="--c:0,255,157;"
+            onclick="document.getElementById('load-dxf').click()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import .dxf
+    </button>
+    <button class="op-btn-color" style="--c:0,255,157;"
+            onclick="exportDXF()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export .dxf
+    </button>
+
+    <div class="file-ops-sep"></div>
+
+    <!-- .stl — teal · import + export same color -->
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:0 0 2px;">
+      <span style="font-family:var(--fm);font-size:8px;color:var(--t3);letter-spacing:0.1em;flex:1;">3D THICKNESS</span>
+      <input id="kam-stl-thickness" type="number" value="6" min="0.1" step="0.1"
+        style="width:46px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+        border-radius:4px;color:#d0dde8;font-family:var(--fm);font-size:10px;
+        padding:2px 5px;outline:none;text-align:right;">
+      <span id="stl-thick-unit" style="font-family:var(--fm);font-size:8px;color:var(--t3);">mm</span>
+    </div>
+    <button class="op-btn-color" style="--c:180,100,255;"
+            onclick="exportSTL()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export .stl
+    </button>
+    <label class="op-btn-color" style="--c:180,100,255;cursor:pointer;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import .stl
+      <input type="file" accept=".stl" style="display:none"
+        onchange="importSTLToKAM(this.files[0]);this.value=''">
+    </label>
+
+    <div class="file-ops-sep"></div>
+
+    <!-- Explode NC → Parts — amber (NC family) -->
+    <button class="op-btn-color" style="--c:220,50,50;grid-column:1/-1;"
+            onclick="explodeNCToParts()"
+            title="Group closed contours into named parts in the Part Library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Explode NC → Parts
+    </button>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="gkode-file-input" accept=".nc,.txt,.tap,.cnc,.gcode" style="display:none" onchange="gkodeLoadFile(event)">
+    <input type="file" id="load-nc-file"     accept=".nc,.NC,.tap,.cnc,.gcode"  style="display:none" onchange="importNC(event)">
+    <input type="file" id="load-kam-file"    accept=".kam"                       style="display:none" onchange="loadKAM(event)">
+    <input type="file" id="load-kad-file"    accept=".kad"                       style="display:none" onchange="importKAD(event)" multiple>
+    <input type="file" id="load-dxf"         accept=".dxf,.DXF"                 style="display:none" onchange="importDXF(event)">
+  </div>
+
   <div class="section-head" style="color:var(--accent);letter-spacing:0.14em;">KAM Tools</div>
   <div class="tool-grid">
 
@@ -1270,93 +1442,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     </button>
   </div>
 
-  <!-- ── 3D Export / Import ── -->
-    <div class="section-head" style="margin-top:4px;">3D · Thickness</div>
-    <div style="padding:4px 8px 2px;display:flex;align-items:center;gap:6px;">
-      <span style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;letter-spacing:0.1em;flex:1;">Sheet thickness</span>
-      <input id="kam-stl-thickness" type="number" value="6" min="0.1" step="0.1"
-        style="width:46px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
-        border-radius:4px;color:#d0dde8;font-family:'Fira Code',monospace;font-size:10px;
-        padding:2px 5px;outline:none;text-align:right;">
-      <span id="stl-thick-unit" style="font-family:'Fira Code',monospace;font-size:8px;color:#6a8099;">mm</span>
-    </div>
-    <!-- Export — STL + STEP together, same green/blue family -->
-    <div style="padding:3px 8px 5px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <button onclick="exportSTL()"
-        style="width:100%;background:rgba(0,255,157,0.08);border:1px solid rgba(0,255,157,0.2);
-        border-radius:5px;color:#00ff9d;font-family:'Fira Code',monospace;font-size:9px;
-        padding:6px;cursor:pointer;letter-spacing:0.06em;margin-bottom:3px;
-        display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>Export .stl</button>
-      <button onclick="exportSTEP()"
-        style="width:100%;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);
-        border-radius:5px;color:#4db8ff;font-family:'Fira Code',monospace;font-size:9px;
-        padding:6px;cursor:pointer;letter-spacing:0.06em;
-        display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>Export .step
-        <span style="font-size:7px;opacity:0.45;margin-left:auto;">AP214</span></button>
-    </div>
-    <!-- Import — STL → flat profile -->
-    <div style="padding:3px 8px 5px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <label style="width:100%;background:rgba(255,170,0,0.06);border:1px solid rgba(255,170,0,0.18);
-        border-radius:5px;color:#ffaa00;font-family:'Fira Code',monospace;font-size:9px;
-        padding:6px;cursor:pointer;letter-spacing:0.06em;
-        display:flex;align-items:center;gap:6px;">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>Import .stl → profile
-        <input type="file" accept=".stl" style="display:none"
-          onchange="importSTLToKAM(this.files[0]);this.value=''">
-      </label>
-    </div>
-    <!-- Delete — always at bottom -->
-    <div style="padding:6px 8px;border-top:1px solid rgba(255,68,85,0.1);">
-      
-    </div>
 
-  <div class="section-head">File</div>
-  <div class="file-ops">
-    <button class="op-btn kam" onclick="saveKAM()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Save .kam
-    </button>
-    <button class="op-btn" onclick="document.getElementById('load-kam-file').click()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Open .kam
-    </button>
-    <button class="op-btn" onclick="document.getElementById('load-kad-file').click()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Import .kad
-    </button>
-    <button class="op-btn" onclick="document.getElementById('load-dxf').click()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Import .dxf
-    </button>
-    <button class="op-btn nc" onclick="openNCModal()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-      Export .nc
-    </button>
-    <button class="op-btn" onclick="document.getElementById('load-nc-file').click()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Import .nc
-    </button>
-    <button class="op-btn" style="color:var(--amber);border-color:var(--amber-dim);" onclick="explodeNCToParts()" title="Group closed contours from NC import into named parts in the Part Library">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Explode NC → Parts
-    </button>
-    <input type="file" id="gkode-file-input" accept=".nc,.txt,.tap,.cnc,.gcode" style="display:none" onchange="gkodeLoadFile(event)">
-  <input type="file" id="load-nc-file" accept=".nc,.NC,.tap,.cnc,.gcode" onchange="importNC(event)" style="display:none">
-    <input type="file" id="load-kam-file" accept=".kam" onchange="loadKAM(event)" style="display:none">
-    <input type="file" id="load-kad-file" accept=".kad" onchange="importKAD(event)" style="display:none" multiple>
-    <input type="file" id="load-dxf" accept=".dxf,.DXF" onchange="importDXF(event)" style="display:none">
-  </div>
 
   <!-- Coordinate Input Help -->
   <div id="coord-panel">
@@ -1631,6 +1717,72 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     </div>
   </div>
 </div>
+
+
+<!-- ═══ G·KODE PANEL — NC code viewer, slides in from right ════════════════ -->
+<div id="gkode-panel">
+
+  <!-- Header -->
+  <div class="gkode-head">
+    <div class="gkode-brand">
+      <div class="gkode-mark">GK</div>
+      <span class="gkode-title">G·KODE</span>
+      <span class="gkode-sub" id="gkode-mode-label">nc viewer</span>
+    </div>
+    <div class="gkode-head-right">
+      <!-- Load button: review a different .nc without importing -->
+      <button class="gkode-btn gkode-btn-load"
+              onclick="document.getElementById('gkode-file-input').click()"
+              title="Load a .nc file for review (does not import to canvas)">
+        Review .nc
+      </button>
+      <!-- Import button: only shown when panel loaded standalone (not from importNC) -->
+      <button class="gkode-btn gkode-btn-import" id="gkode-import-btn"
+              onclick="gkodeCommitImport()" disabled
+              title="Import this NC file as geometry to the canvas">
+        Import →
+      </button>
+      <button class="gkode-btn" id="gkode-download-btn"
+              onclick="gkodeDownload()"
+              title="Download this NC file"
+              style="display:none;">⬇ Save</button>
+      <button class="gkode-btn gkode-btn-close"
+              onclick="toggleGKODE()" title="Close panel (Ctrl+K)">✕</button>
+    </div>
+  </div>
+
+  <!-- Toolpath minimap -->
+  <div class="gkode-tp-wrap">
+    <canvas id="gkode-tp-canvas"></canvas>
+    <div class="gkode-tp-label" id="gkode-tp-label">—</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="gkode-stats" id="gkode-stats">Load or import a .nc file to inspect</div>
+
+  <!-- Unit override + merge mode (only relevant for standalone load) -->
+  <div class="gkode-unit-bar" id="gkode-unit-bar">
+    <label>Units</label>
+    <button class="gkode-ub active" id="gk-ub-auto" onclick="gkodeSetUnit('auto')">Auto</button>
+    <button class="gkode-ub"        id="gk-ub-mm"   onclick="gkodeSetUnit('mm')">mm</button>
+    <button class="gkode-ub"        id="gk-ub-in"   onclick="gkodeSetUnit('in')">in</button>
+    <span class="gkode-merge-lbl">Canvas</span>
+    <button class="gkode-mb active" id="gk-mb-replace" onclick="gkodeSetMerge('replace')">Replace</button>
+    <button class="gkode-mb"        id="gk-mb-merge"   onclick="gkodeSetMerge('merge')">Merge</button>
+  </div>
+
+  <!-- Code label -->
+  <div class="gkode-code-head">G-CODE &nbsp;<em id="gkode-code-label">—</em></div>
+
+  <!-- Syntax-highlighted code scroll -->
+  <div class="gkode-code-scroll" id="gkode-code-scroll">
+    <div class="gkode-empty" id="gkode-empty-state">
+      <div class="gkode-empty-mark">GK</div>
+      <div>Import a .nc file via<br><em>File → Import .nc</em><br>or load one for review above</div>
+    </div>
+  </div>
+
+</div><!-- /gkode-panel -->
 
 </div><!-- end #app -->
 
@@ -3482,6 +3634,7 @@ function onKeyDown(e) {
     if(k==='t'||k==='T') setTool('tag');
     if(k==='p'||k==='P') setTool('place');
     if(k==='k'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); if(typeof toggleGKODE==='function') toggleGKODE(); else sendToKODE(); }
+    if(k==='i'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); document.getElementById('load-nc-file').click(); }
     if(k==='v'||k==='V') setViewMode(viewMode==='kad'?'kam':'kad');
     if(k==='1') tagSelected('cut');
     if(k==='2') tagSelected('mark');
@@ -3499,7 +3652,7 @@ function onKeyDown(e) {
   }
   if(e.ctrlKey){
     if(k==='s'){ e.preventDefault(); saveKAM(); }
-    if(k==='e'){ e.preventDefault(); openNCModal(); }
+    if(k==='e'){ e.preventDefault(); openNCasGKODE(); }
   }
 }
 
@@ -5010,17 +5163,8 @@ function importNC(event) {
     showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr);
     setViewMode('kam');
     explodeNCToParts();
-    // Open G·KODE panel to show the imported NC
-    if(typeof toggleGKODE === 'function') {
-      _gkText = e.target.result;
-      _gkName = file.name;
-      _gkUnit = 'auto';
-      _gkMerge = 'replace';
-      if(typeof _gkUpdateUnitBtns === 'function') _gkUpdateUnitBtns();
-      if(typeof _gkRenderCode === 'function') _gkRenderCode();
-      if(typeof _gkDrawToolpath === 'function') _gkDrawToolpath();
-      if(!document.body.classList.contains('gkode-open')) toggleGKODE();
-    }
+    // Open G·KODE panel as viewer (geometry already imported — hide Import btn)
+    openGkodeAsViewer(e.target.result, file.name);
   };
   reader.readAsText(file);
 }
@@ -5593,8 +5737,38 @@ function setToolKAMExtension(originalSetTool) {
 
 // ── NC GENERATION ─────────────────────────────────────────
 function openNCModal() {
-  document.getElementById('nc-modal').style.display = 'flex';
-  previewNC();
+  // Legacy: redirect to G·KODE panel
+  openNCasGKODE();
+}
+
+function openNCasGKODE() {
+  const nc = generateNC();
+  if (!nc) { showToast('Nothing to export — add geometry and tag cuts first'); return; }
+  const lines = nc.split('\n');
+  _gkText = nc;
+  _gkName = 'O' + (document.getElementById('nc-prog').value||'1000').padStart(4,'0') + '.nc';
+  _gkUnit = 'auto';
+  _gkFromImport = false;
+  // Show Import btn (disabled — this is generated output, not for re-import)
+  const importBtn = document.getElementById('gkode-import-btn');
+  if (importBtn) { importBtn.disabled = true; importBtn.style.display = 'none'; }
+  const dlBtn = document.getElementById('gkode-download-btn');
+  if (dlBtn) dlBtn.style.display = '';
+  // Add a Download button context to header
+  const modeLabel = document.getElementById('gkode-mode-label');
+  if (modeLabel) modeLabel.textContent = 'nc output';
+  const codeLabel = document.getElementById('gkode-code-label');
+  if (codeLabel) codeLabel.textContent = _gkName + ' · ' + lines.length + ' blocks';
+  const emptyState = document.getElementById('gkode-empty-state');
+  if (emptyState) emptyState.style.display = 'none';
+  _gkUpdateUnitBtns();
+  _gkRenderCode();
+  _gkDrawToolpath();
+  if (!document.body.classList.contains('gkode-open')) {
+    document.body.classList.add('gkode-open');
+    setTimeout(() => { resizeCanvas(); _gkDrawToolpath(); _gkRenderCode(); }, 240);
+  }
+  showToast(_gkName + ' · ' + lines.length + ' blocks · Ctrl+K to close');
 }
 function closeNCModal() { document.getElementById('nc-modal').style.display = 'none'; }
 
@@ -6273,7 +6447,7 @@ updateKerfFromThickness(); // set kerf from default thickness
 
 setTimeout(()=>{
   render();
-  showToast(`KAM · S=select  T=tag  P=place  R=rotate  Ctrl+E=NC  Ctrl+K=KODE`);
+  showToast(`KAM · Ctrl+I=import NC  Ctrl+E=export NC  Ctrl+K=G·KODE panel`);
 }, 250);
 
 
@@ -6396,23 +6570,6 @@ function exportSTL() {
 }
 
 // STEP export — placeholder until opencascade.js integration
-function exportSTEP() {
-  const date = new Date().toISOString().split('T')[0];
-  const NL   = '\n';
-  let step   = `ISO-10303-21;${NL}HEADER;${NL}`;
-  step += `FILE_DESCRIPTION(('KAM Sheet Cut Export'),'2;1');${NL}`;
-  step += `FILE_NAME('parts.step','${date}',('KAM'),('KADsuite'),'','','');${NL}`;
-  step += `FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));${NL}ENDSEC;${NL}`;
-  step += `DATA;${NL}/* Sheet geometry — solid kernel required for full STEP.${NL}`;
-  step += `   Import this file into your CAD/KAD system and extrude profiles */${NL}`;
-  step += `ENDSEC;${NL}END-ISO-10303-21;${NL}`;
-  const blob = new Blob([step], {type:'text/plain'});
-  const a    = Object.assign(document.createElement('a'),{
-    href: URL.createObjectURL(blob), download:'parts.step'
-  });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  showToast('Exported parts.step · AP214 header (solid kernel in Phase 2)');
-}
 
 function importSTLToKAM(file) {
   const reader = new FileReader();
@@ -6598,6 +6755,39 @@ function updateSheetPlateLabel() {
 }
 
 // ── G·KODE PANEL ──
+
+// Called when NC was already imported — panel shows code/preview, Import btn hidden
+function openGkodeAsViewer(text, name) {
+  _gkText = text;
+  _gkName = name;
+  _gkUnit = 'auto';
+  _gkMerge = 'replace';
+  _gkFromImport = true;
+  const modeLabel = document.getElementById('gkode-mode-label');
+  if (modeLabel) modeLabel.textContent = 'nc viewer';
+  const importBtn = document.getElementById('gkode-import-btn');
+  if (importBtn) importBtn.style.display = 'none'; // already imported
+  const codeLabel = document.getElementById('gkode-code-label');
+  if (codeLabel) codeLabel.textContent = name;
+  const emptyState = document.getElementById('gkode-empty-state');
+  if (emptyState) emptyState.style.display = 'none';
+  _gkUpdateUnitBtns();
+  if (!document.body.classList.contains('gkode-open')) {
+    document.body.classList.add('gkode-open');
+    setTimeout(() => { resizeCanvas(); _gkDrawToolpath(); _gkRenderCode(); }, 240);
+  } else {
+    _gkDrawToolpath();
+    _gkRenderCode();
+  }
+}
+
+// ── G·KODE state ──────────────────────────────────────────────────────────────
+let _gkText  = '';   // raw NC text currently loaded in panel
+let _gkName  = '';   // filename
+let _gkUnit  = 'auto';  // 'auto' | 'mm' | 'in'
+let _gkMerge = 'replace'; // 'replace' | 'merge'
+let _gkFromImport = false; // true when opened by importNC (hide Import btn)
+
 function toggleGKODE() {
   document.body.classList.toggle('gkode-open');
   // Give CSS transition time then force canvas resize
@@ -6607,6 +6797,12 @@ function toggleGKODE() {
       _gkDrawToolpath();
     }
   }, 240);
+}
+
+function gkodeDownload() {
+  if (!_gkText) return;
+  downloadText(_gkText, _gkName || 'output.nc', 'text/plain');
+  showToast('Downloaded ' + _gkName);
 }
 
 function gkodeLoadFile(event) {
@@ -6620,9 +6816,12 @@ function gkodeLoadFile(event) {
     _gkMerge = GeoMemory.objects.length > 0 ? 'merge' : 'replace';
     _gkUpdateUnitBtns();
     _gkUpdateMergeBtns();
-    document.getElementById('gkode-code-label').textContent = file.name;
-    document.getElementById('gkode-empty-state') && (document.getElementById('gkode-empty-state').style.display = 'none');
-    document.getElementById('gkode-import-btn').disabled = false;
+    const _cl = document.getElementById('gkode-code-label');
+    if(_cl) _cl.textContent = file.name;
+    const _es = document.getElementById('gkode-empty-state');
+    if(_es) _es.style.display = 'none';
+    const _ib = document.getElementById('gkode-import-btn');
+    if(_ib) { _ib.style.display = ''; _ib.disabled = false; } // standalone: show Import btn
     // Open panel if closed
     if(!document.body.classList.contains('gkode-open')) {
       document.body.classList.add('gkode-open');
