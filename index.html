@@ -1362,7 +1362,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
 
     <!-- Hidden file inputs -->
     <input type="file" id="gkode-file-input" accept=".nc,.txt,.tap,.cnc,.gcode" style="display:none" onchange="gkodeLoadFile(event)">
-    <input type="file" id="load-nc-file"     accept=".nc,.NC,.tap,.cnc,.gcode"  style="display:none" onchange="importNC(event)">
+    <input type="file" id="load-nc-file"     accept=".nc,.NC,.tap,.cnc,.gcode,.txt,.TXT"  style="display:none" onchange="importNC(event)">
     <input type="file" id="load-kam-file"    accept=".kam"                       style="display:none" onchange="loadKAM(event)">
     <input type="file" id="load-kad-file"    accept=".kad"                       style="display:none" onchange="importKAD(event)" multiple>
     <input type="file" id="load-dxf"         accept=".dxf,.DXF"                 style="display:none" onchange="importDXF(event)">
@@ -3925,9 +3925,11 @@ function renderNCMode(W, H) {
       ctx.setLineDash([]);
     } else {
       ctx.globalAlpha = 1;
-      ctx.strokeStyle = '#ffbb33';
-      ctx.lineWidth   = 2.2;
+      ctx.strokeStyle = '#ff9900';
+      ctx.lineWidth   = 2.8;
       ctx.setLineDash([]);
+      ctx.shadowColor = 'rgba(255,153,0,0.4)';
+      ctx.shadowBlur  = 3;
     }
 
     if(o.type === 'LINE') {
@@ -3945,6 +3947,7 @@ function renderNCMode(W, H) {
     }
     ctx.setLineDash([]);
     ctx.globalAlpha = 1;
+    ctx.shadowBlur  = 0;
   }
 
   // Draw selection box
@@ -5364,12 +5367,13 @@ function importNC(event) {
 
     for(const ent of result.entities) {
       if(ent.type==='LINE') {
-        const layer = ent.isCut ? 'NC_Import' : 'NC_Rapid';
+        const layer = (ent.isCut && !ent.isRapid) ? 'NC_Import' : 'NC_Rapid';
         const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,layer);
-        if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
+        if(ent.isCut && !ent.isRapid) KAM.setTag(ln.id,'cut','outside');
       } else if(ent.type==='POLYLINE') {
-        const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
-        if(pl && ent.isCut) KAM.setTag(pl.id,'cut', ent.closed?'outside':'outside');
+        const polyLayer = ent.isCut ? 'NC_Import' : 'NC_Rapid';
+        const pl = GeoMemory.addPolyline(ent.pts, ent.closed, polyLayer);
+        if(pl && ent.isCut) KAM.setTag(pl.id,'cut','outside');
       }
     }
 
@@ -5407,12 +5411,13 @@ function parseNCtoKAM(text, filename) {
     if(hu.includes('G20')) { inchMode=true;  hasUnitDecl=true; }
     // Torch/spindle codes — match M followed by 1-3 digits
     // Exclude M30 (program end) and M6 (tool change) which are not torch codes
-    const mMatch = hu.match(/\bM(0*[2-9]|0*[1-9][0-9])\b/g);
+    const mMatch = hu.match(/\bM0*([0-9]+)\b/g);
     if(mMatch) {
       for(const m of mMatch) {
         const n = parseInt(m.replace(/^M0*/,''));
-        // Torch on: 3,7,8,62,64  Torch off: 4,5,9,63,65
-        if([3,4,5,7,8,9,62,63,64,65].includes(n)) hasTorchCodes = true;
+        // Torch on: 3,7,8,62,64,103  Torch off: 4,5,9,63,65,104
+        // M103=torch on, M104=torch off (Dynatorch, Hypertherm, some Burny)
+        if([3,4,5,7,8,9,62,63,64,65,103,104].includes(n)) hasTorchCodes = true;
       }
     }
     // Track max coordinate magnitude to infer units
@@ -5466,16 +5471,16 @@ function parseNCtoKAM(text, filename) {
     if(line.match(/G0*1\b/)) lastGMotion='G1';
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
-    if(!spindleMode) {
-      // Torch on: M3/M03/M7/M07/M8/M08/M62/M64
-      if(/\bM0*(3|7|8|62|64)\b/.test(line)) { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-      // Torch off: M4/M04/M5/M05/M9/M09/M63/M65
-      if(/\bM0*(4|5|9|63|65)\b/.test(line)) { if(torchOn) { torchOn=false; commitPath(); } }
-      // G0 rapid while torch on = implicit pierce end (some controllers skip M09)
-      if(effG==='G0' && torchOn) { torchOn=false; commitPath(); }
-    }
     const gM=line.match(/G0*([0-3])\b/);
     const effG=gM ? 'G'+gM[1] : lastGMotion;
+    if(!spindleMode) {
+      // Torch on: M3,M7,M8,M62,M64,M103 (Dynatorch/Hypertherm)
+      if(/\bM0*(3|7|8|62|64|103)\b/.test(line)) { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      // Torch off: M4,M5,M9,M63,M65,M104 (Dynatorch/Hypertherm)
+      if(/\bM0*(4|5|9|63|65|104)\b/.test(line)) { if(torchOn) { torchOn=false; commitPath(); } }
+      // G0 rapid while torch on = implicit pierce end (some controllers skip torch-off)
+      if(effG==='G0' && torchOn) { torchOn=false; commitPath(); }
+    }
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
     if(nx2===null && ny2===null) continue;
     const nx=nx2!==null ? toMM(nx2) : x;
@@ -5503,10 +5508,13 @@ function parseNCtoKAM(text, filename) {
       }
     } else if(spindleMode && effG==='G0') {
       commitPath();
-      // Capture rapid as a separate non-cut entity (renders dashed)
+      // Capture rapid as a non-cut line
       if(nx2!==null || ny2!==null) {
-        entities.push({type:'LINE',x1:x,y1:y,x2:nx,y2:ny,isCut:false});
+        entities.push({type:'LINE',x1:x,y1:y,x2:nx,y2:ny,isCut:false,isRapid:true});
       }
+    } else if(!spindleMode && !torchOn && (nx2!==null || ny2!==null)) {
+      // Torch-mode rapid (torch off, G0 move)
+      entities.push({type:'LINE',x1:x,y1:y,x2:nx,y2:ny,isCut:false,isRapid:true});
     }
     x=nx; y=ny;
   }
