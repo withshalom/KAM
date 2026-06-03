@@ -4065,7 +4065,11 @@ function drawEntities() {
   for(const o of GeoMemory.objects){
     const sel=selectedIds.has(o.id);
     // KAM view: dim untagged entities so tagged contours stand out
-    ctx.globalAlpha = (viewMode==='kam' && !KAM.getTag(o.id)) ? 0.2 : 1;
+    const _tag = KAM.getTag(o.id);
+    const _isRapid = (o.layer === 'NC_Rapid');
+    if(_isRapid) ctx.globalAlpha = 0.35;
+    else if(viewMode==='kam' && !_tag) ctx.globalAlpha = 0.65;
+    else ctx.globalAlpha = 1;
     // Part color: entities belonging to a named part take that part's color
     const _part = PartLibrary.getPartForEntity(o.id);
     const _col  = sel ? C.entitySel : (_part ? _part.color : C.entity);
