@@ -5043,14 +5043,18 @@ function updateKerfFromThickness() {
 //   — renested (Quick / Smart Nest)
 //   — extracted as .KAD or .DXF
 //   — saved in a .KAM session
-function explodeNCToParts() {
+function explodeNCToParts(silent=false) {
   const all = GeoMemory.objects;
-  if (!all.length) { showToast('No geometry on canvas — import an NC file first'); return; }
+  if (!all.length) {
+    if(!silent) showToast('No geometry on canvas — import an NC file first');
+    return false;
+  }
 
   // Separate closed polylines (outer contours) from everything else
   const closedPolys = all.filter(o => o.type === 'POLYLINE' && o.closed);
   if (!closedPolys.length) {
-    showToast('No closed contours found — import an NC file and check geometry'); return;
+    if(!silent) showToast('No closed contours found — run Explode NC → Parts after import');
+    return false;
   }
 
   // Helper: axis-aligned bbox for any GeoMemory entity
@@ -5116,7 +5120,7 @@ function explodeNCToParts() {
     parts.push({ name: 'Misc', entityIds: leftovers });
   }
 
-  if (!parts.length) { showToast('No parts could be extracted'); return; }
+  if (!parts.length) { if(!silent) showToast('No parts could be extracted'); return false; }
 
   // Clear existing PartLibrary (keep geometry intact) and register new parts
   PartLibrary.clear();
@@ -5132,7 +5136,8 @@ function explodeNCToParts() {
   render();
 
   const misc = leftovers.length ? ` · ${leftovers.length} misc entity(s)` : '';
-  showToast(`Exploded → ${parts.length - (leftovers.length?1:0)} part(s)${misc} · ready to nest or extract`);
+  if(!silent) showToast(`Exploded → ${parts.length - (leftovers.length?1:0)} part(s)${misc} · ready to nest or extract`);
+  return true;
 }
 
 // ── NC IMPORT ─────────────────────────────────────────────
@@ -5169,9 +5174,11 @@ function importNC(event) {
     const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
     showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr);
     setViewMode('kam');
+    // Silent auto-explode — registers closed contours as parts without showing errors
+    explodeNCToParts(true);
+    updateContourList();
     // Open G·KODE panel as viewer (geometry already imported — hide Import btn)
     openGkodeAsViewer(e.target.result, file.name);
-    // Don't auto-explode — user can trigger manually once geometry is verified
   };
   reader.readAsText(file);
 }
