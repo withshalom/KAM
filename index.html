@@ -4071,13 +4071,15 @@ function drawEntities() {
     const _col  = sel ? C.entitySel : (_part ? _part.color : C.entity);
     if(o.type==='LINE'){
       const a=worldToScreen(o.x1,o.y1), b=worldToScreen(o.x2,o.y2);
+      const isRapid = (o.layer==='NC_Rapid');
       if(sel){ ctx.shadowColor='rgba(255,170,0,0.5)'; ctx.shadowBlur=8; }
-      ctx.strokeStyle=_col;
-      ctx.lineWidth=sel?2:1.2;
+      ctx.strokeStyle = isRapid ? 'rgba(80,140,200,0.45)' : _col;
+      ctx.lineWidth = sel ? 2 : (isRapid ? 0.7 : 1.2);
+      if(isRapid) ctx.setLineDash([4,4]);
       ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      if(isRapid) ctx.setLineDash([]);
       ctx.shadowBlur=0;
-      drawDot(a.x,a.y,_col);
-      drawDot(b.x,b.y,_col);
+      if(!isRapid){ drawDot(a.x,a.y,_col); drawDot(b.x,b.y,_col); }
 
     } else if(o.type==='POLYLINE'){
       if(o.pts.length < 2) continue;
@@ -5150,7 +5152,8 @@ function importNC(event) {
 
     for(const ent of result.entities) {
       if(ent.type==='LINE') {
-        const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,'NC_Import');
+        const layer = ent.isCut ? 'NC_Import' : 'NC_Rapid';
+        const ln = GeoMemory.addLine(ent.x1,ent.y1,ent.x2,ent.y2,layer);
         if(ent.isCut) KAM.setTag(ln.id,'cut','outside');
       } else if(ent.type==='POLYLINE') {
         const pl = GeoMemory.addPolyline(ent.pts, ent.closed, 'NC_Import');
@@ -5180,11 +5183,34 @@ function parseNCtoKAM(text, filename) {
 
   // Pre-scan whole file for unit mode AND torch-code presence
   let hasTorchCodes = false;
+  let hasUnitDecl   = false;
+  let maxCoord      = 0; // track largest coordinate to guess units
   for(const hl of lines) {
     const hu = hl.replace(/^N[0-9]+\s*/i,'').replace(/;.*$/,'').toUpperCase();
-    if(hu.includes('G21')) inchMode=false;
-    if(hu.includes('G20')) inchMode=true;
-    if(/\bM0*(3|5|7|8|9|64|65)\b/.test(hu)) hasTorchCodes = true;
+    if(hu.includes('G21')) { inchMode=false; hasUnitDecl=true; }
+    if(hu.includes('G20')) { inchMode=true;  hasUnitDecl=true; }
+    // Torch/spindle codes — match M followed by 1-3 digits
+    // Exclude M30 (program end) and M6 (tool change) which are not torch codes
+    const mMatch = hu.match(/\bM(0*[2-9]|0*[1-9][0-9])\b/g);
+    if(mMatch) {
+      for(const m of mMatch) {
+        const n = parseInt(m.replace(/^M0*/,''));
+        // Torch on: 3,7,8,62,64  Torch off: 4,5,9,63,65
+        if([3,4,5,7,8,9,62,63,64,65].includes(n)) hasTorchCodes = true;
+      }
+    }
+    // Track max coordinate magnitude to infer units
+    const coords = hu.match(/[XY]([+-]?[0-9]*\.?[0-9]+)/gi)||[];
+    for(const co of coords) {
+      const v = Math.abs(parseFloat(co.slice(1)));
+      if(v > maxCoord) maxCoord = v;
+    }
+  }
+  // If no unit declaration, infer from coordinate magnitude:
+  // Metric parts are typically > 25mm; inch parts typically < 100
+  // If max coordinate < 120 and no G21 declared, likely inches
+  if(!hasUnitDecl) {
+    inchMode = (maxCoord > 0 && maxCoord < 120);
   }
   const spindleMode = !hasTorchCodes;
 
@@ -5220,15 +5246,19 @@ function parseNCtoKAM(text, filename) {
     if(line.match(/G0*2\b/)) lastGMotion='G2';
     if(line.match(/G0*3\b/)) lastGMotion='G3';
     if(!spindleMode) {
-      if(['M08','M03','M07','M64'].some(mc=>line.includes(mc))) { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
-      if(['M09','M05','M65'].some(mc=>line.includes(mc)))       { if(torchOn) { torchOn=false; commitPath(); } }
+      // Torch on: M3/M03/M7/M07/M8/M08/M62/M64
+      if(/\bM0*(3|7|8|62|64)\b/.test(line)) { if(!torchOn){ torchOn=true; cur=null; torchOnCount++; } }
+      // Torch off: M4/M04/M5/M05/M9/M09/M63/M65
+      if(/\bM0*(4|5|9|63|65)\b/.test(line)) { if(torchOn) { torchOn=false; commitPath(); } }
+      // G0 rapid while torch on = implicit pierce end (some controllers skip M09)
+      if(effG==='G0' && torchOn) { torchOn=false; commitPath(); }
     }
+    const gM=line.match(/G0*([0-3])\b/);
+    const effG=gM ? 'G'+gM[1] : lastGMotion;
     const nx2=coord(line,'X'), ny2=coord(line,'Y');
     if(nx2===null && ny2===null) continue;
     const nx=nx2!==null ? toMM(nx2) : x;
     const ny=ny2!==null ? toMM(ny2) : y;
-    const gM=line.match(/G0*([0-3])\b/);
-    const effG=gM ? 'G'+gM[1] : lastGMotion;
     const isCutMove = spindleMode ? (effG==='G1'||effG==='G2'||effG==='G3') : torchOn;
     if(isCutMove) {
       if(effG==='G1') {
@@ -5252,6 +5282,10 @@ function parseNCtoKAM(text, filename) {
       }
     } else if(spindleMode && effG==='G0') {
       commitPath();
+      // Capture rapid as a separate non-cut entity (renders dashed)
+      if(nx2!==null || ny2!==null) {
+        entities.push({type:'LINE',x1:x,y1:y,x2:nx,y2:ny,isCut:false});
+      }
     }
     x=nx; y=ny;
   }
