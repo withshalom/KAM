@@ -3921,6 +3921,32 @@ function renderTableMode(W, H) {
     }
   }
 
+  // If no placed parts, draw raw geometry as faint preview
+  const hasInstances = PartLibrary.parts.some(p => p.instances && p.instances.length > 0);
+  if(!hasInstances && GeoMemory.objects.length > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = '#ffdd88';
+    ctx.lineWidth   = 1.2;
+    for(const o of GeoMemory.objects) {
+      if(o.layer === 'NC_Rapid') continue;
+      if(o.type === 'LINE') {
+        const a=worldToScreen(o.x1,o.y1), b=worldToScreen(o.x2,o.y2);
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+      } else if(o.type === 'POLYLINE' && o.pts.length > 1) {
+        const p0=worldToScreen(o.pts[0].x,o.pts[0].y);
+        ctx.beginPath(); ctx.moveTo(p0.x,p0.y);
+        for(let i=1;i<o.pts.length;i++){
+          const p=worldToScreen(o.pts[i].x,o.pts[i].y);
+          ctx.lineTo(p.x,p.y);
+        }
+        if(o.closed) ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
   // Table dimension labels
   ctx.font='10px Fira Code,monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillStyle='rgba(255,170,0,0.7)';
@@ -5171,7 +5197,8 @@ function importNC(event) {
 
     updateProps(); updateContourList(); render(); zoomExtents();
     const modeStr = result.stats.spindleMode ? 'spindle mode' : result.stats.torchOn + ' cuts';
-    showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr);
+    const unitStr = result.stats.inchMode ? 'in→mm' : 'mm';
+    showToast('Imported ' + file.name + ' · ' + result.entities.length + ' paths · ' + modeStr + ' · ' + unitStr);
     setViewMode('kam');
     // Silent auto-explode — registers closed contours as parts without showing errors
     explodeNCToParts(true);
@@ -5216,11 +5243,12 @@ function parseNCtoKAM(text, filename) {
       if(v > maxCoord) maxCoord = v;
     }
   }
-  // If no unit declaration, infer from coordinate magnitude:
-  // Metric parts are typically > 25mm; inch parts typically < 100
-  // If max coordinate < 120 and no G21 declared, likely inches
+  // If no unit declaration: default to inches.
+  // North American plasma NC files are almost always inches and rarely declare G20.
+  // European/metric files almost always include G21. No size threshold — table length
+  // is unlimited. User can override via the G·KODE unit buttons if needed.
   if(!hasUnitDecl) {
-    inchMode = (maxCoord > 0 && maxCoord < 120);
+    inchMode = true;
   }
   const spindleMode = !hasTorchCodes;
 
@@ -5304,7 +5332,7 @@ function parseNCtoKAM(text, filename) {
     x=nx; y=ny;
   }
   if(cur) commitPath();
-  return { entities, stats:{ torchOn: spindleMode ? entities.length : torchOnCount, spindleMode } };
+  return { entities, stats:{ torchOn: spindleMode ? entities.length : torchOnCount, spindleMode, inchMode } };
 }
 
 // ── PART LIBRARY ─────────────────────────────────────────
