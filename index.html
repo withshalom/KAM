@@ -1098,6 +1098,40 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
 .nc-field input:focus, .nc-field select:focus { border-color:var(--green); }
 
 
+
+/* ── PART VIEWER OVERLAY ──────────────────────────────────────────────────── */
+#part-viewer {
+  position:fixed; inset:0; z-index:200;
+  display:none;
+  background:rgba(4,8,14,0.85);
+  backdrop-filter:blur(4px);
+}
+#part-viewer.open { display:flex; }
+#part-viewer-panel {
+  position:absolute; left:0; top:0; bottom:0;
+  width:300px;
+  background:var(--panel);
+  border-right:1px solid var(--border-hi);
+  display:flex; flex-direction:column;
+  z-index:201;
+}
+#part-viewer-canvas-wrap {
+  position:absolute; left:300px; right:0; top:0; bottom:0;
+  background:#07090c;
+  display:flex; align-items:center; justify-content:center;
+}
+#part-viewer-canvas { width:100%; height:100%; }
+
+/* ── Return to KADsuite — matches KADsuite escape bar button, amber for KAM ── */
+#btn-return-kadsuite {
+  display:flex; align-items:center; gap:6px; padding:4px 12px;
+  background:none; border:1px solid rgba(255,170,0,0.4); border-radius:3px;
+  color:var(--amber); font-family:var(--fm); font-size:9px;
+  letter-spacing:0.14em; text-transform:uppercase; cursor:pointer;
+  transition:all .2s; text-decoration:none; flex-shrink:0; white-space:nowrap;
+  margin-right:4px;
+}
+#btn-return-kadsuite:hover { background:rgba(255,170,0,0.08); border-color:var(--amber); }
 </style>
 </head>
 <body>
@@ -1180,8 +1214,7 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     </div>
     <div class="vt-div"></div>
     <div class="mode-tab-bar">
-      <button class="mode-tab active" id="mt-part" onclick="setKAMMode('part')">⚙ PART</button>
-      <button class="mode-tab" id="mt-table" onclick="setKAMMode('table')">⬛ TABLE</button>
+      <button class="mode-tab active" id="mt-table" onclick="setKAMMode('table')">⬛ TABLE</button>
       <button class="mode-tab" id="mt-nc" onclick="setKAMMode('nc')" style="color:#ff6b35;">&lt;/&gt; NC</button>
     </div>
   </div>
@@ -1213,6 +1246,9 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     </button>
   
   </div>
+  <div style="flex:1;"></div>
+  <a href="https://kadsuite.com" id="btn-return-kadsuite" title="Return to KADsuite">← Return to KADsuite</a>
+
 </div>
 
     
@@ -1222,22 +1258,62 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
 <!-- SIDEBAR -->
 <div id="sidebar">
   <!-- ── NESTING MODE PANEL ────────────────── -->
+  <!-- ── PARTS LIBRARY PANEL ──────────────────────────────────────── -->
   <div id="nest-panel">
-    <div class="section-head">PLACE PARTS</div>
-    <div id="nest-sel-bar" class="nest-sel-bar">
-      <span id="nest-sel-name" style="flex:1">—</span>
-      <button class="nest-sel-btn" onclick="nestRotateSel()">↻ 90°</button>
-      <button class="nest-sel-btn danger" onclick="nestRemoveSel()">Remove</button>
+    <!-- Import buttons at top -->
+    <div class="section-head" style="letter-spacing:0.12em;display:flex;align-items:center;justify-content:space-between;padding-right:6px;">
+      <span>PARTS</span>
+      <button onclick="openPartViewer()" title="Open part viewer / tagger"
+        style="font-family:var(--fm);font-size:8px;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:3px;padding:1px 6px;cursor:pointer;letter-spacing:0.06em;">
+        OPEN VIEWER
+      </button>
     </div>
-    <div id="nest-part-list">
-      <div style="padding:16px;font-size:10px;color:var(--t3);font-family:var(--fm)">
-        Import parts in PART mode first.
+
+    <!-- Quick import row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:4px 6px;flex-shrink:0;">
+      <button class="op-btn-color" style="--c:0,212,255;font-size:8px;padding:5px 4px;"
+              onclick="document.getElementById('load-kad-file').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        .kad
+      </button>
+      <button class="op-btn-color" style="--c:0,255,157;font-size:8px;padding:5px 4px;"
+              onclick="document.getElementById('load-dxf').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        .dxf
+      </button>
+    </div>
+
+    <!-- Part list — scrollable -->
+    <div id="nest-part-list" style="flex:1;overflow-y:auto;padding:2px 0;">
+      <div style="padding:16px 8px;font-size:9px;color:var(--t3);font-family:var(--fm);line-height:1.6;text-align:center;">
+        No parts yet.<br>Import .kad or .dxf,<br>or extract from NC tab.
       </div>
     </div>
-    <div id="nest-util-bar">Utilization: <span id="nest-util-pct">0.0 %</span></div>
-    <div style="padding:4px 8px">
-      <button class="op-btn" style="color:#ff4455;border-color:rgba(255,68,85,0.2)" onclick="nestClearAll()">
-        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Clear All</button>
+
+    <!-- Selected part controls -->
+    <div id="nest-sel-bar" class="nest-sel-bar" style="display:none;">
+      <span id="nest-sel-name" style="flex:1;font-size:9px;">—</span>
+      <button class="nest-sel-btn" onclick="nestRotateSel()">↻90°</button>
+      <button class="nest-sel-btn danger" onclick="nestRemoveSel()">✕</button>
+    </div>
+
+    <!-- Utilization + controls -->
+    <div style="flex-shrink:0;border-top:1px solid var(--border);">
+      <div id="nest-util-bar" style="padding:5px 8px;">
+        Utilization: <span id="nest-util-pct" style="color:var(--accent);font-weight:700;">0.0%</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:4px 6px 6px;">
+        <button class="op-btn-color" style="--c:0,212,255;font-size:8px;padding:5px 4px;"
+                onclick="autoNest()" title="Auto-nest all parts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="8" height="8" rx="1"/></svg>
+          Auto-nest
+        </button>
+        <button class="op-btn-color" style="--c:255,68,85;font-size:8px;padding:5px 4px;"
+                onclick="nestClearAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:10px;height:10px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Clear All
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1368,106 +1444,51 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
     <input type="file" id="load-dxf"         accept=".dxf,.DXF"                 style="display:none" onchange="importDXF(event)">
   </div>
 
-  <div class="section-head" style="color:var(--accent);letter-spacing:0.14em;">KAM Tools</div>
-  <div class="tool-grid">
+  <!-- ── KAM TOOLS — select, tag, place, rotate, extents only ─────────── -->
+  <div class="section-head" style="color:var(--accent);letter-spacing:0.14em;">KAM TOOLS</div>
+  <div class="tool-grid" style="grid-template-columns:1fr 1fr;">
 
     <button class="tool-btn active" id="btn-select" onclick="setTool('select')">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3l14 9-7 1-4 7z"/></svg></div>
       <span class="tool-label">SELECT</span>
     </button>
 
-    <button class="tool-btn" id="btn-line" onclick="setTool('line')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="2" fill="currentColor"/><circle cx="20" cy="4" r="2" fill="currentColor"/></svg></div>
-      <span class="tool-label">LINE</span>
-    </button>
-    <button class="tool-btn" id="btn-rect" onclick="setTool('rect')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="1"/></svg></div>
-      <span class="tool-label">RECT</span>
-    </button>
-    <button class="tool-btn" id="btn-polygon" onclick="setTool('polygon')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12,3 21,9 17,20 7,20 3,9"/></svg></div>
-      <span class="tool-label">POLY</span>
-    </button>
-    <button class="tool-btn" id="btn-offset" onclick="setTool('offset')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="21" y2="16"/><path d="M14 11.5l3 2.5-3 2.5" stroke-width="1.2"/></svg></div>
-      <span class="tool-label">OFFSET</span>
-    </button>
-    <button class="tool-btn" id="btn-arc" onclick="setTool('arc')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 19a9 9 0 0 1 14 0"/><circle cx="5" cy="19" r="1.5" fill="currentColor"/><circle cx="19" cy="19" r="1.5" fill="currentColor"/></svg></div>
-      <span class="tool-label">ARC</span>
-    </button>
-    <button class="tool-btn" id="btn-circle" onclick="setTool('circle')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
-      <span class="tool-label">CIRCLE</span>
-    </button>
-    <button class="tool-btn" id="btn-fillet" onclick="setTool('fillet')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20v-8a8 8 0 0 1 8-8h8"/></svg></div>
-      <span class="tool-label">FILLET</span>
-    </button>
-    <button class="tool-btn" id="btn-chamfer" onclick="setTool('chamfer')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20 L12 4 L20 20"/><line x1="7" y1="14" x2="17" y2="14"/></svg></div>
-      <span class="tool-label">CHAMFER</span>
-    </button>
-    <button class="tool-btn" id="btn-mirror" onclick="setTool('mirror')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="3" x2="12" y2="21" stroke-dasharray="3,2"/><path d="M3 8l9-5 9 5"/><path d="M3 16l9 5 9-5"/></svg></div>
-      <span class="tool-label">MIRROR</span>
-    </button>
-    <button class="tool-btn" id="btn-measure" onclick="setTool('measure')">
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="12" x2="21" y2="12"/><path d="M3 6l3 6-3 6"/><path d="M21 6l-3 6 3 6"/></svg></div>
-      <span class="tool-label">MEASURE</span>
-    </button>
-    <button class="tool-btn" id="btn-tag" onclick="setTool('tag')" title="Tag contour (T)">
+    <button class="tool-btn" id="btn-tag" onclick="setTool('tag')" title="Tag contour cut/outside/inside (T)">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
       <span class="tool-label" style="color:var(--accent);">TAG</span>
     </button>
 
-    <button class="tool-btn" id="btn-place" onclick="setTool('place')" title="Place part instance (P)">
+    <button class="tool-btn" id="btn-place" onclick="setTool('place')" title="Place part on table (P)">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1" opacity="0.4"/><rect x="3" y="13" width="8" height="8" rx="1" opacity="0.4"/><path d="M17 13v8M13 17h8"/></svg></div>
       <span class="tool-label" style="color:var(--green);">PLACE</span>
     </button>
 
-    <button class="tool-btn" id="btn-rotate" onclick="setTool('rotate')" title="Rotate part (R)">
+    <button class="tool-btn" id="btn-rotate" onclick="setTool('rotate')" title="Rotate placed part (R)">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/></svg></div>
       <span class="tool-label">ROTATE</span>
     </button>
 
-
-
-    <button class="tool-btn" id="btn-zext" onclick="zoomExtents()" title="Zoom Extents (Z)">
+    <button class="tool-btn" id="btn-zext" onclick="zoomExtents()" title="Zoom Extents (Z)" style="grid-column:1/-1;">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
       <span class="tool-label">EXTENTS</span>
     </button>
 
   </div>
 
-  <!-- Rotation controls (shown when rotate tool is active OR objects are selected) -->
+  <!-- Rotation controls -->
   <div id="rotate-bar">
-    <button class="rot-btn" onclick="rotateSelected(-90)" title="Rotate 90° counter-clockwise (Q)">↺90°</button>
-    <button class="rot-btn" onclick="rotateSelected(90)"  title="Rotate 90° clockwise (E)">↻90°</button>
+    <button class="rot-btn" onclick="rotateSelected(-90)" title="Rotate 90° CCW (Q)">↺90°</button>
+    <button class="rot-btn" onclick="rotateSelected(90)"  title="Rotate 90° CW (E)">↻90°</button>
     <label style="margin-left:2px;">Δ</label>
     <input type="number" id="rotate-angle-input" value="0" step="1" placeholder="0"/>
     <span style="font-family:var(--fm);font-size:9px;color:var(--t3);">°</span>
-    <button class="rot-btn hi" onclick="applyRotationInput(false)" title="Rotate by typed angle (relative)">+Δ</button>
-    <button class="rot-btn" onclick="applyRotationInput(true)" title="Set absolute angle">ABS</button>
-    <button class="rot-btn" onclick="flattenSelection()" title="Rotate to 0° horizontal">→0°</button>
-  </div>
-
-  <div id="offset-bar">
-    <label>DIST</label>
-    <input type="number" id="offset-dist-input" value="10" min="0.0001" step="0.5"/>
-    <span id="offset-dist-unit">mm</span>
-  </div>
-
-  <!-- Polygon sides input (only shown for polygon tool) -->
-  <div id="poly-bar" style="display:none;align-items:center;gap:6px;padding:5px 8px;background:var(--panel2);border-bottom:1px solid var(--border);flex-shrink:0;">
-    <label style="font-family:var(--fm);font-size:9px;color:var(--t3);letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;">SIDES</label>
-    <input type="number" id="poly-sides-input" value="6" min="3" max="64" step="1" style="background:var(--panel);border:1px solid var(--border-hi);border-radius:3px;color:var(--accent);font-family:var(--fm);font-size:11px;padding:3px 6px;width:52px;outline:none;text-align:right;"/>
-    <label style="font-family:var(--fm);font-size:9px;color:var(--t3);text-transform:uppercase;">CIRC</label>
-    <input type="checkbox" id="poly-inscribed" checked title="Inscribed (vertices on circle) vs circumscribed"/>
+    <button class="rot-btn hi" onclick="applyRotationInput(false)">+Δ</button>
+    <button class="rot-btn" onclick="applyRotationInput(true)">ABS</button>
+    <button class="rot-btn" onclick="flattenSelection()">→0°</button>
   </div>
 
   <div class="tool-grid-bottom">
-    <button class="tool-btn" id="btn-delete" onclick="deleteSelected()" style="color:#ff4455;">
+    <button class="tool-btn" id="btn-delete" onclick="deleteSelected()" style="color:#ff4455;grid-column:1/-1;">
       <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#ff4455" stroke-width="1.5">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
@@ -1475,23 +1496,6 @@ body.gkode-open .gkode-toggle-btn { background: var(--gk); border-color: var(--g
       </svg></div>
       <span class="tool-label" style="color:#ff4455;">DELETE</span>
     </button>
-  </div>
-
-
-
-  <!-- Coordinate Input Help -->
-  <div id="coord-panel">
-    <div class="section-head" id="coord-panel-head" onclick="toggleCoordPanel()" style="cursor:pointer;display:flex;justify-content:space-between;">
-      <span>Coord Input</span><span id="coord-chevron">▶</span>
-    </div>
-    <div id="coord-panel-body">
-      <div class="coord-example">While LINE active, type to open input.</div>
-      <div class="coord-example">Values entered in current unit (<span id="coord-cur-unit" style="color:var(--accent)">mm</span>):</div>
-      <div class="coord-example"><b>100,50</b> — absolute X,Y</div>
-      <div class="coord-example"><i>@50,-20</i> — relative dX,dY</div>
-      <div class="coord-example"><em>@100&lt;45</em> — polar dist&lt;angle°</div>
-      <div class="coord-example" style="margin-top:4px;color:var(--t3);">Press <b>Enter</b> to commit · <b>Esc</b> to cancel · <b>U</b> to toggle units</div>
-    </div>
   </div>
 
   <!-- KAD VIEW: geometry properties -->
@@ -2190,12 +2194,12 @@ function toggleUnits() {
     // was mm, now show inches
     distInput.value = (oldVal / MM_PER_IN).toFixed(4);
     distInput.step  = '0.0625';
-    document.getElementById('offset-dist-unit').textContent = 'in';
+    { const _odu=document.getElementById('offset-dist-unit'); if(_odu) _odu.textContent='in'; }
   } else {
     // was in, now show mm
     distInput.value = (oldVal * MM_PER_IN).toFixed(2);
     distInput.step  = '0.5';
-    document.getElementById('offset-dist-unit').textContent = 'mm';
+    { const _odu=document.getElementById('offset-dist-unit'); if(_odu) _odu.textContent='mm'; }
   }
   updateGridLabel();
   // Update coord overlay unit label
@@ -2333,7 +2337,7 @@ function findSnap(wx, wy) {
 let activeTool   = 'select';
 let placePartId  = null;  // which part is being placed (PLACE tool)
 let mouseWorld   = {x:0,y:0};
-let kamMode      = 'part';   // 'part' | 'table' | 'nc'
+let kamMode      = 'table';  // 'table' | 'nc' (part viewer is a panel)
 let nestSel      = null;     // { partId, iid } selected in TABLE mode
 let nestPlacing  = null;     // partId being placed
 let nestDrag     = null;     // { partId, iid, ox, oy } active drag
@@ -2405,8 +2409,8 @@ document.addEventListener('click', (e)=>{
 let coordPanelOpen = false;
 function toggleCoordPanel() {
   coordPanelOpen = !coordPanelOpen;
-  document.getElementById('coord-panel-body').classList.toggle('open', coordPanelOpen);
-  document.getElementById('coord-chevron').textContent = coordPanelOpen ? '▼' : '▶';
+  { const _cpb=document.getElementById('coord-panel-body'); if(_cpb) _cpb.classList.toggle('open', coordPanelOpen); }
+  { const _gel=document.getElementById('coord-chevron'); if(_gel) _gel.textContent = coordPanelOpen ? '▼' : '▶'; }
 }
 function showCoordHelp() {
   if(!coordPanelOpen) toggleCoordPanel();
@@ -2836,7 +2840,7 @@ function drawPolyPreview() {
   ctx.setLineDash([]);
   // center dot
   const sc=worldToScreen(cx,cy);
-  ctx.strokeStyle='var(--green)';
+  ctx.strokeStyle='#00ff9d';
   ctx.lineWidth=1;
   ctx.beginPath();
   ctx.arc(sc.x,sc.y,4,0,Math.PI*2);
@@ -3027,7 +3031,7 @@ function drawRotatePreview() {
 
   // ── Pivot handle ─────────────────────────────────────
   // Outer ring
-  ctx.strokeStyle = rotateState.draggingPivot ? 'var(--green)' : 'rgba(255,170,0,0.9)';
+  ctx.strokeStyle = rotateState.draggingPivot ? '#00ff9d' : 'rgba(255,170,0,0.9)';
   ctx.lineWidth   = 1.5;
   ctx.setLineDash([]);
   ctx.beginPath(); ctx.arc(sp.x, sp.y, PIVOT_HANDLE_PX, 0, Math.PI*2); ctx.stroke();
@@ -3038,7 +3042,7 @@ function drawRotatePreview() {
   ctx.moveTo(sp.x, sp.y-6); ctx.lineTo(sp.x, sp.y+6);
   ctx.stroke();
   // Filled dot
-  ctx.fillStyle = rotateState.draggingPivot ? 'var(--green)' : 'rgba(255,170,0,0.8)';
+  ctx.fillStyle = rotateState.draggingPivot ? '#00ff9d' : 'rgba(255,170,0,0.8)';
   ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5, 0, Math.PI*2); ctx.fill();
 
   // Tooltip when hovering pivot
@@ -3114,7 +3118,7 @@ function cancelTool() {
   offsetState = {active:false, selectedLine:null, previewPts:null};
   rotateState = {phase:0,pivotX:0,pivotY:0,pivotSet:false,draggingPivot:false,startAngle:0,previewDelta:0};
   selBox      = {active:false, pending:false, startSX:0, startSY:0, startWX:0, startWY:0};
-  document.getElementById('rect-preview').style.display='none';
+  { const _rp=document.getElementById('rect-preview'); if(_rp) _rp.style.display='none'; }
 }
 
 function setTool(tool) {
@@ -3132,14 +3136,13 @@ function setTool(tool) {
 
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
   const btnMap={select:'btn-select',arc:'btn-arc',circle:'btn-circle',fillet:'btn-fillet',chamfer:'btn-chamfer',mirror:'btn-mirror',measure:'btn-measure',line:'btn-line',rect:'btn-rect',polygon:'btn-polygon',offset:'btn-offset',rotate:'btn-rotate',tag:'btn-tag'};
-  if(btnMap[tool]) document.getElementById(btnMap[tool]).classList.add('active');
+  if(btnMap[tool]) { const _b=document.getElementById(btnMap[tool]); if(_b) _b.classList.add('active'); }
 
-  document.getElementById('sb-mode').textContent=tool.toUpperCase();
+  { const _sm=document.getElementById('sb-mode'); if(_sm) _sm.textContent=tool.toUpperCase(); }
 
-  // Offset bar
-  document.getElementById('offset-bar').style.display = tool==='offset'?'flex':'none';
-  // Poly bar
-  document.getElementById('poly-bar').style.display   = tool==='polygon'?'flex':'none';
+  // Offset/poly bars removed in overhaul — guard if absent
+  const _ob = document.getElementById('offset-bar'); if(_ob) _ob.style.display = tool==='offset'?'flex':'none';
+  const _pb = document.getElementById('poly-bar');   if(_pb) _pb.style.display = tool==='polygon'?'flex':'none';
   // Rotate bar — show when rotate tool OR when something is selected
   const rotateBar = document.getElementById('rotate-bar');
   if (tool === 'rotate') rotateBar.classList.add('visible');
@@ -3370,7 +3373,7 @@ function onMouseDown(e) {
       } else {
         commitRect(rectState.x1,rectState.y1,wp.x,wp.y);
         rectState={active:false};
-        document.getElementById('rect-preview').style.display='none';
+        { const _rp=document.getElementById('rect-preview'); if(_rp) _rp.style.display='none'; }
       }
       render(); return;
     }
@@ -3535,7 +3538,7 @@ function onMouseMove(e) {
     rp.style.display='block'; rp.style.left=lx+'px'; rp.style.top=ly+'px';
     rp.style.width=w+'px'; rp.style.height=h+'px';
   } else {
-    document.getElementById('rect-preview').style.display='none';
+    { const _rp=document.getElementById('rect-preview'); if(_rp) _rp.style.display='none'; }
   }
 
   if (kamMode==='table' && nestDrag) {
@@ -3647,7 +3650,7 @@ function onKeyDown(e) {
       const wp=snapActive&&snapPoint?snapPoint:mouseWorld;
       commitRect(rectState.x1,rectState.y1,wp.x,wp.y);
       rectState={active:false};
-      document.getElementById('rect-preview').style.display='none';
+      { const _rp=document.getElementById('rect-preview'); if(_rp) _rp.style.display='none'; }
       render();
     }
     return;
@@ -3793,17 +3796,19 @@ const C={
 // ═══════════════════════════════════════════════════════════
 function setKAMMode(mode) {
   kamMode = mode;
-  document.getElementById('mt-part').classList.toggle('active',  mode==='part');
+  // TABLE is primary — no PART tab anymore
   document.getElementById('mt-table').classList.toggle('active', mode==='table');
   const ncBtn = document.getElementById('mt-nc');
   if(ncBtn) ncBtn.classList.toggle('active', mode==='nc');
-  document.getElementById('part-sidebar').style.display = mode==='part'  ? ''     : 'none';
-  document.getElementById('nest-panel').style.display   = mode==='table' ? 'flex' : 'none';
-  const ncSidebar = document.getElementById('nc-sidebar');
-  if(ncSidebar) ncSidebar.style.display = mode==='nc' ? 'flex' : 'none';
-  // View toggle only relevant in part mode
-  const vtBar = document.querySelector('.view-toggle');
-  if(vtBar) vtBar.style.opacity = mode==='part' ? '1' : '0.4';
+
+  // Sidebar: nest-panel for TABLE, nc-sidebar for NC, part-sidebar hidden unless part viewer
+  const nestPanel  = document.getElementById('nest-panel');
+  const ncSidebar  = document.getElementById('nc-sidebar');
+  const partSidebar = document.getElementById('part-sidebar');
+  if(nestPanel)  nestPanel.style.display  = mode==='table' ? 'flex' : 'none';
+  if(ncSidebar)  ncSidebar.style.display  = mode==='nc'    ? 'flex' : 'none';
+  if(partSidebar) partSidebar.style.display = 'none'; // part viewer is separate
+
   if(mode==='table') {
     nestSel = null; nestPlacing = null; nestDrag = null;
     fitTableView();
@@ -4211,8 +4216,6 @@ function render() {
   if (kamMode==='table') { renderTableMode(W,H); return; }
   if (kamMode==='nc')    { renderNCMode(W,H);    return; }
   if(showGrid) drawGrid(W,H);
-  // Table outline only in table mode (not part or nc view)
-  if(kamMode==='table') drawTableOutline();
   if(viewMode==='kam') drawKAMOverlay();
   drawEntities();
   drawRubberBand();
@@ -5713,43 +5716,30 @@ function showProcTab(tab) {
 }
 
 function updatePartList() {
-  const list = document.getElementById('part-list');
-  const summary = document.getElementById('part-summary');
-  const parts = PartLibrary.parts;
-  const totalEntities = parts.reduce((n,p)=>n+p.entityIds.length,0);
-  const totalQty = parts.reduce((n,p)=>n+p.qty,0);
-  summary.textContent = `${parts.length} part${parts.length!==1?'s':''} · ${totalEntities} entities · ${totalQty} total to cut`;
-
-  if(!parts.length){
-    list.innerHTML='<div style="font-family:var(--fm);font-size:9px;color:var(--t3);padding:12px 8px;text-align:center;line-height:1.7;">No parts imported yet.<br>Use Import .KAD or Import .DXF<br>to add parts to the nest.</div>';
+  const el = document.getElementById('nest-part-list');
+  if (!el) return;
+  if (!PartLibrary.parts.length) {
+    el.innerHTML = '<div style="padding:16px 8px;font-size:9px;color:var(--t3);font-family:var(--fm);line-height:1.6;text-align:center;">No parts yet.<br>Import .kad or .dxf,<br>or extract from NC tab.</div>';
     return;
   }
-
-  list.innerHTML = parts.map(p=>{
-    const bb=PartLibrary.partBBox(p.partId);
-    const wStr=bb?`${toDisplay(bb.maxX-bb.minX).toFixed(3)}"`:'-';
-    const hStr=bb?`${toDisplay(bb.maxY-bb.minY).toFixed(3)}"`:'-';
-    const sizeStr=bb?`${wStr} × ${hStr}`:'-';
-    return `<div class="part-row" data-part-id="${p.partId}" id="pr-${p.partId}">
-      <div class="part-header" onclick="PartLibrary.selectPart('${p.partId}')">
-        <div class="part-color-dot" style="background:${p.color};box-shadow:0 0 4px ${p.color}"></div>
-        <span class="part-name" title="${p.name}">${p.name}</span>
-        <span class="part-qty-badge">×<input type="number" value="${p.qty}" min="1" step="1"
-          style="width:28px;background:none;border:none;color:inherit;font-family:inherit;font-size:inherit;text-align:right;outline:none;padding:0;"
-          onclick="event.stopPropagation()"
-          onchange="PartLibrary.setQty('${p.partId}',this.value)"/></span>
-      </div>
-      <div class="part-body">
-        <div class="part-src">${p.sourceFile}</div>
-        <div class="part-stats">${p.entityIds.length} entities · ${sizeStr}</div>
-        <div class="part-actions">
-          <button class="part-btn sel" onclick="PartLibrary.selectPart('${p.partId}')">Select</button>
-          <button class="part-btn ext" onclick="PartLibrary.extractAsKAD('${p.partId}')">Extract .KAD</button>
-          <button class="part-btn del" onclick="if(confirm('Remove ${p.name}?'))PartLibrary.removePart('${p.partId}')">Remove</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML = '';
+  PartLibrary.parts.forEach((part, i) => {
+    const placed = (part.instances||[]).length;
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:5px 6px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:3px;cursor:pointer;';
+    row.innerHTML =
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<div style="width:8px;height:8px;border-radius:2px;background:'+(part.color||'#ffaa00')+';flex-shrink:0;"></div>' +
+        '<span style="flex:1;font-family:var(--fm);font-size:9px;color:var(--t1);">' + (part.name||'Part '+(i+1)) + '</span>' +
+        '<span style="font-family:var(--fm);font-size:8px;color:var(--t3);">×' + placed + '</span>' +
+      '</div>' +
+      '<div style="display:flex;gap:3px;">' +
+        '<button onclick="openPartViewer('+i+')" style="flex:1;font-family:var(--fm);font-size:8px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:2px;color:var(--accent);cursor:pointer;padding:2px 4px;">Open</button>' +
+        '<button onclick="nestStartPlace('+i+')" style="flex:1;font-family:var(--fm);font-size:8px;background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:2px;color:var(--amber);cursor:pointer;padding:2px 4px;">Place</button>' +
+        '<button onclick="PartLibrary.parts.splice('+i+',1);updatePartList();render();" style="font-family:var(--fm);font-size:8px;background:rgba(255,68,85,0.1);border:1px solid rgba(255,68,85,0.3);border-radius:2px;color:#ff4455;cursor:pointer;padding:2px 6px;">✕</button>' +
+      '</div>';
+    el.appendChild(row);
+  });
 }
 
 function clearAllParts() {
@@ -5912,15 +5902,15 @@ let viewMode = 'kad';
 
 function setViewMode(mode) {
   viewMode = mode;
-  document.getElementById('vt-kad').className = 'vt-btn kad' + (mode==='kad'?' active':'');
-  document.getElementById('vt-kam').className = 'vt-btn kam' + (mode==='kam'?' active':'');
-  document.getElementById('kad-props-panel').style.display = mode==='kad' ? '' : 'none';
-  document.getElementById('process-panel').classList.toggle('visible', mode==='kam');
-  document.getElementById('sb-view-mode').textContent = `.KAM · ${mode.toUpperCase()} View`;
-  document.getElementById('sb-view-mode').style.color = mode==='kad' ? 'var(--accent)' : 'var(--amber)';
-  if(mode==='kam') updateContourList();
+  const _g = id => document.getElementById(id);
+  const vtk = _g('vt-kad'); if(vtk) vtk.className = 'vt-btn kad' + (mode==='kad'?' active':'');
+  const vtm = _g('vt-kam'); if(vtm) vtm.className = 'vt-btn kam' + (mode==='kam'?' active':'');
+  const kpp = _g('kad-props-panel'); if(kpp) kpp.style.display = mode==='kad' ? '' : 'none';
+  const pp = _g('process-panel'); if(pp) pp.classList.toggle('visible', mode==='kam');
+  const svm = _g('sb-view-mode');
+  if(svm) { svm.textContent = `.KAM · ${mode.toUpperCase()} View`; svm.style.color = mode==='kad' ? 'var(--accent)' : 'var(--amber)'; }
+  if(mode==='kam' && typeof updateContourList==='function') updateContourList();
   render();
-  showToast(mode==='kad' ? 'KAD View — geometry & drafting' : 'KAM View — process & manufacturing');
 }
 
 // ── CONTOUR TAGGING ──────────────────────────────────────
@@ -6392,7 +6382,7 @@ function circumscribedCircle(p1,p2,p3){
   return{cx:parseFloat(ux.toFixed(6)),cy:parseFloat(uy.toFixed(6)),r:parseFloat(r.toFixed(6))};
 }
 
-function getFillet(){const r=parseFloat(document.getElementById('fillet-r-input').value)||5;return parseFloat(fromDisplay(r).toFixed(6));}
+function getFillet(){const r=parseFloat(document.getElementById('fillet-r-input')?.value)||5;return parseFloat(fromDisplay(r).toFixed(6));}
 
 function commitFillet(l1,l2){
   const r=getFillet();if(r<=0){showToast('Enter a fillet radius > 0');return;}
@@ -6656,8 +6646,8 @@ function updateMeasureDisplay(p1, p2) {
   const dx = p2.x - p1.x, dy = p2.y - p1.y;
   const dist = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-  document.getElementById('measure-dist').textContent = fmtU(dist);
-  document.getElementById('measure-angle').textContent = angle.toFixed(2) + '°';
+  { const _md=document.getElementById('measure-dist'); if(_md) _md.textContent = fmtU(dist); }
+  { const _gel=document.getElementById('measure-angle'); if(_gel) _gel.textContent = angle.toFixed(2) + '°'; }
 }
 
 function copySelected() {
@@ -7318,6 +7308,185 @@ function gkodeCommitImport() {
     showToast('G\u00b7KODE \u2192 ' + result.entities.length + ' open paths' + modeLabel + ' \u00b7 use Explode NC \u2192 Parts when ready');
   }
 }
+
+// ── PART VIEWER ───────────────────────────────────────────────────────────────
+let _pvPart = null; // currently viewed part
+
+function openPartViewer(partIdx) {
+  const overlay = document.getElementById('part-viewer');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  if (partIdx !== undefined && PartLibrary.parts[partIdx]) {
+    _pvPart = PartLibrary.parts[partIdx];
+  } else if (PartLibrary.parts.length > 0) {
+    _pvPart = PartLibrary.parts[0];
+  } else {
+    _pvPart = null;
+  }
+  pvRender();
+}
+
+function closePartViewer() {
+  const overlay = document.getElementById('part-viewer');
+  if (overlay) overlay.classList.remove('open');
+  _pvPart = null;
+}
+
+function pvRender() {
+  // Update name/dims
+  const nameEl = document.getElementById('pv-part-name');
+  const dimsEl = document.getElementById('pv-part-dims');
+  if (!_pvPart) {
+    if (nameEl) nameEl.textContent = 'No part loaded';
+    return;
+  }
+  if (nameEl) nameEl.textContent = _pvPart.name || 'Unnamed Part';
+
+  // Build contour list
+  const listEl = document.getElementById('pv-contour-list');
+  if (listEl && _pvPart.entityIds) {
+    listEl.innerHTML = '';
+    _pvPart.entityIds.forEach((id, i) => {
+      const o = GeoMemory.objects.find(x => x.id === id);
+      if (!o) return;
+      const tag = KAM.tags[id] || {};
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 4px;' +
+        'border-radius:3px;cursor:pointer;font-family:var(--fm);font-size:9px;color:var(--t2);' +
+        'background:var(--panel2);border:1px solid var(--border);';
+      const opColor = tag.operation==='cut' ? '#00d4ff' : tag.operation==='mark' ? '#ffaa00' : '#666';
+      row.innerHTML =
+        '<span style="width:6px;height:6px;border-radius:50%;background:'+opColor+';flex-shrink:0;"></span>' +
+        '<span style="flex:1;">' + (o.type) + ' #' + (i+1) + '</span>' +
+        '<span style="color:var(--t3);font-size:8px;">' + (tag.operation||'untagged') + ' / ' + (tag.side||'—') + '</span>';
+      row.onclick = () => pvSelectContour(id);
+      listEl.appendChild(row);
+    });
+  }
+
+  // Draw on part viewer canvas
+  pvDrawCanvas();
+}
+
+function pvSelectContour(id) {
+  // Update order input with current tag
+  const tag = KAM.tags[id] || {};
+  const orderEl = document.getElementById('pv-cut-order');
+  if (orderEl) orderEl.value = tag.cutOrder || 1;
+  pvRender();
+}
+
+function pvSetOp(op) {
+  // Tag selected contours or all in part
+  if (!_pvPart) return;
+  (_pvPart.entityIds || []).forEach(id => {
+    if (!KAM.tags[id]) KAM.tags[id] = {};
+    KAM.tags[id].operation = op;
+  });
+  pvRender(); render();
+}
+
+function pvSetSide(side) {
+  if (!_pvPart) return;
+  (_pvPart.entityIds || []).forEach(id => {
+    if (!KAM.tags[id]) KAM.tags[id] = {};
+    KAM.tags[id].side = side;
+  });
+  pvRender(); render();
+}
+
+function pvSetOrder(val) {
+  if (!_pvPart) return;
+  (_pvPart.entityIds || []).forEach(id => {
+    if (!KAM.tags[id]) KAM.tags[id] = {};
+    KAM.tags[id].cutOrder = parseInt(val) || 1;
+  });
+  pvRender();
+}
+
+function pvAddToTable() {
+  if (!_pvPart) { showToast('No part loaded'); return; }
+  // Add an instance of this part to the table at origin
+  if (!_pvPart.instances) _pvPart.instances = [];
+  _pvPart.instances.push({ x:50, y:50, angle:0 });
+  showToast(_pvPart.name + ' added to table');
+  closePartViewer();
+  setKAMMode('table');
+  render();
+}
+
+function pvSaveAsKAD() {
+  if (!_pvPart) { showToast('No part loaded'); return; }
+  const ids = _pvPart.entityIds || [];
+  const objs = GeoMemory.objects.filter(o => ids.includes(o.id));
+  const kad = { version:1, objects: objs, meta:{ name:_pvPart.name } };
+  downloadText(JSON.stringify(kad, null, 2), (_pvPart.name||'part').replace(/[^a-z0-9]/gi,'_') + '.kad', 'application/json');
+  showToast('Saved ' + _pvPart.name + '.kad');
+}
+
+function pvDrawCanvas() {
+  const canvas = document.getElementById('part-viewer-canvas');
+  if (!canvas || !_pvPart) return;
+  const wrap = document.getElementById('part-viewer-canvas-wrap');
+  canvas.width  = wrap.offsetWidth  || 600;
+  canvas.height = wrap.offsetHeight || 500;
+  const ctx2 = canvas.getContext('2d');
+  ctx2.fillStyle = '#07090c';
+  ctx2.fillRect(0, 0, canvas.width, canvas.height);
+
+  const ids = _pvPart.entityIds || [];
+  const objs = GeoMemory.objects.filter(o => ids.includes(o.id));
+  if (!objs.length) {
+    ctx2.fillStyle = 'rgba(255,170,0,0.4)';
+    ctx2.font = '12px Fira Code,monospace';
+    ctx2.textAlign = 'center';
+    ctx2.fillText('No geometry', canvas.width/2, canvas.height/2);
+    return;
+  }
+
+  // Compute bounding box
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  objs.forEach(o => {
+    if(o.type==='LINE'){
+      minX=Math.min(minX,o.x1,o.x2); maxX=Math.max(maxX,o.x1,o.x2);
+      minY=Math.min(minY,o.y1,o.y2); maxY=Math.max(maxY,o.y1,o.y2);
+    } else if(o.type==='POLYLINE') {
+      o.pts.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+    }
+  });
+
+  const pad=40, gW=maxX-minX||1, gH=maxY-minY||1;
+  const scale = Math.min((canvas.width-pad*2)/gW, (canvas.height-pad*2)/gH);
+  const ox = (canvas.width  - gW*scale)/2 - minX*scale;
+  const oy = (canvas.height + gH*scale)/2 + minY*scale;
+  const w2s = (x,y) => ({ x: x*scale+ox, y: -y*scale+oy });
+
+  ctx2.strokeStyle = '#ffaa00'; ctx2.lineWidth = 1.8; ctx2.setLineDash([]);
+  objs.forEach(o => {
+    const tag = KAM.tags[o.id] || {};
+    ctx2.strokeStyle = tag.operation==='cut' ? '#ff9900' :
+                       tag.operation==='mark' ? '#ffdd00' : '#444';
+    ctx2.lineWidth = tag.side==='inside' ? 1.0 : 1.8;
+    if(o.type==='LINE'){
+      const a=w2s(o.x1,o.y1),b=w2s(o.x2,o.y2);
+      ctx2.beginPath(); ctx2.moveTo(a.x,a.y); ctx2.lineTo(b.x,b.y); ctx2.stroke();
+    } else if(o.type==='POLYLINE' && o.pts.length>1){
+      const p0=w2s(o.pts[0].x,o.pts[0].y);
+      ctx2.beginPath(); ctx2.moveTo(p0.x,p0.y);
+      o.pts.slice(1).forEach(p=>{const s=w2s(p.x,p.y);ctx2.lineTo(s.x,s.y);});
+      if(o.closed) ctx2.closePath();
+      ctx2.stroke();
+    }
+  });
+
+  // Dims
+  if(isFinite(gW) && isFinite(gH)) {
+    const wLabel = unitMode==='in' ? (gW/25.4).toFixed(3)+'"' : gW.toFixed(1)+'mm';
+    const hLabel = unitMode==='in' ? (gH/25.4).toFixed(3)+'"' : gH.toFixed(1)+'mm';
+    const dimsEl = document.getElementById('pv-part-dims');
+    if(dimsEl) dimsEl.textContent = wLabel + ' × ' + hLabel;
+  }
+}
 </script>
 
 <div class="su-ov" id="kam-startup">
@@ -7357,5 +7526,57 @@ function gkodeCommitImport() {
 </div></div>
 
 
+
+<!-- ── PART VIEWER OVERLAY ────────────────────────────────────────────────── -->
+<div id="part-viewer">
+  <div id="part-viewer-panel">
+    <div class="section-head" style="display:flex;align-items:center;justify-content:space-between;padding-right:8px;">
+      <span>PART VIEWER</span>
+      <button onclick="closePartViewer()" style="background:none;border:none;color:var(--t2);cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:6px 8px;font-family:var(--fm);font-size:9px;color:var(--t2);">
+      <span id="pv-part-name" style="color:var(--t1);font-weight:700;">—</span>
+      <span id="pv-part-dims" style="color:var(--t3);margin-left:8px;"></span>
+    </div>
+    <div class="file-ops-sep" style="margin:2px 8px;"></div>
+    <div style="padding:4px 8px 2px;">
+      <div style="font-family:var(--fm);font-size:8px;color:var(--t3);letter-spacing:0.1em;padding:2px 0 4px;">CONTOUR TAGS</div>
+      <div id="pv-contour-list" style="display:flex;flex-direction:column;gap:3px;max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <div class="file-ops-sep" style="margin:6px 8px;"></div>
+    <div style="padding:4px 8px;" id="pv-tag-controls">
+      <div style="font-family:var(--fm);font-size:8px;color:var(--t3);letter-spacing:0.1em;padding:2px 0 4px;">TAG SELECTED</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="op-btn-color" style="--c:0,212,255;font-size:8px;padding:4px 8px;" onclick="pvSetOp('cut')">Cut</button>
+        <button class="op-btn-color" style="--c:255,170,0;font-size:8px;padding:4px 8px;" onclick="pvSetOp('mark')">Mark</button>
+        <button class="op-btn-color" style="--c:100,100,100;font-size:8px;padding:4px 8px;" onclick="pvSetOp('ignore')">Ignore</button>
+      </div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+        <button class="op-btn-color" style="--c:0,255,157;font-size:8px;padding:4px 8px;" onclick="pvSetSide('outside')">Outside</button>
+        <button class="op-btn-color" style="--c:180,100,255;font-size:8px;padding:4px 8px;" onclick="pvSetSide('inside')">Inside</button>
+        <button class="op-btn-color" style="--c:150,150,150;font-size:8px;padding:4px 8px;" onclick="pvSetSide('on')">On-line</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+        <span style="font-family:var(--fm);font-size:8px;color:var(--t3);">ORDER</span>
+        <input type="number" id="pv-cut-order" min="1" max="99" value="1" onchange="pvSetOrder(this.value)"
+          style="width:44px;background:var(--panel2);border:1px solid var(--border-hi);border-radius:3px;color:var(--accent);font-family:var(--fm);font-size:10px;padding:2px 5px;outline:none;text-align:center;">
+      </div>
+    </div>
+    <div style="flex:1;"></div>
+    <div style="padding:6px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px;">
+      <button class="op-btn-color" style="--c:255,140,0;" onclick="pvAddToTable()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1"/><path d="M17 13v8M13 17h8"/></svg>
+        Add to Table
+      </button>
+      <button class="op-btn-color" style="--c:0,255,157;" onclick="pvSaveAsKAD()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Save as .kad
+      </button>
+    </div>
+  </div>
+  <div id="part-viewer-canvas-wrap">
+    <canvas id="part-viewer-canvas"></canvas>
+  </div>
+</div>
 </body>
 </html>
